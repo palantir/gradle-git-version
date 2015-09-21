@@ -38,7 +38,7 @@ dependencies {
 tasks.eclipse.dependsOn createClasspathManifest
 
 group 'com.palantir.gradle.gitversion'
-version '0.1.1-develop'
+version '0.1.1'
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
