@@ -1,0 +1,13 @@
+build
+bin
+*.class
+
+.gradle
+.project
+.classpath
+.checkstyle
+.settings
+.node
+*.ipr
+*.iws
+.idea

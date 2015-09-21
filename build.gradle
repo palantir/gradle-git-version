@@ -1,0 +1,95 @@
+plugins {
+    id 'com.jfrog.bintray' version '1.2'
+    id 'com.gradle.plugin-publish' version '0.9.1'
+    id 'eclipse'
+    id 'groovy'
+    id 'idea'
+    id 'maven-publish'
+}
+
+task createClasspathManifest {
+    def outputDir = file("$buildDir/$name")
+
+    inputs.files sourceSets.main.runtimeClasspath
+    outputs.dir outputDir
+
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile 'org.eclipse.jgit:org.eclipse.jgit:4.0.2.201509141540-r'
+
+    testCompile gradleTestKit()
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.3') {
+        exclude module: 'groovy-all'
+    }
+    testCompile files(createClasspathManifest)
+}
+
+tasks.eclipse.dependsOn createClasspathManifest
+
+group 'com.palantir.gradle.gitversion'
+version '0.1.0-develop'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+publishing {
+    publications {
+        bintray(MavenPublication) {
+            from components.java
+            artifact(sourceJar) {
+                classifier 'sources'
+            }
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    pkg {
+        repo = 'releases'
+        name = 'gradle-git-version'
+        userOrg = 'palantir'
+        licenses = ['Apache-2.0']
+        publications = ['bintray']
+    }
+}
+
+bintrayUpload.onlyIf {
+    System.getenv('BINTRAY_USER') && System.getenv('BINTRAY_KEY') && project.version ==~ /\d+\.\d+\.\d+/
+}
+
+bintrayUpload.dependsOn { generatePomFileForBintrayPublication }
+bintrayUpload.dependsOn { sourceJar }
+bintrayUpload.dependsOn { build }
+
+pluginBundle {
+    website = 'https://github.com/palantir/gradle-git-version'
+    vcsUrl = 'https://github.com/palantir/gradle-git-version'
+    description = 'Gradle Git-Version is a plugin that generates a version for use with Gradle by calling git-describe.'
+    tags = ['git', 'version']
+
+    plugins {
+        dockerPlugin {
+            id = 'com.palantir.git-version'
+            displayName = 'Palantir Gradle Git-Version'
+        }
+    }
+}
+
+publishPlugins.onlyIf {
+    project.version ==~ /\d+\.\d+\.\d+/
+}
