@@ -1,6 +1,7 @@
 plugins {
     id 'com.jfrog.bintray' version '1.2'
     id 'com.gradle.plugin-publish' version '0.9.1'
+    id 'com.palantir.git-version' version '0.1.1'
     id 'eclipse'
     id 'groovy'
     id 'idea'
@@ -38,7 +39,7 @@ dependencies {
 tasks.eclipse.dependsOn createClasspathManifest
 
 group 'com.palantir.gradle.gitversion'
-version '0.1.1'
+version gitVersion()
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
