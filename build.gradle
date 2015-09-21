@@ -38,7 +38,7 @@ dependencies {
 tasks.eclipse.dependsOn createClasspathManifest
 
 group 'com.palantir.gradle.gitversion'
-version '0.1.0'
+version '0.1.1-develop'
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
@@ -93,3 +93,4 @@ pluginBundle {
 publishPlugins.onlyIf {
     project.version ==~ /\d+\.\d+\.\d+/
 }
+
