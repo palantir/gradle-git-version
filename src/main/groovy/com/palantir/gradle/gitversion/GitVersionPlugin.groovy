@@ -20,8 +20,6 @@ import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-import com.google.common.base.Preconditions
-
 class GitVersionPlugin implements Plugin<Project> {
 
     private static final String NO_VERSION = 'unspecified-version'
@@ -29,7 +27,9 @@ class GitVersionPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.ext.gitVersion = {
             File gitDir = new File(project.rootDir, '.git')
-            Preconditions.checkArgument(gitDir.exists(), 'Cannot find \'.git\' directory')
+            if (!gitDir.exists()) {
+                throw new IllegalArgumentException('Cannot find \'.git\' directory')
+            }
 
             try {
                 Git git = Git.wrap(new FileRepository(gitDir))
