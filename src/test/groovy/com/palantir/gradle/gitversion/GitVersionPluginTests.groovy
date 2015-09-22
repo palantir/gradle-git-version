@@ -72,7 +72,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.standardError.contains('> Cannot find \'.git\' directory')
     }
 
-    def 'unspecified-version when no tags are present' () {
+    def 'unspecified when no tags are present' () {
         given:
         buildFile << '''
             apply plugin: 'com.palantir.git-version'
@@ -84,10 +84,10 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\nunspecified-version\n')
+        buildResult.standardOutput.contains(':printVersion\nunspecified\n')
     }
 
-    def 'unspecified-version when no annotated tags are present' () {
+    def 'unspecified when no annotated tags are present' () {
         given:
         buildFile << '''
             apply plugin: 'com.palantir.git-version'
@@ -102,10 +102,10 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\nunspecified-version\n')
+        buildResult.standardOutput.contains(':printVersion\nunspecified\n')
     }
 
-    def 'unspecified-version and dirty when no annotated tags are present and dirty content' () {
+    def 'unspecified and dirty when no annotated tags are present and dirty content' () {
         given:
         buildFile << '''
             apply plugin: 'com.palantir.git-version'
@@ -121,7 +121,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\nunspecified-version.dirty\n')
+        buildResult.standardOutput.contains(':printVersion\nunspecified.dirty\n')
     }
 
     def 'git describe when annotated tag is present' () {
