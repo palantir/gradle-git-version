@@ -42,7 +42,9 @@ class GitVersionPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks.create('printVersion', PrintVersionTask)
+        project.tasks.create('printVersion') << {
+            println project.version
+        }
     }
 }
 
