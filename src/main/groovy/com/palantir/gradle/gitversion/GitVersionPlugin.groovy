@@ -22,7 +22,8 @@ import org.gradle.api.Project
 
 class GitVersionPlugin implements Plugin<Project> {
 
-    private static final String NO_VERSION = 'unspecified-version'
+    // Gradle returns 'unspecified' when no version is set
+    private static final String UNSPECIFIED_VERSION = 'unspecified'
 
     void apply(Project project) {
         project.ext.gitVersion = {
@@ -33,11 +34,11 @@ class GitVersionPlugin implements Plugin<Project> {
 
             try {
                 Git git = Git.wrap(new FileRepository(gitDir))
-                String version = git.describe().call() ?: NO_VERSION
+                String version = git.describe().call() ?: UNSPECIFIED_VERSION
                 boolean isClean = git.status().call().isClean()
                 return version + (isClean ? '' : '.dirty')
             } catch (Throwable t) {
-                return NO_VERSION
+                return UNSPECIFIED_VERSION
             }
         }
 
