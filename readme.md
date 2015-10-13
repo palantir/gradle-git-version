@@ -1,5 +1,7 @@
 Git-Version Gradle Plugin
 =========================
+[![Build Status](https://travis-ci.org/palantir/gradle-git-version.svg?branch=develop)](https://travis-ci.org/palantir/gradle-git-version)
+
 When applied, Git-Version adds a method to the target project called `gitVersion()` that
 runs the JGit equivalent of `git describe` to determine a version string. It behaves exactly 
 as the JGit `git describe` method behaves, except that when the repository is in a dirty 
