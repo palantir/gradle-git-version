@@ -32,36 +32,14 @@ class GitVersionPluginTests extends Specification {
     File buildFile
     File gitIgnoreFile
     File dirtyContentFile
-
-    def setup() {
-        projectDir = temporaryFolder.root
-        buildFile = temporaryFolder.newFile('build.gradle')
-        gitIgnoreFile = temporaryFolder.newFile('.gitignore')
-        dirtyContentFile = temporaryFolder.newFile('dirty')
-
-        def pluginClasspathResource = getClass().classLoader.findResource("plugin-classpath.txt")
-        if (pluginClasspathResource == null) {
-            throw new IllegalStateException("Did not find plugin classpath resource, run `testClasses` build task.")
-        }
-
-        def pluginClasspath = pluginClasspathResource.readLines()
-            .collect { it.replace('\\', '\\\\') } // escape backslashes in Windows paths
-            .collect { "'$it'" }
-            .join(", ")
-
-        buildFile << """
-            buildscript {
-                dependencies {
-                    classpath files($pluginClasspath)
-                }
-            }
-        """.stripIndent()
-    }
+    List<File> pluginClasspath
 
     def 'exception when project root does not have a git repo' () {
         given:
         buildFile << '''
-            apply plugin: 'com.palantir.git-version'
+            plugins {
+                id 'com.palantir.git-version'
+            }
             version gitVersion()
         '''.stripIndent()
 
@@ -75,7 +53,9 @@ class GitVersionPluginTests extends Specification {
     def 'unspecified when no tags are present' () {
         given:
         buildFile << '''
-            apply plugin: 'com.palantir.git-version'
+            plugins {
+                id 'com.palantir.git-version'
+            }
             version gitVersion()
         '''.stripIndent()
         Git git = Git.init().setDirectory(projectDir).call();
@@ -90,7 +70,9 @@ class GitVersionPluginTests extends Specification {
     def 'unspecified when no annotated tags are present' () {
         given:
         buildFile << '''
-            apply plugin: 'com.palantir.git-version'
+            plugins {
+                id 'com.palantir.git-version'
+            }
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -108,7 +90,9 @@ class GitVersionPluginTests extends Specification {
     def 'unspecified and dirty when no annotated tags are present and dirty content' () {
         given:
         buildFile << '''
-            apply plugin: 'com.palantir.git-version'
+            plugins {
+                id 'com.palantir.git-version'
+            }
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -127,7 +111,9 @@ class GitVersionPluginTests extends Specification {
     def 'git describe when annotated tag is present' () {
         given:
         buildFile << '''
-            apply plugin: 'com.palantir.git-version'
+            plugins {
+                id 'com.palantir.git-version'
+            }
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -146,7 +132,9 @@ class GitVersionPluginTests extends Specification {
     def 'git describe and dirty when annotated tag is present and dirty content' () {
         given:
         buildFile << '''
-            apply plugin: 'com.palantir.git-version'
+            plugins {
+                id 'com.palantir.git-version'
+            }
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -164,7 +152,26 @@ class GitVersionPluginTests extends Specification {
     }
 
     private GradleRunner with(String... tasks) {
-        GradleRunner.create().withProjectDir(projectDir).withArguments(tasks)
+        GradleRunner.create()
+            .withPluginClasspath(pluginClasspath)
+            .withProjectDir(projectDir)
+            .withArguments(tasks)
+    }
+
+    def setup() {
+        projectDir = temporaryFolder.root
+        buildFile = temporaryFolder.newFile('build.gradle')
+        gitIgnoreFile = temporaryFolder.newFile('.gitignore')
+        dirtyContentFile = temporaryFolder.newFile('dirty')
+
+        def pluginClasspathResource = getClass().classLoader.findResource("plugin-classpath.txt")
+        if (pluginClasspathResource == null) {
+            throw new IllegalStateException("Did not find plugin classpath resource, run `testClasses` build task.")
+        }
+
+        pluginClasspath = pluginClasspathResource.readLines()
+            .collect { it.replace('\\', '\\\\') } // escape backslashes in Windows paths
+            .collect { new File(it) }
     }
 
 }
