@@ -9,9 +9,9 @@ cache:
   directories:
   - "$HOME/.gradle/wrapper"
   - "$HOME/.gradle/native"
-  - "$HOME/.gradle/caches/2.6"
+  - "$HOME/.gradle/caches/2.8"
   - "$HOME/.gradle/caches/modules-2/files-2.1"
-  - "$HOME/.gradle/caches/modules-2/metadata-2.15"
+  - "$HOME/.gradle/caches/modules-2/metadata-2.16"
 env:
   global:
   - secure: VjbingJ5Iy8UHiX52yUrjcL4BD5aDvMYNb9k1w/gDWqUzYTunZ13x/aWo0enQJWdP09Chdvt5vfzBe6RY4oBxfyPkomvKO+4tnXKh0ivLlkdpIATrTZHoIZsYZDEOw4OSw7vevXf4BeU5CsFHvIALv3jR9xLxRxJryWolYnyg+Sp2FJVfkD2YmSnZkaZ787v+EF4nYaA8soxIvZBul7QMUPaOlOuF4N2GAAroJ43ImeJpDf+SUHKmBgQNbVpfzcsQf8S82X90xaV3TErU3moCshM1jCr27Awv/LmqR+2KpVi9qx8CjWJ+84MqJu5DUVH4qAXwg2O0k1M+Dn/5LSWu9YzkWcPYSADrO7AVw97zjii4QcjIfDb/Nce2B1bz4qXWTMjWQWgtyr3F1SwwCIyC2r9jKAoHGb3Tf5FISDvU7AI4n5ebegdtg3cIyRtJgp+8k/AhBYSzDcUbcv+tUEgJF21FcY+9jMLWpOdG+MUflVMWtqUtc/Ld52z5AwaELw0Z/1Oq1Gl8dDSzmTxSd/bdkY2rf47RTYYj2Mq+fQFRZ9LyEPBHxK4e4P1O0n6K2atWVlWd1oGSGHl1/tICZsNhKFgQmZe74kK7wIOHoWA8ybvdAQbCd4+Re67whG0KTjGSSx19FskbKEwj0Nul3SvntM8f5W9s78TSiPGEO49LCo=
