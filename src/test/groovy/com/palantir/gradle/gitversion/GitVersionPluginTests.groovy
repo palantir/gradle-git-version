@@ -58,7 +58,7 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
         '''.stripIndent()
-        Git git = Git.init().setDirectory(projectDir).call();
+        git_init()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -76,9 +76,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
+        git_init_commit()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -96,9 +94,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
+        git_init_commit()
         dirtyContentFile << 'dirty-content'
 
         when:
@@ -117,10 +113,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        git_init_commit_tag()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -138,10 +131,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        git_init_commit_tag()
         dirtyContentFile << 'dirty-content'
 
         when:
@@ -149,6 +139,45 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.standardOutput.contains(':printVersion\n1.0.0.dirty\n')
+    }
+
+    def 'git describe long when annotated tag is present and long is true' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            gitVersionDescriber().setLong(true)
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        git_init_commit_tag()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.standardOutput.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\n')
+    }
+
+    def 'git describe long and dirty when annotated tag is present, long is true and repo is dirty' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            gitVersionDescriber().setLong(true)
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        git_init_commit_tag();
+        dirtyContentFile << 'Dirty content'
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.standardOutput.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\\.dirty\n')
     }
 
     private GradleRunner with(String... tasks) {
@@ -174,4 +203,20 @@ class GitVersionPluginTests extends Specification {
             .collect { new File(it) }
     }
 
+    private Git git;
+
+    private git_init(){
+        git = Git.init().setDirectory(projectDir).call();
+    }
+
+    private git_init_commit(){
+        git_init()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+    }
+
+    private git_init_commit_tag(){
+        git_init_commit();
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+    }
 }

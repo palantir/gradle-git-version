@@ -43,9 +43,11 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     private String doDescribe(Project project) {
+
+        Git git = ensureGit(project);
         try {
             String version = ensureDescribeCommand(project).call() ?: UNSPECIFIED_VERSION
-            boolean isClean = ensureGit(project).status().call().isClean()
+            boolean isClean = git.status().call().isClean()
             return version + (isClean ? '' : '.dirty')
 
         } catch (Throwable t) {
@@ -55,7 +57,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     private DescribeCommand ensureDescribeCommand(Project project) {
         if (describeCommand == null) {
-            Git git = ensureGit()
+            Git git = ensureGit(project)
             describeCommand = git.describe()
         }
 
