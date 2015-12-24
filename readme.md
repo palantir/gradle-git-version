@@ -12,7 +12,7 @@ Usage
 Apply the plugin using standard Gradle convention:
 
     plugins {
-        id 'com.palantir.git-version'
+        id 'com.palantir.git-version' version '<current version>'
     }
 
 Set the version of a project by calling:
