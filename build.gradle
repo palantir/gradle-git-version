@@ -1,7 +1,7 @@
 plugins {
     id 'com.jfrog.bintray' version '1.2'
     id 'com.gradle.plugin-publish' version '0.9.1'
-    id 'com.palantir.git-version' version '0.2.0'
+    id 'com.palantir.git-version' version '0.3.0'
     id 'eclipse'
     id 'groovy'
     id 'idea'
@@ -26,8 +26,7 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    compile 'org.codehaus.groovy:groovy-all:2.4.4'
-    compile 'org.eclipse.jgit:org.eclipse.jgit:4.1.0.201509280440-r'
+    compile 'org.eclipse.jgit:org.eclipse.jgit:4.1.1.201511131810-r'
 
     testCompile gradleTestKit()
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
