@@ -47,7 +47,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').buildAndFail()
 
         then:
-        buildResult.standardError.contains('> Cannot find \'.git\' directory')
+        buildResult.output.contains('> Cannot find \'.git\' directory')
     }
 
     def 'unspecified when no tags are present' () {
@@ -64,7 +64,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\nunspecified\n')
+        buildResult.output.contains(':printVersion\nunspecified\n')
     }
 
     def 'unspecified when no annotated tags are present' () {
@@ -84,7 +84,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\nunspecified\n')
+        buildResult.output.contains(':printVersion\nunspecified\n')
     }
 
     def 'unspecified and dirty when no annotated tags are present and dirty content' () {
@@ -105,7 +105,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\nunspecified.dirty\n')
+        buildResult.output.contains(':printVersion\nunspecified.dirty\n')
     }
 
     def 'git describe when annotated tag is present' () {
@@ -126,7 +126,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(":printVersion\n1.0.0\n")
+        buildResult.output.contains(":printVersion\n1.0.0\n")
     }
 
     def 'git describe and dirty when annotated tag is present and dirty content' () {
@@ -148,7 +148,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\n1.0.0.dirty\n')
+        buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
     }
 
     private GradleRunner with(String... tasks) {
