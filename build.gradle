@@ -84,7 +84,7 @@ pluginBundle {
     tags = ['git', 'version']
 
     plugins {
-        dockerPlugin {
+        gitVersionPlugin {
             id = 'com.palantir.git-version'
             displayName = 'Palantir Gradle Git-Version'
         }
