@@ -38,7 +38,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
                 DescribeCommand describeCommand = git.describe()
                 describeCommand.setLong(longDescription)
-//                describeCommand.setTarget(target)
+                describeCommand.setTarget(target)
 
                 String version = describeCommand.call() ?: UNSPECIFIED_VERSION
                 boolean isClean = git.status().call().isClean()
