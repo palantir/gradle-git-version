@@ -151,6 +151,49 @@ class GitVersionPluginTests extends Specification {
         buildResult.standardOutput.contains(':printVersion\n1.0.0.dirty\n')
     }
 
+    def 'git describe and long when annotated tag is present and longDescription is true' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version\'
+            }
+            version gitVersion(true)
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.standardOutput.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\n')
+    }
+
+    def 'git describe, long and dirty when annotated tag is present, longDescription is true and dirty content' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version\'
+            }
+            version gitVersion(true)
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        dirtyContentFile << 'dirty-content'
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.standardOutput.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\\.dirty\n')
+    }
+
     private GradleRunner with(String... tasks) {
         GradleRunner.create()
             .withPluginClasspath(pluginClasspath)
