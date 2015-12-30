@@ -156,7 +156,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\n')
+        buildResult.output.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\n')
     }
 
     def 'git describe, long and dirty when annotated tag is present, longDescription is true and dirty content' () {
@@ -175,7 +175,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\\.dirty\n')
+        buildResult.output.find(':printVersion\n1.0.0-0-g[a-f0-9]{7}\\.dirty\n')
     }
 
     def 'git describe long format with commit count when commit after tag' () {
@@ -195,7 +195,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.find(':printVersion\n1.0.0-1-g[a-f0-9]{7}\n')
+        buildResult.output.find(':printVersion\n1.0.0-1-g[a-f0-9]{7}\n')
     }
 
     def 'git describe short format when commit after tag but target is tag' () {
@@ -215,7 +215,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.standardOutput.contains(':printVersion\n1.0.0\n')
+        buildResult.output.contains(':printVersion\n1.0.0\n')
     }
 
     private GradleRunner with(String... tasks) {
