@@ -20,6 +20,20 @@ Set the version of a project by calling:
 
     version gitVersion()
 
+`gitVersion` function takes two optional positional parameters :
+    1 `boolean longDescription` just like `git describe --long` will always show the long
+        format if set to true. It is passed directly to DescribeCommand.setLong
+    2 `String target` takes any valid target String. See [Repository.resolve(String target)](http://download.eclipse.org/jgit/site/4.1.1.201511131810-r/apidocs/index.html)
+        for valid options.
+
+An example using the long format :
+
+    version gitVersion(true)
+
+An example using the short format and specifying a target :
+
+    version gitVersion(false, 'master')
+
 Tasks
 -----
 This plugin adds a `printVersion` task, which will echo the project's configured version
