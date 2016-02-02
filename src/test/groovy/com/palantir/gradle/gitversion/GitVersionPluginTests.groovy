@@ -34,7 +34,7 @@ class GitVersionPluginTests extends Specification {
     File dirtyContentFile
     List<File> pluginClasspath
 
-    def 'exception when project root does not have a git repo' () {
+    def 'unspecified when project root does not have a git repo' () {
         given:
         buildFile << '''
             plugins {
@@ -44,10 +44,10 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
 
         when:
-        BuildResult buildResult = with('printVersion').buildAndFail()
+        BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains('> Cannot find \'.git\' directory')
+        buildResult.output.contains(':printVersion\nunspecified\n')
     }
 
     def 'unspecified when no tags are present' () {
