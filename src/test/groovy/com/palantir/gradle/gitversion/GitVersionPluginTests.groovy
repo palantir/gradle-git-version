@@ -15,6 +15,8 @@
  */
 package com.palantir.gradle.gitversion
 
+import java.nio.file.Files
+
 import org.eclipse.jgit.api.Git
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -149,6 +151,36 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
+    }
+
+    def 'git describe and clean when symlink is present' () {
+
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        File fileToLinkTo = temporaryFolder.newFile('fileToLinkTo')
+        fileToLinkTo << 'content'
+        Files.createSymbolicLink(temporaryFolder.getRoot().toPath().resolve('fileLink'), fileToLinkTo.toPath());
+
+        File folderToLinkTo = temporaryFolder.newFolder('folderToLinkTo')
+        new File(folderToLinkTo, 'dummyFile') << 'content'
+        Files.createSymbolicLink(temporaryFolder.getRoot().toPath().resolve('folderLink'), folderToLinkTo.toPath());
+
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.output.contains(':printVersion\n1.0.0\n')
     }
 
     private GradleRunner with(String... tasks) {
