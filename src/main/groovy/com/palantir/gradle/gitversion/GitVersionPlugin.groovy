@@ -29,7 +29,7 @@ class GitVersionPlugin implements Plugin<Project> {
         project.ext.gitVersion = {
             File gitDir = new File(project.rootDir, '.git')
             if (!gitDir.exists()) {
-                throw new IllegalArgumentException('Cannot find \'.git\' directory')
+                return UNSPECIFIED_VERSION
             }
 
             try {
