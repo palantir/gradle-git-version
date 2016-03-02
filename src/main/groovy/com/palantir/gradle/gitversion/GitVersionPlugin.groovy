@@ -27,7 +27,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            File gitDir = new File(project.rootDir, '.git')
+            File gitDir = findRootGitDir(project.rootDir)
             if (!gitDir.exists()) {
                 throw new IllegalArgumentException('Cannot find \'.git\' directory')
             }
@@ -46,5 +46,20 @@ class GitVersionPlugin implements Plugin<Project> {
             println project.version
         }
     }
-}
 
+    private File findRootGitDir(File currentRoot) {
+        File gitDir = new File(currentRoot, '.git')
+
+        if (gitDir.exists()) {
+            return gitDir
+        }
+
+        // stop at the root directory, return non-existing File object
+        if (currentRoot.parentFile == null) {
+            return gitDir
+        }
+
+        // look in parent directory
+        return findRootGitDir(currentRoot.parentFile)
+    }
+}

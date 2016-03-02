@@ -52,6 +52,31 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains('> Cannot find \'.git\' directory')
     }
 
+    def 'git describe works when git repo is multiple levels up' () {
+        given:
+        File rootFolder = temporaryFolder.root
+        projectDir = temporaryFolder.newFolder('level1', 'level2')
+        buildFile = temporaryFolder.newFile('level1/level2/build.gradle')
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(rootFolder).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        when:
+        // will build the project at projectDir
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0\n")
+    }
+
     def 'unspecified when no tags are present' () {
         given:
         buildFile << '''
