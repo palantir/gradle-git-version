@@ -1,4 +1,5 @@
 build
+out/
 bin
 *.class
 
@@ -8,6 +9,7 @@ bin
 .checkstyle
 .settings
 .node
+*.iml
 *.ipr
 *.iws
 .idea
