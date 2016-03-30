@@ -208,6 +208,78 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(':printVersion\n1.0.0\n')
     }
 
+    def 'version details null when no tags are present' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails()
+            }
+        '''.stripIndent()
+        Git git = Git.init().setDirectory(projectDir).call();
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output.contains(':printVersionDetails\nnull\n')
+    }
+
+    def 'version details on commit with a tag' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails().lastTag
+                println versionDetails().commitDistance
+            }
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output.contains(":printVersionDetails\n1.0.0\n0\n")
+    }
+
+    def 'version details when commit distance to tag is > 0' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails().lastTag
+                println versionDetails().commitDistance
+            }
+
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        git.commit().setMessage('commit 2').call()
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output.contains(":printVersionDetails\n1.0.0\n1\n")
+    }
+
     private GradleRunner with(String... tasks) {
         GradleRunner.create()
             .withPluginClasspath(pluginClasspath)

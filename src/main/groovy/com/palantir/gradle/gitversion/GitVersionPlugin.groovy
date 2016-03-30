@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import com.palantir.gradle.gitversion.VersionDetails;
 
 class GitVersionPlugin implements Plugin<Project> {
 
@@ -27,10 +28,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            File gitDir = findRootGitDir(project.rootDir)
-            if (!gitDir.exists()) {
-                throw new IllegalArgumentException('Cannot find \'.git\' directory')
-            }
+            File gitDir = getRootGitDir(project.rootDir)
 
             try {
                 Git git = Git.wrap(new FileRepository(gitDir))
@@ -42,12 +40,41 @@ class GitVersionPlugin implements Plugin<Project> {
             }
         }
 
+        project.ext.versionDetails = {
+            File gitDir = getRootGitDir(project.rootDir)
+
+            try {
+                Git git = Git.wrap(new FileRepository(gitDir))
+                String description = git.describe().call();
+
+                // Description has no git hash so it is just the tag name
+                if(!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+                  return new VersionDetails(description, 0);
+                }
+                def match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+                String tagName = match[0][1]
+                int commitCount = match[0][2].toInteger()
+
+                return new VersionDetails(tagName, commitCount)
+            } catch (Throwable t) {
+                return null
+            }
+        }
+
         project.tasks.create('printVersion') << {
             println project.version
         }
     }
 
-    private File findRootGitDir(File currentRoot) {
+    private File getRootGitDir(currentRoot) {
+        File gitDir = scanForRootGitDir(currentRoot)
+        if (!gitDir.exists()) {
+            throw new IllegalArgumentException('Cannot find \'.git\' directory')
+        }
+        return gitDir
+    }
+
+    private File scanForRootGitDir(File currentRoot) {
         File gitDir = new File(currentRoot, '.git')
 
         if (gitDir.exists()) {
@@ -60,6 +87,6 @@ class GitVersionPlugin implements Plugin<Project> {
         }
 
         // look in parent directory
-        return findRootGitDir(currentRoot.parentFile)
+        return scanForRootGitDir(currentRoot.parentFile)
     }
 }
