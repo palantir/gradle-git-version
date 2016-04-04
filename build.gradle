@@ -27,6 +27,7 @@ repositories {
 dependencies {
     compile gradleApi()
     compile 'org.eclipse.jgit:org.eclipse.jgit:4.1.1.201511131810-r'
+    compile 'com.google.guava:guava:19.0'
 
     testCompile gradleTestKit()
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {

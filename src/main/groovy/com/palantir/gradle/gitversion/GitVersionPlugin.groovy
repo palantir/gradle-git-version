@@ -13,52 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.palantir.gradle.gitversion;
+package com.palantir.gradle.gitversion
+
+import java.util.regex.Matcher
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import com.palantir.gradle.gitversion.VersionDetails;
+
+import com.google.common.base.Supplier
+import com.google.common.base.Suppliers
 
 class GitVersionPlugin implements Plugin<Project> {
 
     // Gradle returns 'unspecified' when no version is set
     private static final String UNSPECIFIED_VERSION = 'unspecified'
 
-    void apply(Project project) {
-        project.ext.gitVersion = {
-            File gitDir = getRootGitDir(project.rootDir)
+    private Supplier<String> gitDesc
 
-            try {
-                Git git = Git.wrap(new FileRepository(gitDir))
-                String version = git.describe().call() ?: UNSPECIFIED_VERSION
-                boolean isClean = git.status().call().isClean()
-                return version + (isClean ? '' : '.dirty')
-            } catch (Throwable t) {
-                return UNSPECIFIED_VERSION
+    void apply(Project project) {
+        gitDesc = Suppliers.memoize(new Supplier<String>() {
+            @Override
+            public String get() {
+                File gitDir = getRootGitDir(project.rootDir)
+                try {
+                    Git git = Git.wrap(new FileRepository(gitDir))
+                    String version = git.describe().call() ?: UNSPECIFIED_VERSION
+                    boolean isClean = git.status().call().isClean()
+                    return version + (isClean ? '' : '.dirty')
+                } catch (Throwable t) {
+                    return UNSPECIFIED_VERSION
+                }
             }
+        })
+
+        project.ext.gitVersion = {
+            return gitDesc.get()
         }
 
         project.ext.versionDetails = {
-            File gitDir = getRootGitDir(project.rootDir)
+            String description = gitDesc.get()
 
-            try {
-                Git git = Git.wrap(new FileRepository(gitDir))
-                String description = git.describe().call();
-
-                // Description has no git hash so it is just the tag name
-                if(!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
-                  return new VersionDetails(description, 0);
-                }
-                def match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
-                String tagName = match[0][1]
-                int commitCount = match[0][2].toInteger()
-
-                return new VersionDetails(tagName, commitCount)
-            } catch (Throwable t) {
+            if (description.equals(UNSPECIFIED_VERSION)) {
                 return null
             }
+
+            if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+                // Description has no git hash so it is just the tag name
+                return new VersionDetails(description, 0)
+            }
+
+            Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+            String tagName = match[0][1]
+            int commitCount = Integer.valueOf(match[0][2])
+
+            return new VersionDetails(tagName, commitCount)
         }
 
         project.tasks.create('printVersion') << {
@@ -66,7 +76,7 @@ class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
-    private File getRootGitDir(currentRoot) {
+    private static File getRootGitDir(currentRoot) {
         File gitDir = scanForRootGitDir(currentRoot)
         if (!gitDir.exists()) {
             throw new IllegalArgumentException('Cannot find \'.git\' directory')
@@ -74,7 +84,7 @@ class GitVersionPlugin implements Plugin<Project> {
         return gitDir
     }
 
-    private File scanForRootGitDir(File currentRoot) {
+    private static File scanForRootGitDir(File currentRoot) {
         File gitDir = new File(currentRoot, '.git')
 
         if (gitDir.exists()) {
