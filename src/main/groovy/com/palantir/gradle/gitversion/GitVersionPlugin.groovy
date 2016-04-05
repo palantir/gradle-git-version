@@ -71,8 +71,11 @@ class GitVersionPlugin implements Plugin<Project> {
             return new VersionDetails(tagName, commitCount)
         }
 
-        project.tasks.create('printVersion') << {
-            println project.version
+        project.tasks.create('printVersion') {
+            description = "Prints the project's configured version to standard out"
+            doLast {
+                println project.version
+            }
         }
     }
 
