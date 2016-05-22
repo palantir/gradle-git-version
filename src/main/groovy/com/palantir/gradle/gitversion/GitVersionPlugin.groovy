@@ -15,6 +15,8 @@
  */
 package com.palantir.gradle.gitversion
 
+import groovy.transform.*
+
 import java.util.regex.Matcher
 
 import org.eclipse.jgit.api.Git
@@ -22,38 +24,52 @@ import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-import com.google.common.base.Supplier
-import com.google.common.base.Suppliers
-
 class GitVersionPlugin implements Plugin<Project> {
 
     // Gradle returns 'unspecified' when no version is set
     private static final String UNSPECIFIED_VERSION = 'unspecified'
+    private static final int VERSION_ABBR_LENGTH = 10
 
-    private Supplier<String> gitDesc
+    @Memoized
+    private File gitDir(Project project) {
+        return getRootGitDir(project.rootDir)
+    }
+
+    @Memoized
+    private Git gitRepo(Project project) {
+        return Git.wrap(new FileRepository(gitDir(project)))
+    }
+
+    @Memoized
+    private String gitDesc(Project project) {
+        Git git = gitRepo(project)
+        try {
+            String version = git.describe().call() ?: UNSPECIFIED_VERSION
+            boolean isClean = git.status().call().isClean()
+            return version + (isClean ? '' : '.dirty')
+        } catch (Throwable t) {
+            return UNSPECIFIED_VERSION
+        }
+    }
+
+    @Memoized
+    private String gitHash(Project project) {
+        Git git = gitRepo(project)
+        try {
+            return git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
+        } catch (Throwable t) {
+            return UNSPECIFIED_VERSION
+        }
+    }
 
     void apply(Project project) {
-        gitDesc = Suppliers.memoize(new Supplier<String>() {
-            @Override
-            public String get() {
-                File gitDir = getRootGitDir(project.rootDir)
-                try {
-                    Git git = Git.wrap(new FileRepository(gitDir))
-                    String version = git.describe().call() ?: UNSPECIFIED_VERSION
-                    boolean isClean = git.status().call().isClean()
-                    return version + (isClean ? '' : '.dirty')
-                } catch (Throwable t) {
-                    return UNSPECIFIED_VERSION
-                }
-            }
-        })
-
         project.ext.gitVersion = {
-            return gitDesc.get()
+            return gitDesc(project)
         }
 
         project.ext.versionDetails = {
-            String description = gitDesc.get()
+            String description = gitDesc(project)
+            String hash = gitHash(project)
 
             if (description.equals(UNSPECIFIED_VERSION)) {
                 return null
@@ -61,14 +77,14 @@ class GitVersionPlugin implements Plugin<Project> {
 
             if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
                 // Description has no git hash so it is just the tag name
-                return new VersionDetails(description, 0)
+                return new VersionDetails(description, 0, hash)
             }
 
             Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
             String tagName = match[0][1]
             int commitCount = Integer.valueOf(match[0][2])
 
-            return new VersionDetails(tagName, commitCount)
+            return new VersionDetails(tagName, commitCount, hash)
         }
 
         project.tasks.create('printVersion') {

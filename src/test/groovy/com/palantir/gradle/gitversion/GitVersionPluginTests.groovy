@@ -238,6 +238,7 @@ class GitVersionPluginTests extends Specification {
             task printVersionDetails() << {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
+                println versionDetails().gitHash
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -250,7 +251,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output.contains(":printVersionDetails\n1.0.0\n0\n")
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n"
     }
 
     def 'version details when commit distance to tag is > 0' () {
@@ -263,6 +264,7 @@ class GitVersionPluginTests extends Specification {
             task printVersionDetails() << {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
+                println versionDetails().gitHash
             }
 
         '''.stripIndent()
@@ -277,7 +279,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output.contains(":printVersionDetails\n1.0.0\n1\n")
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\n"
     }
 
     private GradleRunner with(String... tasks) {
