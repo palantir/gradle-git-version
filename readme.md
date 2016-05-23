@@ -29,6 +29,7 @@ You can get an object containing more detailed information by calling:
     def details = versionDetails()
     details.lastTag
     details.commitDistance
+    details.gitHash
 
 Tasks
 -----

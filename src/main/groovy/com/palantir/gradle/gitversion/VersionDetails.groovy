@@ -15,22 +15,25 @@
  */
 package com.palantir.gradle.gitversion;
 
+import groovy.transform.*
+
 /**
  * POGO containing the tag name and commit count that make
  * up the version string.
  */
+@ToString
+@EqualsAndHashCode
 class VersionDetails implements Serializable {
     private static final long serialVersionUID = -7340444937169877612L;
 
     final String lastTag;
     final int commitDistance;
+    final String gitHash;
 
-    public VersionDetails(String lastTag, int commitDistance) {
+    public VersionDetails(String lastTag, int commitDistance, String gitHash) {
         this.lastTag = lastTag;
         this.commitDistance = commitDistance;
+        this.gitHash = gitHash;
     }
 
-    public String toString() {
-      return "VersionDetails[lastTag=${lastTag}, commitDistance=${commitDistance}]";
-    }
 }
