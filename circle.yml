@@ -1,16 +1,20 @@
 machine:
   java:
     version: openjdk7
+  environment:
+    TERM: dumb
 
 general:
   artifacts:
     - build/libs
 
+dependencies:
+  override:
+    - ./gradlew resolveConfigurations
+
 test:
-  pre:
-    - ./gradlew assemble:
-        environment:
-          TERM: dumb
+  override:
+    - ./gradlew build
 
 deployment:
   release:

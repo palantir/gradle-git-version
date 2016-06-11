@@ -34,7 +34,6 @@ class GitVersionPluginTests extends Specification {
     File buildFile
     File gitIgnoreFile
     File dirtyContentFile
-    List<File> pluginClasspath
 
     def 'exception when project root does not have a git repo' () {
         given:
@@ -284,7 +283,7 @@ class GitVersionPluginTests extends Specification {
 
     private GradleRunner with(String... tasks) {
         GradleRunner.create()
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .withProjectDir(projectDir)
             .withArguments(tasks)
     }
@@ -294,15 +293,6 @@ class GitVersionPluginTests extends Specification {
         buildFile = temporaryFolder.newFile('build.gradle')
         gitIgnoreFile = temporaryFolder.newFile('.gitignore')
         dirtyContentFile = temporaryFolder.newFile('dirty')
-
-        def pluginClasspathResource = getClass().classLoader.findResource("plugin-classpath.txt")
-        if (pluginClasspathResource == null) {
-            throw new IllegalStateException("Did not find plugin classpath resource, run `testClasses` build task.")
-        }
-
-        pluginClasspath = pluginClasspathResource.readLines()
-            .collect { it.replace('\\', '\\\\') } // escape backslashes in Windows paths
-            .collect { new File(it) }
     }
 
 }
