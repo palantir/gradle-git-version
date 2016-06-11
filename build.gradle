@@ -2,22 +2,12 @@ plugins {
     id 'com.jfrog.bintray' version '1.5'
     id 'com.gradle.plugin-publish' version '0.9.2'
     id 'com.palantir.git-version' version '0.4.0'
+    id 'com.palantir.idea-test-fix' version '0.1.0'
     id 'eclipse'
     id 'groovy'
     id 'idea'
+    id 'java-gradle-plugin'
     id 'maven-publish'
-}
-
-task createClasspathManifest {
-    def outputDir = file("$buildDir/$name")
-
-    inputs.files sourceSets.main.runtimeClasspath
-    outputs.dir outputDir
-
-    doLast {
-        outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
-    }
 }
 
 repositories {
@@ -32,10 +22,7 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
-    testCompile files(createClasspathManifest)
 }
-
-tasks.eclipse.dependsOn createClasspathManifest
 
 if (System.env.CIRCLE_TEST_REPORTS) {
     test.reports.junitXml.destination = new File(System.env.CIRCLE_TEST_REPORTS, getName())
