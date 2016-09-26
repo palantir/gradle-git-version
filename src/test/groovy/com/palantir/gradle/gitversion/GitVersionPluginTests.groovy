@@ -215,7 +215,9 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
             task printVersionDetails() << {
-                println versionDetails()
+                println versionDetails().lastTag
+                println versionDetails().commitDistance
+                println versionDetails().gitHash
             }
         '''.stripIndent()
         Git git = Git.init().setDirectory(projectDir).call();
@@ -224,7 +226,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output.contains(':printVersionDetails\nnull\n')
+        buildResult.output.contains(':printVersionDetails\nunspecified\n0\nunspecified\n')
     }
 
     def 'version details on commit with a tag' () {

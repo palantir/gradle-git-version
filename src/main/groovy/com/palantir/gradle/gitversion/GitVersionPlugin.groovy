@@ -71,11 +71,7 @@ class GitVersionPlugin implements Plugin<Project> {
             String description = gitDesc(project)
             String hash = gitHash(project)
 
-            if (description.equals(UNSPECIFIED_VERSION)) {
-                return null
-            }
-
-            if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+            if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/) || description.equals(UNSPECIFIED_VERSION)) {
                 // Description has no git hash so it is just the tag name
                 return new VersionDetails(description, 0, hash)
             }
