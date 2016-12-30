@@ -238,6 +238,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
+                println versionDetails().branchName
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -250,7 +251,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nmaster\n"
     }
 
     def 'version details when commit distance to tag is > 0' () {
@@ -264,6 +265,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
+                println versionDetails().branchName
             }
 
         '''.stripIndent()
@@ -278,7 +280,37 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\n"
+    }
+
+    def 'version details when detached HEAD mode' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails().lastTag
+                println versionDetails().commitDistance
+                println versionDetails().gitHash
+                println versionDetails().branchName
+            }
+
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        def commit1 = git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        git.commit().setMessage('commit 2').call()
+        git.checkout().setName(commit1.getId().getName()).call()
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nnull\n"
     }
 
     private GradleRunner with(String... tasks) {

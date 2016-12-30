@@ -10,26 +10,33 @@ It behaves exactly as the JGit `git describe` method behaves, except that when t
 state, appends `.dirty` to the version string.
 
 The second, called `versionDetails()`, returns an object containing the specific details of the version string:
-the tag name, and the commit count since the tag.
+the tag name, the commit count since the tag, the current commit hash of HEAD, and an optional branch name of HEAD.
 
 Usage
 -----
 Apply the plugin using standard Gradle convention:
 
-    plugins {
-        id 'com.palantir.git-version' version '<current version>'
-    }
+```groovy
+plugins {
+    id 'com.palantir.git-version' version '<current version>'
+}
+```
 
 Set the version of a project by calling:
 
-    version gitVersion()
+```groovy
+version gitVersion()
+```
 
 You can get an object containing more detailed information by calling:
 
-    def details = versionDetails()
-    details.lastTag
-    details.commitDistance
-    details.gitHash
+```groovy
+def details = versionDetails()
+details.lastTag
+details.commitDistance
+details.gitHash
+details.branchName // is null if the repository in detached HEAD mode
+```
 
 Tasks
 -----
