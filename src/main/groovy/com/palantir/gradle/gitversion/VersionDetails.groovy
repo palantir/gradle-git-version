@@ -29,11 +29,13 @@ class VersionDetails implements Serializable {
     final String lastTag;
     final int commitDistance;
     final String gitHash;
+    final String branchName;
 
-    public VersionDetails(String lastTag, int commitDistance, String gitHash) {
+    public VersionDetails(String lastTag, int commitDistance, String gitHash, String branchName) {
         this.lastTag = lastTag;
         this.commitDistance = commitDistance;
         this.gitHash = gitHash;
+        this.branchName = branchName
     }
 
 }

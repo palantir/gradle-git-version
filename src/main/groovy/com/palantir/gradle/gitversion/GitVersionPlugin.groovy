@@ -15,14 +15,14 @@
  */
 package com.palantir.gradle.gitversion
 
-import groovy.transform.*
-
-import java.util.regex.Matcher
-
+import groovy.transform.Memoized
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
+import org.eclipse.jgit.lib.Constants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+
+import java.util.regex.Matcher
 
 class GitVersionPlugin implements Plugin<Project> {
 
@@ -55,10 +55,17 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitHash(Project project) {
         Git git = gitRepo(project)
-        try {
-            return git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
-        } catch (Throwable t) {
-            return UNSPECIFIED_VERSION
+        return git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
+    }
+
+    @Memoized
+    private String gitBranchName(Project project) {
+        Git git = gitRepo(project)
+        def ref = git.repository.getRef(git.repository.branch)
+        if (ref == null) {
+            return null
+        } else {
+            return ref.getName().substring(Constants.R_HEADS.length())
         }
     }
 
@@ -69,22 +76,23 @@ class GitVersionPlugin implements Plugin<Project> {
 
         project.ext.versionDetails = {
             String description = gitDesc(project)
-            String hash = gitHash(project)
-
             if (description.equals(UNSPECIFIED_VERSION)) {
                 return null
             }
 
+            String hash = gitHash(project)
+            String branchName = gitBranchName(project)
+
             if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
                 // Description has no git hash so it is just the tag name
-                return new VersionDetails(description, 0, hash)
+                return new VersionDetails(description, 0, hash, branchName)
             }
 
             Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
             String tagName = match[0][1]
             int commitCount = Integer.valueOf(match[0][2])
 
-            return new VersionDetails(tagName, commitCount, hash)
+            return new VersionDetails(tagName, commitCount, hash, branchName)
         }
 
         project.tasks.create('printVersion') {
