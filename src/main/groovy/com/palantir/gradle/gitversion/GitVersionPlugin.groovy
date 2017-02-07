@@ -45,9 +45,13 @@ class GitVersionPlugin implements Plugin<Project> {
         Git git = gitRepo(project)
         try {
             String version = git.describe().call() ?: UNSPECIFIED_VERSION
+            if (version.equals(UNSPECIFIED_VERSION)) {
+                logger.warn("No tags found in git repo.  Version will be '${UNSPECIFIED_VERSION}'")
+            }
             boolean isClean = git.status().call().isClean()
             return version + (isClean ? '' : '.dirty')
         } catch (Throwable t) {
+            logger.warn("No tags found in git repo.  Version will be '${UNSPECIFIED_VERSION}'")
             return UNSPECIFIED_VERSION
         }
     }
