@@ -47,7 +47,7 @@ class GitVersionPlugin implements Plugin<Project> {
             DescribeFirstParentCommand describe = new DescribeFirstParentCommand(git.getRepository())
             String version = describe.call() ?: UNSPECIFIED_VERSION
             boolean isClean = git.status().call().isClean()
-            return version + (isClean ? '' : '.dirty')
+            return version + (isClean ? '' : '-dirty')
         } catch (Throwable t) {
             return UNSPECIFIED_VERSION
         }
