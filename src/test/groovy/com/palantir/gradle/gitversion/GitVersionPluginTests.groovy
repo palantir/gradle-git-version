@@ -134,7 +134,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains(':printVersion\nunspecified.dirty\n')
+        buildResult.output.contains(':printVersion\nunspecified-dirty\n')
     }
 
     def 'git describe when annotated tag is present' () {
@@ -248,7 +248,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
+        buildResult.output.contains(':printVersion\n1.0.0-dirty\n')
     }
 
     def 'git describe and clean when symlink is present' () {
