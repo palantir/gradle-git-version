@@ -16,6 +16,7 @@
 package com.palantir.gradle.gitversion
 
 import groovy.transform.Memoized
+import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
@@ -44,8 +45,11 @@ class GitVersionPlugin implements Plugin<Project> {
     private String gitDesc(Project project) {
         Git git = gitRepo(project)
         try {
-            DescribeFirstParentCommand describe = new DescribeFirstParentCommand(git.getRepository())
-            String version = describe.call() ?: UNSPECIFIED_VERSION
+            // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
+            // first to preserve this behavior in cases where this call would fail but native "git" call does not.
+            new DescribeCommand(git.getRepository()).call()
+
+            String version = runGitCommand(project.rootDir, "describe", "--tags", "--first-parent") ?: UNSPECIFIED_VERSION
             boolean isClean = git.status().call().isClean()
             return version + (isClean ? '' : '.dirty')
         } catch (Throwable t) {
@@ -128,4 +132,31 @@ class GitVersionPlugin implements Plugin<Project> {
         // look in parent directory
         return scanForRootGitDir(currentRoot.parentFile)
     }
+
+    private static String runGitCommand(File dir, String ...commands) {
+        List<String> cmdInput = new ArrayList<>()
+        cmdInput.add("git")
+        cmdInput.addAll(commands)
+        ProcessBuilder pb = new ProcessBuilder(cmdInput)
+        pb.directory(dir)
+        pb.redirectErrorStream(true)
+
+        Process process = pb.start()
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
+
+        StringBuilder builder = new StringBuilder()
+        String line = null
+        while ((line = reader.readLine()) != null) {
+            builder.append(line)
+            builder.append(System.getProperty("line.separator"))
+        }
+
+        int exitCode = process.waitFor()
+        if (exitCode != 0) {
+            return ""
+        }
+
+        return builder.toString().trim()
+    }
+
 }
