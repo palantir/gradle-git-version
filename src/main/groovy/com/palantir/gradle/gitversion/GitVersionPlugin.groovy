@@ -43,6 +43,9 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private String gitDesc(Project project) {
+        // verify that "git" command exists (throws exception if it does not)
+        verifyGitCommandExists()
+
         Git git = gitRepo(project)
         try {
             // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
@@ -131,6 +134,13 @@ class GitVersionPlugin implements Plugin<Project> {
 
         // look in parent directory
         return scanForRootGitDir(currentRoot.parentFile)
+    }
+
+    private static void verifyGitCommandExists() {
+        Process gitVersionProcess = new ProcessBuilder("git", "version").start()
+        if (gitVersionProcess.waitFor() != 0) {
+            throw new IllegalStateException("error invoking git command")
+        }
     }
 
     private static String runGitCommand(File dir, String ...commands) {
