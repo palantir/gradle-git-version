@@ -29,6 +29,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class GitVersionPluginTests extends Specification {
+    private final static int VERSION_ABBR_LENGTH = 7
 
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
@@ -109,11 +110,13 @@ class GitVersionPluginTests extends Specification {
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
 
+        String expected = git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
+
         when:
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains(':printVersion\nunspecified\n')
+        buildResult.output.contains(':printVersion\n'+expected+'\n')
     }
 
     def 'unspecified and dirty when no annotated tags are present and dirty content' () {
@@ -129,12 +132,13 @@ class GitVersionPluginTests extends Specification {
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         dirtyContentFile << 'dirty-content'
+        String expected = git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
 
         when:
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains(':printVersion\nunspecified.dirty\n')
+        buildResult.output.contains(':printVersion\n'+expected+'.dirty\n')
     }
 
     def 'git describe when annotated tag is present' () {
