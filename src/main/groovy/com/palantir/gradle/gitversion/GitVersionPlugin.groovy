@@ -52,7 +52,7 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            String version = runGitCommand(project.rootDir, "describe", "--tags", "--first-parent") ?: UNSPECIFIED_VERSION
+            String version = runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent") ?: UNSPECIFIED_VERSION
             boolean isClean = git.status().call().isClean()
             return version + (isClean ? '' : '.dirty')
         } catch (Throwable t) {
