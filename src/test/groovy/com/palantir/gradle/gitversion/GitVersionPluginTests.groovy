@@ -29,8 +29,6 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class GitVersionPluginTests extends Specification {
-    private final static int VERSION_ABBR_LENGTH = 7
-
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
 
@@ -97,7 +95,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(':printVersion\nunspecified\n')
     }
 
-    def 'unspecified when no annotated tags are present' () {
+    def 'short sha1 when no annotated tags are present' () {
         given:
         buildFile << '''
             plugins {
@@ -110,7 +108,7 @@ class GitVersionPluginTests extends Specification {
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
 
-        String expected = git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
+        String expected = shortSha(git, "HEAD")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -119,7 +117,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(':printVersion\n'+expected+'\n')
     }
 
-    def 'unspecified and dirty when no annotated tags are present and dirty content' () {
+    def 'short sha1 and dirty when no annotated tags are present and dirty content' () {
         given:
         buildFile << '''
             plugins {
@@ -132,7 +130,7 @@ class GitVersionPluginTests extends Specification {
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         dirtyContentFile << 'dirty-content'
-        String expected = git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
+        String expected = shortSha(git, "HEAD")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -396,6 +394,11 @@ class GitVersionPluginTests extends Specification {
             .withPluginClasspath()
             .withProjectDir(projectDir)
             .withArguments(tasks)
+    }
+
+    private static shortSha(Git git, String commitish) {
+        final int VERSION_ABBR_LENGTH = 7
+        git.getRepository().getRef(commitish).getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
     }
 
     def setup() {
