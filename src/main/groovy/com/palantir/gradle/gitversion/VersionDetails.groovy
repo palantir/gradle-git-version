@@ -48,11 +48,11 @@ class VersionDetails implements Serializable {
     }
 
     public boolean getIsCleanTag() {
-        return isClean && !descriptionContainsCommitHash();
+        return isClean && descriptionIsPlainTag();
     }
 
     public int getCommitDistance() {
-        if (!descriptionContainsCommitHash()) {
+        if (descriptionIsPlainTag()) {
             return 0;
         }
 
@@ -62,7 +62,7 @@ class VersionDetails implements Serializable {
     }
 
     public String getLastTag() {
-        if (!descriptionContainsCommitHash()) {
+        if (descriptionIsPlainTag()) {
             return description;
         }
 
@@ -71,7 +71,7 @@ class VersionDetails implements Serializable {
         return tagName;
     }
 
-    private boolean descriptionContainsCommitHash() {
-        return description =~ /.*g.?[0-9a-fA-F]{3,}/;
+    private boolean descriptionIsPlainTag() {
+        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/);
     }
 }
