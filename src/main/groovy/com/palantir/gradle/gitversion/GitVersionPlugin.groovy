@@ -23,8 +23,6 @@ import org.eclipse.jgit.lib.Constants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-import java.util.regex.Matcher
-
 class GitVersionPlugin implements Plugin<Project> {
 
     // Gradle returns 'unspecified' when no version is set
@@ -87,16 +85,7 @@ class GitVersionPlugin implements Plugin<Project> {
         String hash = gitHash(project)
         String branchName = gitBranchName(project)
 
-        if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
-            // Description has no git hash so it is just the tag name
-            return new VersionDetails(description, 0, hash, branchName)
-        }
-
-        Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
-        String tagName = match[0][1]
-        int commitCount = Integer.valueOf(match[0][2])
-
-        return new VersionDetails(tagName, commitCount, hash, branchName)
+        return new VersionDetails(description, hash, branchName)
     }
 
     void apply(Project project) {

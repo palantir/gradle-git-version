@@ -17,6 +17,8 @@ package com.palantir.gradle.gitversion;
 
 import groovy.transform.*
 
+import java.util.regex.Matcher
+
 /**
  * POGO containing the tag name and commit count that make
  * up the version string.
@@ -26,19 +28,38 @@ import groovy.transform.*
 class VersionDetails implements Serializable {
     private static final long serialVersionUID = -7340444937169877612L;
 
-    final String lastTag;
-    final int commitDistance;
+    final String description;
     final String gitHash;
     final String branchName;
 
-    public VersionDetails(String lastTag, int commitDistance, String gitHash, String branchName) {
-        this.lastTag = lastTag;
-        this.commitDistance = commitDistance;
+    public VersionDetails(String description, String gitHash, String branchName) {
+        this.description = description;
         this.gitHash = gitHash;
         this.branchName = branchName;
     }
 
     public boolean getIsTag() {
         return commitDistance == 0;
+    }
+
+    public int getCommitDistance() {
+        if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+            // Description has no git hash so it is just the tag name
+            return 0;
+        }
+
+        Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+        int commitCount = Integer.valueOf(match[0][2])
+        return commitCount;
+    }
+
+    public String getLastTag() {
+        if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+            return description;
+        }
+
+        Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+        String tagName = match[0][1]
+        return tagName;
     }
 }
