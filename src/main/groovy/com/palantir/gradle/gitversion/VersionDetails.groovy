@@ -19,10 +19,6 @@ import groovy.transform.*
 
 import java.util.regex.Matcher
 
-/**
- * POGO containing the tag name and commit count that make
- * up the version string.
- */
 @ToString
 @EqualsAndHashCode
 class VersionDetails implements Serializable {
@@ -52,12 +48,11 @@ class VersionDetails implements Serializable {
     }
 
     public boolean getIsCleanTag() {
-        return isClean && getCommitDistance() == 0;
+        return isClean && !descriptionContainsCommitHash();
     }
 
     public int getCommitDistance() {
-        if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
-            // Description has no git hash so it is just the tag name
+        if (!descriptionContainsCommitHash()) {
             return 0;
         }
 
@@ -67,12 +62,16 @@ class VersionDetails implements Serializable {
     }
 
     public String getLastTag() {
-        if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+        if (!descriptionContainsCommitHash()) {
             return description;
         }
 
         Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
         String tagName = match[0][1]
         return tagName;
+    }
+
+    private boolean descriptionContainsCommitHash() {
+        return description =~ /.*g.?[0-9a-fA-F]{3,}/;
     }
 }

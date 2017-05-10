@@ -21,6 +21,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.ObjectId
+import org.eclipse.jgit.lib.Ref
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -74,12 +75,11 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitBranchName(Project project) {
         Git git = gitRepo(project)
-        def ref = git.repository.getRef(git.repository.branch)
+        Ref ref = git.repository.getRef(git.repository.branch)
         if (ref == null) {
             return null
-        } else {
-            return ref.getName().substring(Constants.R_HEADS.length())
         }
+        return ref.getName().substring(Constants.R_HEADS.length())
     }
 
     @Memoized
