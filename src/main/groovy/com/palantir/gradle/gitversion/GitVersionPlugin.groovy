@@ -29,6 +29,34 @@ class GitVersionPlugin implements Plugin<Project> {
 
     private static final int VERSION_ABBR_LENGTH = 10
 
+    void apply(Project project) {
+        project.ext.gitVersion = {
+            return versionDetails(project).version
+        }
+
+        project.ext.versionDetails = {
+            return versionDetails(project)
+        }
+
+        project.tasks.create('printVersion') {
+            group = 'Versioning'
+            description = 'Prints the project\'s configured version to standard out'
+            doLast {
+                println project.version
+            }
+        }
+    }
+
+    @Memoized
+    private VersionDetails versionDetails(Project project) {
+        String description = gitDescribe(project)
+        String hash = gitHash(project)
+        String branchName = gitBranchName(project)
+        boolean isClean = isClean(project)
+
+        return new VersionDetails(description, hash, branchName, isClean)
+    }
+
     @Memoized
     private Git gitRepo(Project project) {
         File gitDir = GitCli.getRootGitDir(project.rootDir);
@@ -53,12 +81,6 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private boolean isClean(Project project) {
-        Git git = gitRepo(project)
-        return git.status().call().isClean();
-    }
-
-    @Memoized
     private String gitHash(Project project) {
         Git git = gitRepo(project)
         ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
@@ -79,30 +101,8 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private VersionDetails versionDetails(Project project) {
-        String description = gitDescribe(project)
-        String hash = gitHash(project)
-        String branchName = gitBranchName(project)
-        boolean isClean = isClean(project)
-
-        return new VersionDetails(description, hash, branchName, isClean)
-    }
-
-    void apply(Project project) {
-        project.ext.gitVersion = {
-            return versionDetails(project).version
-        }
-
-        project.ext.versionDetails = {
-            return versionDetails(project)
-        }
-
-        project.tasks.create('printVersion') {
-            group = 'Versioning'
-            description = 'Prints the project\'s configured version to standard out'
-            doLast {
-                println project.version
-            }
-        }
+    private boolean isClean(Project project) {
+        Git git = gitRepo(project)
+        return git.status().call().isClean();
     }
 }
