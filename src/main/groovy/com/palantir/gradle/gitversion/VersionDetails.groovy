@@ -31,11 +31,13 @@ class VersionDetails implements Serializable {
     final String description;
     final String gitHash;
     final String branchName;
+    final boolean isClean;
 
-    public VersionDetails(String description, String gitHash, String branchName) {
+    public VersionDetails(String description, String gitHash, String branchName, boolean isClean) {
         this.description = description;
         this.gitHash = gitHash;
         this.branchName = branchName;
+        this.isClean = isClean;
     }
 
     public boolean getIsTag() {

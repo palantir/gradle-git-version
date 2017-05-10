@@ -60,6 +60,12 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
+    private boolean isClean(Project project) {
+        Git git = gitRepo(project)
+        return git.status().call().isClean();
+    }
+
+    @Memoized
     private String gitHash(Project project) {
         Git git = gitRepo(project)
         ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
@@ -85,8 +91,9 @@ class GitVersionPlugin implements Plugin<Project> {
         String description = gitDescribe(project)
         String hash = gitHash(project)
         String branchName = gitBranchName(project)
+        boolean isClean = isClean(project)
 
-        return new VersionDetails(description, hash, branchName)
+        return new VersionDetails(description, hash, branchName, isClean)
     }
 
     void apply(Project project) {
