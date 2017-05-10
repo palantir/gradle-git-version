@@ -283,6 +283,26 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(':printVersion\n1.0.0\n')
     }
 
+    def 'version details not null when no tags are present' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails()
+            }
+        '''.stripIndent()
+        Git git = Git.init().setDirectory(projectDir).call();
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output.contains(':printVersionDetails\ncom.palantir.gradle.gitversion.VersionDetails(null, null, null, false)\n')
+    }
+
     def 'version details on commit with a tag' () {
         given:
         buildFile << '''
