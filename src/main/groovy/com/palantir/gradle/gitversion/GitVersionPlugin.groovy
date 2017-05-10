@@ -42,7 +42,7 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private String gitDesc(Project project) {
+    private String gitDescribe(Project project) {
         // verify that "git" command exists (throws exception if it does not)
         verifyGitCommandExists()
 
@@ -79,11 +79,11 @@ class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            return gitDesc(project)
+            return gitDescribe(project)
         }
 
         project.ext.versionDetails = {
-            String description = gitDesc(project)
+            String description = gitDescribe(project)
             if (description.equals(UNSPECIFIED_VERSION)) {
                 return null
             }
