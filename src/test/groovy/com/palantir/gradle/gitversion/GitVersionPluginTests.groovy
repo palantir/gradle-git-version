@@ -295,7 +295,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
-                println versionDetails().isTag
+                println versionDetails().isCleanTag
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -323,7 +323,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
-                println versionDetails().isTag
+                println versionDetails().isCleanTag
             }
 
         '''.stripIndent()
@@ -339,6 +339,31 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\nfalse\n"
+    }
+
+    def 'isCleanTag should be false when repo dirty on a tag checkout' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails().isCleanTag
+            }
+
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        dirtyContentFile << 'dirty-content'
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\nfalse\n"
     }
 
     def 'version details when detached HEAD mode' () {

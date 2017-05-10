@@ -51,8 +51,8 @@ class VersionDetails implements Serializable {
         return description + (isClean ? '' : '.dirty')
     }
 
-    public boolean getIsTag() {
-        return commitDistance == 0;
+    public boolean getIsCleanTag() {
+        return isClean && getCommitDistance() == 0;
     }
 
     public int getCommitDistance() {
