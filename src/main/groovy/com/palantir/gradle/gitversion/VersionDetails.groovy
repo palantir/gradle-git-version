@@ -30,13 +30,15 @@ class VersionDetails implements Serializable {
     final int commitDistance;
     final String gitHash;
     final String branchName;
-    final boolean isTag;
 
     public VersionDetails(String lastTag, int commitDistance, String gitHash, String branchName) {
         this.lastTag = lastTag;
         this.commitDistance = commitDistance;
         this.gitHash = gitHash;
         this.branchName = branchName;
-        this.isTag = commitDistance == 0;
+    }
+
+    public boolean getIsTag() {
+        return commitDistance == 0;
     }
 }
