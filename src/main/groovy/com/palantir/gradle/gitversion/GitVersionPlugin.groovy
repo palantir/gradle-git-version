@@ -26,8 +26,6 @@ import org.gradle.api.Project
 
 class GitVersionPlugin implements Plugin<Project> {
 
-    // Gradle returns 'unspecified' when no version is set
-    private static final String UNSPECIFIED_VERSION = 'unspecified'
     private static final int VERSION_ABBR_LENGTH = 10
 
     @Memoized
@@ -51,11 +49,9 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            String version = runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent") ?: UNSPECIFIED_VERSION
-            boolean isClean = git.status().call().isClean()
-            return version + (isClean ? '' : '.dirty')
+            return runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent")
         } catch (Throwable t) {
-            return UNSPECIFIED_VERSION
+            return null
         }
     }
 
@@ -98,7 +94,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            return versionDetails(project).description
+            return versionDetails(project).version
         }
 
         project.ext.versionDetails = {

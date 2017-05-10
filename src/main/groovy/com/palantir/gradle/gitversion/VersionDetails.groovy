@@ -26,6 +26,9 @@ import java.util.regex.Matcher
 @ToString
 @EqualsAndHashCode
 class VersionDetails implements Serializable {
+
+    // Gradle returns 'unspecified' when no version is set
+    private static final String UNSPECIFIED_VERSION = 'unspecified'
     private static final long serialVersionUID = -7340444937169877612L;
 
     final String description;
@@ -38,6 +41,14 @@ class VersionDetails implements Serializable {
         this.gitHash = gitHash;
         this.branchName = branchName;
         this.isClean = isClean;
+    }
+
+    public String getVersion() {
+        if (description == null) {
+            return UNSPECIFIED_VERSION
+        }
+
+        return description + (isClean ? '' : '.dirty')
     }
 
     public boolean getIsTag() {
