@@ -36,6 +36,7 @@ details.lastTag
 details.commitDistance
 details.gitHash
 details.branchName // is null if the repository in detached HEAD mode
+details.isTag // true if a tag is checked out and repository is not dirty
 ```
 
 Tasks
