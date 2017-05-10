@@ -33,7 +33,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private File gitDir(Project project) {
-        return getRootGitDir(project.rootDir)
+        return getRootGitDir(project.projectDir)
     }
 
     @Memoized
