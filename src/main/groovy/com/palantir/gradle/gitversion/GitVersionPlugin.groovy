@@ -30,19 +30,15 @@ class GitVersionPlugin implements Plugin<Project> {
     private static final int VERSION_ABBR_LENGTH = 10
 
     @Memoized
-    private File gitDir(Project project) {
-        return getRootGitDir(project.rootDir)
-    }
-
-    @Memoized
     private Git gitRepo(Project project) {
-        return Git.wrap(new FileRepository(gitDir(project)))
+        File gitDir = GitCli.getRootGitDir(project.rootDir);
+        return Git.wrap(new FileRepository(gitDir))
     }
 
     @Memoized
     private String gitDescribe(Project project) {
         // verify that "git" command exists (throws exception if it does not)
-        verifyGitCommandExists()
+        GitCli.verifyGitCommandExists()
 
         Git git = gitRepo(project)
         try {
@@ -50,7 +46,7 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            return runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent")
+            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent")
         } catch (Throwable t) {
             return null
         }
@@ -75,7 +71,7 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitBranchName(Project project) {
         Git git = gitRepo(project)
-        Ref ref = git.repository.getRef(git.repository.branch)
+        Ref ref = git.getRepository().getRef(git.repository.branch)
         if (ref == null) {
             return null
         }
@@ -109,62 +105,4 @@ class GitVersionPlugin implements Plugin<Project> {
             }
         }
     }
-
-    private static File getRootGitDir(currentRoot) {
-        File gitDir = scanForRootGitDir(currentRoot)
-        if (!gitDir.exists()) {
-            throw new IllegalArgumentException('Cannot find \'.git\' directory')
-        }
-        return gitDir
-    }
-
-    private static File scanForRootGitDir(File currentRoot) {
-        File gitDir = new File(currentRoot, '.git')
-
-        if (gitDir.exists()) {
-            return gitDir
-        }
-
-        // stop at the root directory, return non-existing File object
-        if (currentRoot.parentFile == null) {
-            return gitDir
-        }
-
-        // look in parent directory
-        return scanForRootGitDir(currentRoot.parentFile)
-    }
-
-    private static void verifyGitCommandExists() {
-        Process gitVersionProcess = new ProcessBuilder("git", "version").start()
-        if (gitVersionProcess.waitFor() != 0) {
-            throw new IllegalStateException("error invoking git command")
-        }
-    }
-
-    private static String runGitCommand(File dir, String ...commands) {
-        List<String> cmdInput = new ArrayList<>()
-        cmdInput.add("git")
-        cmdInput.addAll(commands)
-        ProcessBuilder pb = new ProcessBuilder(cmdInput)
-        pb.directory(dir)
-        pb.redirectErrorStream(true)
-
-        Process process = pb.start()
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
-
-        StringBuilder builder = new StringBuilder()
-        String line = null
-        while ((line = reader.readLine()) != null) {
-            builder.append(line)
-            builder.append(System.getProperty("line.separator"))
-        }
-
-        int exitCode = process.waitFor()
-        if (exitCode != 0) {
-            return ""
-        }
-
-        return builder.toString().trim()
-    }
-
 }
