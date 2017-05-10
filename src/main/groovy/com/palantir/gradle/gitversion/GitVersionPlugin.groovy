@@ -77,30 +77,35 @@ class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
+    @Memoized
+    private VersionDetails versionDetails(Project project) {
+        String description = gitDescribe(project)
+        if (description.equals(UNSPECIFIED_VERSION)) {
+            return null
+        }
+
+        String hash = gitHash(project)
+        String branchName = gitBranchName(project)
+
+        if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
+            // Description has no git hash so it is just the tag name
+            return new VersionDetails(description, 0, hash, branchName)
+        }
+
+        Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+        String tagName = match[0][1]
+        int commitCount = Integer.valueOf(match[0][2])
+
+        return new VersionDetails(tagName, commitCount, hash, branchName)
+    }
+
     void apply(Project project) {
         project.ext.gitVersion = {
             return gitDescribe(project)
         }
 
         project.ext.versionDetails = {
-            String description = gitDescribe(project)
-            if (description.equals(UNSPECIFIED_VERSION)) {
-                return null
-            }
-
-            String hash = gitHash(project)
-            String branchName = gitBranchName(project)
-
-            if (!(description =~ /.*g.?[0-9a-fA-F]{3,}/)) {
-                // Description has no git hash so it is just the tag name
-                return new VersionDetails(description, 0, hash, branchName)
-            }
-
-            Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
-            String tagName = match[0][1]
-            int commitCount = Integer.valueOf(match[0][2])
-
-            return new VersionDetails(tagName, commitCount, hash, branchName)
+            return versionDetails(project)
         }
 
         project.tasks.create('printVersion') {
