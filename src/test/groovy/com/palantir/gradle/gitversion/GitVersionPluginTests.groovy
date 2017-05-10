@@ -315,6 +315,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
+                println versionDetails().isTag
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -327,7 +328,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nmaster\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nmaster\ntrue\n"
     }
 
     def 'version details when commit distance to tag is > 0' () {
@@ -342,6 +343,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
+                println versionDetails().isTag
             }
 
         '''.stripIndent()
@@ -356,7 +358,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\nfalse\n"
     }
 
     def 'version details when detached HEAD mode' () {
