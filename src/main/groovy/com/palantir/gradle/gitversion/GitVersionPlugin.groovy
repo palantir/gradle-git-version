@@ -20,6 +20,7 @@ import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
+import org.eclipse.jgit.lib.ObjectId
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -61,7 +62,11 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitHash(Project project) {
         Git git = gitRepo(project)
-        return git.getRepository().getRef("HEAD").getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
+        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
+        if (objectId == null) {
+            return null
+        }
+        return objectId.abbreviate(VERSION_ABBR_LENGTH).name()
     }
 
     @Memoized
@@ -78,10 +83,6 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private VersionDetails versionDetails(Project project) {
         String description = gitDescribe(project)
-        if (description.equals(UNSPECIFIED_VERSION)) {
-            return null
-        }
-
         String hash = gitHash(project)
         String branchName = gitBranchName(project)
 
@@ -90,7 +91,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            return gitDescribe(project)
+            return versionDetails(project).description
         }
 
         project.ext.versionDetails = {
