@@ -283,7 +283,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(':printVersion\n1.0.0\n')
     }
 
-    def 'version details null when no tags are present' () {
+    def 'version details not null when no tags are present' () {
         given:
         buildFile << '''
             plugins {
@@ -300,7 +300,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output.contains(':printVersionDetails\nnull\n')
+        buildResult.output.contains(':printVersionDetails\ncom.palantir.gradle.gitversion.VersionDetails(null, null, null, false)\n')
     }
 
     def 'version details on commit with a tag' () {
@@ -315,6 +315,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
+                println versionDetails().isCleanTag
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -327,7 +328,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nmaster\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nmaster\ntrue\n"
     }
 
     def 'version details when commit distance to tag is > 0' () {
@@ -342,6 +343,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
+                println versionDetails().isCleanTag
             }
 
         '''.stripIndent()
@@ -356,7 +358,32 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\nfalse\n"
+    }
+
+    def 'isCleanTag should be false when repo dirty on a tag checkout' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println versionDetails().isCleanTag
+            }
+
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        dirtyContentFile << 'dirty-content'
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\nfalse\n"
     }
 
     def 'version details when detached HEAD mode' () {

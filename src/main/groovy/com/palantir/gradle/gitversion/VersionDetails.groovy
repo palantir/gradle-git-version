@@ -17,25 +17,61 @@ package com.palantir.gradle.gitversion;
 
 import groovy.transform.*
 
-/**
- * POGO containing the tag name and commit count that make
- * up the version string.
- */
+import java.util.regex.Matcher
+
 @ToString
 @EqualsAndHashCode
 class VersionDetails implements Serializable {
+
+    // Gradle returns 'unspecified' when no version is set
+    private static final String UNSPECIFIED_VERSION = 'unspecified'
     private static final long serialVersionUID = -7340444937169877612L;
 
-    final String lastTag;
-    final int commitDistance;
+    final String description;
     final String gitHash;
     final String branchName;
+    final boolean isClean;
 
-    public VersionDetails(String lastTag, int commitDistance, String gitHash, String branchName) {
-        this.lastTag = lastTag;
-        this.commitDistance = commitDistance;
+    public VersionDetails(String description, String gitHash, String branchName, boolean isClean) {
+        this.description = description;
         this.gitHash = gitHash;
-        this.branchName = branchName
+        this.branchName = branchName;
+        this.isClean = isClean;
     }
 
+    public String getVersion() {
+        if (description == null) {
+            return UNSPECIFIED_VERSION
+        }
+
+        return description + (isClean ? '' : '.dirty')
+    }
+
+    public boolean getIsCleanTag() {
+        return isClean && descriptionIsPlainTag();
+    }
+
+    public int getCommitDistance() {
+        if (descriptionIsPlainTag()) {
+            return 0;
+        }
+
+        Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+        int commitCount = Integer.valueOf(match[0][2])
+        return commitCount;
+    }
+
+    public String getLastTag() {
+        if (descriptionIsPlainTag()) {
+            return description;
+        }
+
+        Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
+        String tagName = match[0][1]
+        return tagName;
+    }
+
+    private boolean descriptionIsPlainTag() {
+        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/);
+    }
 }
