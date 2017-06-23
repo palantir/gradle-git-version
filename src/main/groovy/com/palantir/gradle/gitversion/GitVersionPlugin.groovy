@@ -31,11 +31,13 @@ class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            return versionDetails(project).version
+            args=[:] ->
+                return versionDetails(project, args as GitVersionArgs).version
         }
 
         project.ext.versionDetails = {
-            return versionDetails(project)
+            args=[:] ->
+                return versionDetails(project, args as GitVersionArgs)
         }
 
         project.tasks.create('printVersion') {
@@ -47,9 +49,17 @@ class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
+    private static String optionallyStripPrefix(String description, String prefix, boolean includePrefix) {
+        if (!description) {
+            return description
+        }
+        return includePrefix ? description : description.replaceFirst("^${prefix}", "")
+    }
+
     @Memoized
-    private VersionDetails versionDetails(Project project) {
-        String description = gitDescribe(project)
+    private VersionDetails versionDetails(Project project, GitVersionArgs args) {
+        String description =
+                optionallyStripPrefix(gitDescribe(project, args.prefix), args.prefix, args.includePrefix)
         String hash = gitHash(project)
         String branchName = gitBranchName(project)
         boolean isClean = isClean(project)
@@ -64,7 +74,7 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private String gitDescribe(Project project) {
+    private String gitDescribe(Project project, String prefix) {
         // verify that "git" command exists (throws exception if it does not)
         GitCli.verifyGitCommandExists()
 
@@ -74,7 +84,8 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent")
+            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent",
+                    "--match=${prefix}*")
         } catch (Throwable t) {
             return null
         }

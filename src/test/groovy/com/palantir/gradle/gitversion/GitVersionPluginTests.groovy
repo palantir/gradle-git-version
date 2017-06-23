@@ -416,6 +416,56 @@ class GitVersionPluginTests extends Specification {
         buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nnull\n"
     }
 
+    def 'version includes tag if includePrefix is true' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion(prefix:"my-product", includePrefix:true)
+            task printVersionDetails() << {
+                println versionDetails(prefix:"my-product", includePrefix:true).lastTag
+            }
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('my-product1.0.0').setName('my-product1.0.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\nmy-product1.0.0\n"
+    }
+
+    def 'version filters out tags not matching prefix' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion(prefix:"my-product")
+            task printVersionDetails() << {
+                println versionDetails(prefix:"my-product").lastTag
+            }
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('my-product1.0.0').setName('my-product1.0.0').call()
+        git.commit().setMessage('commit 2').call()
+        git.tag().setAnnotated(true).setMessage('1.1.0').setName('1.1.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n"
+    }
+
     private GradleRunner with(String... tasks) {
         GradleRunner.create()
             .withPluginClasspath()

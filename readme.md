@@ -39,6 +39,14 @@ details.branchName // is null if the repository in detached HEAD mode
 details.isCleanTag
 ```
 
+You can optionally search a subset of tags with `prefix`. Inclusion of the `prefix` in the returned version is toggled
+with `includePrefix` (default: `false`). Example when the tag is my-product2.15.0:
+
+```groovy
+gitVersion(prefix:'my-product') // -> 2.15.0
+gitVersion(prefix:'my-product', includePrefix:true) // -> my-product2.15.0
+```
+
 Tasks
 -----
 This plugin adds a `printVersion` task, which will echo the project's configured version
