@@ -15,18 +15,16 @@
  */
 package com.palantir.gradle.gitversion
 
+import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeCommand
 import org.eclipse.jgit.lib.Ref
-
-import java.nio.file.Files
-
-import org.eclipse.jgit.api.Git
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-
 import spock.lang.Specification
+
+import java.nio.file.Files
 
 class GitVersionPluginTests extends Specification {
     @Rule
@@ -422,16 +420,16 @@ class GitVersionPluginTests extends Specification {
             plugins {
                 id 'com.palantir.git-version'
             }
-            version gitVersion(prefix:"my-product")
+            version gitVersion(prefix:"my-product@")
             task printVersionDetails() << {
-                println versionDetails(prefix:"my-product").lastTag
+                println versionDetails(prefix:"my-product@").lastTag
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('my-product1.0.0').setName('my-product1.0.0').call()
+        git.tag().setAnnotated(true).setMessage('my-product@1.0.0').setName('my-product@1.0.0').call()
         git.commit().setMessage('commit 2').call()
         git.tag().setAnnotated(true).setMessage('1.1.0').setName('1.1.0').call()
 
@@ -440,6 +438,27 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output =~ ":printVersionDetails\n1.0.0\n"
+    }
+
+    def 'test valid prefixes' () {
+        expect:
+        GitVersionPlugin.verifyPrefix("@Product@")
+        GitVersionPlugin.verifyPrefix("abc@")
+        GitVersionPlugin.verifyPrefix("abc@test@")
+        GitVersionPlugin.verifyPrefix("Abc-aBc-abC@")
+        GitVersionPlugin.verifyPrefix("foo-bar@")
+        GitVersionPlugin.verifyPrefix("foo-bar/")
+        GitVersionPlugin.verifyPrefix("foo-bar-")
+        GitVersionPlugin.verifyPrefix("foo/bar@")
+        GitVersionPlugin.verifyPrefix("Foo/Bar@")
+    }
+
+    def 'test requires @ or / or - between prefix and version' () {
+        when:
+        GitVersionPlugin.verifyPrefix("v")
+
+        then:
+        thrown AssertionError
     }
 
     private GradleRunner with(String... tasks) {

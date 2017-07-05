@@ -28,15 +28,16 @@ import org.gradle.api.Project
 class GitVersionPlugin implements Plugin<Project> {
 
     private static final int VERSION_ABBR_LENGTH = 10
+    private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
 
     void apply(Project project) {
         project.ext.gitVersion = {
-            args=[:] ->
+            args = [:] ->
                 return versionDetails(project, args as GitVersionArgs).version
         }
 
         project.ext.versionDetails = {
-            args=[:] ->
+            args = [:] ->
                 return versionDetails(project, args as GitVersionArgs)
         }
 
@@ -49,12 +50,18 @@ class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
+    static void verifyPrefix(String prefix) {
+        assert prefix != null && (prefix == "" || prefix.matches(PREFIX_REGEX)),
+                "Specified prefix `${prefix}` does not match the allowed format regex `${PREFIX_REGEX}`."
+    }
+
     private static String stripPrefix(String description, String prefix) {
         return !description ? description : description.replaceFirst("^${prefix}", "")
     }
 
     @Memoized
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
+        verifyPrefix(args.prefix)
         String description = stripPrefix(gitDescribe(project, args.prefix), args.prefix)
         String hash = gitHash(project)
         String branchName = gitBranchName(project)
