@@ -74,7 +74,7 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent")
+            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always")
         } catch (Throwable t) {
             return null
         }
