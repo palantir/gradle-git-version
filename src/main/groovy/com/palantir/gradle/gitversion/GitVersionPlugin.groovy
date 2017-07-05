@@ -49,17 +49,13 @@ class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
-    private static String optionallyStripPrefix(String description, String prefix, boolean includePrefix) {
-        if (!description) {
-            return description
-        }
-        return includePrefix ? description : description.replaceFirst("^${prefix}", "")
+    private static String stripPrefix(String description, String prefix) {
+        return !description ? description : description.replaceFirst("^${prefix}", "")
     }
 
     @Memoized
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
-        String description =
-                optionallyStripPrefix(gitDescribe(project, args.prefix), args.prefix, args.includePrefix)
+        String description = stripPrefix(gitDescribe(project, args.prefix), args.prefix)
         String hash = gitHash(project)
         String branchName = gitBranchName(project)
         boolean isClean = isClean(project)
