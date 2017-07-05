@@ -168,67 +168,36 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
         '''.stripIndent()
-        gitIgnoreFile << 'build'
 
-        // create repository with a single commit tagged as 1.0.0
+        // create repository with a single commit, tagged as 1.0.0
         Git git = Git.init().setDirectory(projectDir).call();
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
-        // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
+        // create a new branch called "develop" that has a single commit
+        String develop = "develop";
         String master = git.getRepository().getFullBranch();
-        Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
-        git.checkout().setName(hotfixBranch.getName()).call()
-        git.commit().setMessage("hot fix for issue").call()
-        git.tag().setAnnotated(true).setMessage('1.0.0-hotfix').setName('1.0.0-hotfix').call()
+        Ref developBranch = git.branchCreate().setName(develop).call()
+        git.checkout().setName(developBranch.getName()).call()
+        git.commit().setMessage("develop change").call()
 
-        // switch back to main branch and merge hotfix branch into main branch
+        // add a new commit to master, tagged as 2.0.0
         git.checkout().setName(master).call()
-        git.merge().include(git.getRepository().getRef("hotfix")).setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output =~ ":printVersion\n1.0.0-1-g[a-z0-9]{7}\n"
-    }
-
-    def 'git describe when annotated tag is present after merge commit' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
         gitIgnoreFile << 'build'
-
-        // create repository with a single commit tagged as 1.0.0
-        Git git = Git.init().setDirectory(projectDir).call();
         git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
-
-        // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
-        String master = git.getRepository().getFullBranch();
-        Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
-        git.checkout().setName(hotfixBranch.getName()).call()
-        git.commit().setMessage("hot fix for issue").call()
-        git.tag().setAnnotated(true).setMessage('1.0.0-hotfix').setName('1.0.0-hotfix').call()
-
-        // switch back to main branch and merge hotfix branch into main branch
-        git.checkout().setName(master).call()
-        git.merge().include(git.getRepository().getRef("hotfix")).setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
-
-        // tag merge commit on main branch as 2.0.0
+        git.commit().setMessage('second commit').call()
         git.tag().setAnnotated(true).setMessage('2.0.0').setName('2.0.0').call()
 
+        // switch back to develop and merge in master
+        git.checkout().setName(develop).call()
+        git.merge().include(git.getRepository().getRef(master)).setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
+
         when:
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output =~ ":printVersion\n2.0.0\n"
+        buildResult.output =~ ":printVersion\n2.0.0-2-g[a-z0-9]{7}\n"
     }
 
     def 'git describe and dirty when annotated tag is present and dirty content' () {
