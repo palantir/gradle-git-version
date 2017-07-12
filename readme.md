@@ -39,6 +39,20 @@ details.branchName // is null if the repository in detached HEAD mode
 details.isCleanTag
 ```
 
+You can optionally search a subset of tags with `prefix`. Example when the tag is my-product@2.15.0:
+
+```groovy
+gitVersion(prefix:'my-product@') // -> 2.15.0
+```
+
+Valid prefixes are defined by the regex `[/@]?([A-Za-z]+[/@-])+`.
+```
+/Abc/
+Abc@
+foo-bar@
+foo/bar@
+```
+
 Tasks
 -----
 This plugin adds a `printVersion` task, which will echo the project's configured version
