@@ -29,12 +29,14 @@ class VersionDetails implements Serializable {
 
     final String description;
     final String gitHash;
+    final String gitHashFull;
     final String branchName;
     final boolean isClean;
 
-    public VersionDetails(String description, String gitHash, String branchName, boolean isClean) {
+    public VersionDetails(String description, String gitHash, String gitHashFull, String branchName, boolean isClean) {
         this.description = description;
         this.gitHash = gitHash;
+        this.gitHashFull = gitHashFull;
         this.branchName = branchName;
         this.isClean = isClean;
     }

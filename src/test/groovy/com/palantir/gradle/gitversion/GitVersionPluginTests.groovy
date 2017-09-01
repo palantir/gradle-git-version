@@ -298,7 +298,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output.contains(':printVersionDetails\ncom.palantir.gradle.gitversion.VersionDetails(null, null, null, false)\n')
+        buildResult.output.contains(':printVersionDetails\ncom.palantir.gradle.gitversion.VersionDetails(null, null, null, null, false)\n')
     }
 
     def 'version details on commit with a tag' () {
@@ -312,6 +312,7 @@ class GitVersionPluginTests extends Specification {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
+                println versionDetails().gitHashFull
                 println versionDetails().branchName
                 println versionDetails().isCleanTag
             }
@@ -326,7 +327,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nmaster\ntrue\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmaster\ntrue\n"
     }
 
     def 'version details when commit distance to tag is > 0' () {
