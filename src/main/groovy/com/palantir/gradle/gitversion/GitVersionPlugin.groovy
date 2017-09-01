@@ -97,12 +97,11 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private String gitHash(Project project) {
-        Git git = gitRepo(project)
-        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
-        if (objectId == null) {
+        String gitHashFull = gitHashFull(project)
+        if (gitHashFull == null) {
             return null
         }
-        return objectId.abbreviate(VERSION_ABBR_LENGTH).name()
+        return gitHashFull.substring(0, VERSION_ABBR_LENGTH)
     }
 
     @Memoized
