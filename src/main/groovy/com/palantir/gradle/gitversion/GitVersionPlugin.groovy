@@ -64,10 +64,11 @@ class GitVersionPlugin implements Plugin<Project> {
         verifyPrefix(args.prefix)
         String description = stripPrefix(gitDescribe(project, args.prefix), args.prefix)
         String hash = gitHash(project)
+        String fullHash = gitHashFull(project)
         String branchName = gitBranchName(project)
         boolean isClean = isClean(project)
 
-        return new VersionDetails(description, hash, branchName, isClean)
+        return new VersionDetails(description, hash, fullHash, branchName, isClean)
     }
 
     @Memoized
@@ -102,6 +103,16 @@ class GitVersionPlugin implements Plugin<Project> {
             return null
         }
         return objectId.abbreviate(VERSION_ABBR_LENGTH).name()
+    }
+
+    @Memoized
+    private String gitHashFull(Project project) {
+        Git git = gitRepo(project)
+        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
+        if (objectId == null) {
+            return null
+        }
+        return objectId.name()
     }
 
     @Memoized
