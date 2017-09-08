@@ -35,6 +35,7 @@ def details = versionDetails()
 details.lastTag
 details.commitDistance
 details.gitHash
+details.gitHashFull // new in 0.9.0 - full 40-character git hash
 details.branchName // is null if the repository in detached HEAD mode
 details.isCleanTag
 ```
