@@ -81,6 +81,7 @@ class GitVersionPlugin implements Plugin<Project> {
     private String gitDescribe(Project project, String prefix, boolean forceSnapshot) {
         // verify that "git" command exists (throws exception if it does not)
         GitCli.verifyGitCommandExists()
+        def cli = new GitCli(project)
 
         Git git = gitRepo(project)
         try {
@@ -89,10 +90,12 @@ class GitVersionPlugin implements Plugin<Project> {
             new DescribeCommand(git.getRepository()).call()
 
             def command0 = ["describe", "--tags", "--always", "--first-parent", "--match=${prefix}*"]
-            def currentTags = GitCli.runGitCommand(project.rootDir, "git", "tag", "--points-at=HEAD")
-                    .readLines()
-            def command = command0 + currentTags.each { "--exclude=$it" }
-            return GitCli.runGitCommand(project.rootDir, *command)
+            def currentTags = cli.runGitCommand(project.rootDir, "tag", "--points-at=HEAD").readLines()
+            if (currentTags) {
+                project.logger.info("Found current tags on HEAD: ${currentTags}")
+            }
+            def command = command0 + currentTags.collect { "--exclude=$it" }
+            return cli.runGitCommand(project.rootDir, *command)
         } catch (Throwable throwable) {
             project.logger.warn("Couldn't call git describe", throwable)
             return null

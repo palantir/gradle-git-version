@@ -361,7 +361,7 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output =~ ":printVersionDetails\n" +
-                "0.1.0-1-[a-z0-9]{7}\n" +
+                "0.1.0\n" +
                 "1\n" +
                 "[a-z0-9]{10}\n" +
                 "[a-z0-9]{40}\n" +
