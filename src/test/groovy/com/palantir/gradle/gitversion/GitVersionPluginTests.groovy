@@ -343,6 +343,7 @@ class GitVersionPluginTests extends Specification {
                 println details.gitHash
                 println details.gitHashFull
                 println details.branchName
+                println details.isClean
                 println details.isCleanTag
             }
         '''.stripIndent()
@@ -366,7 +367,8 @@ class GitVersionPluginTests extends Specification {
                 "[a-z0-9]{10}\n" +
                 "[a-z0-9]{40}\n" +
                 "master\n" +
-                "true\n"
+                "true\n" +
+                "false"
     }
 
 
