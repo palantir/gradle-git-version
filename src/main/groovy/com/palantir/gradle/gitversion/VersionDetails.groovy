@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.palantir.gradle.gitversion;
+package com.palantir.gradle.gitversion
 
 import groovy.transform.*
 
@@ -25,23 +25,23 @@ class VersionDetails implements Serializable {
 
     // Gradle returns 'unspecified' when no version is set
     private static final String UNSPECIFIED_VERSION = 'unspecified'
-    private static final long serialVersionUID = -7340444937169877612L;
+    private static final long serialVersionUID = -7340444937169877612L
 
-    final String description;
-    final String gitHash;
-    final String gitHashFull;
-    final String branchName;
-    final boolean isClean;
+    final String description
+    final String gitHash
+    final String gitHashFull
+    final String branchName
+    final boolean isClean
 
-    public VersionDetails(String description, String gitHash, String gitHashFull, String branchName, boolean isClean) {
-        this.description = description;
-        this.gitHash = gitHash;
-        this.gitHashFull = gitHashFull;
-        this.branchName = branchName;
-        this.isClean = isClean;
+    VersionDetails(String description, String gitHash, String gitHashFull, String branchName, boolean isClean) {
+        this.description = description
+        this.gitHash = gitHash
+        this.gitHashFull = gitHashFull
+        this.branchName = branchName
+        this.isClean = isClean
     }
 
-    public String getVersion() {
+    String getVersion() {
         if (description == null) {
             return UNSPECIFIED_VERSION
         }
@@ -49,31 +49,31 @@ class VersionDetails implements Serializable {
         return description + (isClean ? '' : '.dirty')
     }
 
-    public boolean getIsCleanTag() {
-        return isClean && descriptionIsPlainTag();
+    boolean getIsCleanTag() {
+        return isClean && descriptionIsPlainTag()
     }
 
-    public int getCommitDistance() {
+    int getCommitDistance() {
         if (descriptionIsPlainTag()) {
-            return 0;
+            return 0
         }
 
         Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
         int commitCount = Integer.valueOf(match[0][2])
-        return commitCount;
+        return commitCount
     }
 
-    public String getLastTag() {
+    String getLastTag() {
         if (descriptionIsPlainTag()) {
-            return description;
+            return description
         }
 
         Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
         String tagName = match[0][1]
-        return tagName;
+        return tagName
     }
 
     private boolean descriptionIsPlainTag() {
-        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/);
+        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/)
     }
 }

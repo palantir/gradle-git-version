@@ -330,6 +330,48 @@ class GitVersionPluginTests extends Specification {
         buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmaster\ntrue\n"
     }
 
+    def 'version details on commit with two tags when forceSnapshot=true' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            task printVersionDetails() << {
+                def details = versionDetails(forceSnapshot: true)
+                println details.lastTag
+                println details.commitDistance
+                println details.gitHash
+                println details.gitHashFull
+                println details.branchName
+                println details.isClean
+                println details.isCleanTag
+            }
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setName('0.1.0').call()
+
+        git.commit().setAllowEmpty(true).setMessage('second commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        git.tag().setAnnotated(true).setMessage('1.0.1').setName('1.0.1').call()
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\n" +
+                "0.1.0\n" +
+                "1\n" +
+                "[a-z0-9]{10}\n" +
+                "[a-z0-9]{40}\n" +
+                "master\n" +
+                "true\n" +
+                "false"
+    }
+
+
     def 'version details when commit distance to tag is > 0' () {
         given:
         buildFile << '''

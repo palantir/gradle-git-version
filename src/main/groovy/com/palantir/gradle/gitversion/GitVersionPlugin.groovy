@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion
 import groovy.transform.Memoized
 import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.Status
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.ObjectId
@@ -62,7 +63,7 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
         verifyPrefix(args.prefix)
-        String description = stripPrefix(gitDescribe(project, args.prefix), args.prefix)
+        String description = stripPrefix(gitDescribe(project, args.prefix, args.forceSnapshot), args.prefix)
         String hash = gitHash(project)
         String fullHash = gitHashFull(project)
         String branchName = gitBranchName(project)
@@ -73,14 +74,15 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private Git gitRepo(Project project) {
-        File gitDir = GitCli.getRootGitDir(project.rootDir);
+        File gitDir = GitCli.getRootGitDir(project.rootDir)
         return Git.wrap(new FileRepository(gitDir))
     }
 
     @Memoized
-    private String gitDescribe(Project project, String prefix) {
+    private String gitDescribe(Project project, String prefix, boolean forceSnapshot) {
         // verify that "git" command exists (throws exception if it does not)
         GitCli.verifyGitCommandExists()
+        def cli = new GitCli(project)
 
         Git git = gitRepo(project)
         try {
@@ -88,9 +90,20 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent",
-                    "--match=${prefix}*")
-        } catch (Throwable t) {
+            def command0 = ["describe", "--tags", "--always", "--first-parent", "--match=${prefix}*"]
+            def command
+            if (forceSnapshot) {
+                def currentTags = cli.runGitCommand(project.rootDir, "tag", "--points-at=HEAD").readLines()
+                if (currentTags) {
+                    project.logger.info("Found current tags on HEAD: ${currentTags}")
+                }
+                command = command0 + currentTags.collect { "--exclude=$it" }
+            } else {
+                command = command0
+            }
+            return cli.runGitCommand(project.rootDir, *command)
+        } catch (Throwable throwable) {
+            project.logger.warn("Couldn't call git describe", throwable)
             return null
         }
     }
@@ -107,7 +120,7 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitHashFull(Project project) {
         Git git = gitRepo(project)
-        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
+        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId()
         if (objectId == null) {
             return null
         }
@@ -127,6 +140,6 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private boolean isClean(Project project) {
         Git git = gitRepo(project)
-        return git.status().call().isClean();
+        return git.status().call().isClean()
     }
 }

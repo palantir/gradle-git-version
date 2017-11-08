@@ -15,8 +15,14 @@
  */
 package com.palantir.gradle.gitversion
 
+import org.gradle.api.Project
+
 class GitCli {
-    private GitCli() {}
+    private final Project project
+
+    GitCli(Project project) {
+        this.project = project
+    }
 
     static void verifyGitCommandExists() {
         Process gitVersionProcess = new ProcessBuilder("git", "version").start()
@@ -25,13 +31,13 @@ class GitCli {
         }
     }
 
-    static String runGitCommand(File dir, String... commands) {
-        List<String> cmdInput = new ArrayList<>()
-        cmdInput.add("git")
-        cmdInput.addAll(commands)
+    String runGitCommand(File dir, String... commands) {
+        def cmdInput = ["git"] + commands.toList()
         ProcessBuilder pb = new ProcessBuilder(cmdInput)
         pb.directory(dir)
         pb.redirectErrorStream(true)
+
+        project.logger.info("Running git command: $cmdInput")
 
         Process process = pb.start()
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
@@ -45,6 +51,7 @@ class GitCli {
 
         int exitCode = process.waitFor()
         if (exitCode != 0) {
+            project.logger.warn("Git command $commands failed ($exitCode) with output: $builder")
             return ""
         }
 
