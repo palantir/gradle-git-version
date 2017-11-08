@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion
 import groovy.transform.Memoized
 import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.Status
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.ObjectId
@@ -90,11 +91,16 @@ class GitVersionPlugin implements Plugin<Project> {
             new DescribeCommand(git.getRepository()).call()
 
             def command0 = ["describe", "--tags", "--always", "--first-parent", "--match=${prefix}*"]
-            def currentTags = cli.runGitCommand(project.rootDir, "tag", "--points-at=HEAD").readLines()
-            if (currentTags) {
-                project.logger.info("Found current tags on HEAD: ${currentTags}")
+            def command
+            if (forceSnapshot) {
+                def currentTags = cli.runGitCommand(project.rootDir, "tag", "--points-at=HEAD").readLines()
+                if (currentTags) {
+                    project.logger.info("Found current tags on HEAD: ${currentTags}")
+                }
+                command = command0 + currentTags.collect { "--exclude=$it" }
+            } else {
+                command = command0
             }
-            def command = command0 + currentTags.collect { "--exclude=$it" }
             return cli.runGitCommand(project.rootDir, *command)
         } catch (Throwable throwable) {
             project.logger.warn("Couldn't call git describe", throwable)
