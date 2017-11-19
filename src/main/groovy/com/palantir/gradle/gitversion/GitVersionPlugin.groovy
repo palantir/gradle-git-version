@@ -79,6 +79,12 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private String gitDescribe(Project project, String prefix) {
+        def abbrevHash = { it.substring(0, 7) }
+
+        def formatDescription = { tag, depth, commitHash ->
+            depth == 0 ? tag : String.format("%s-%s-g%s", tag, depth, abbrevHash(commitHash))
+        }
+
         // verify that "git" command exists (throws exception if it does not)
         GitCli.verifyGitCommandExists()
 
@@ -88,8 +94,23 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent",
-                    "--match=${prefix}*")
+            /*
+             * Mimick 'git describe --tags --always --first-parent --match=${prefix}*' by using rev-list to
+             * support versions of git < 1.8.4
+             */
+            int depth = 0
+            String revList = GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD")
+            for (String rev : revList.split(System.getProperty("line.separator"))) {
+                String exactTag = GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--exact-match",
+                        "--match=${prefix}*", rev)
+                if (exactTag != "") {
+                    return formatDescription(exactTag, depth, rev)
+                }
+                depth += 1
+            }
+
+            // No tags found, so return commit hash of HEAD
+            return abbrevHash(GitCli.runGitCommand(project.rootDir, "rev-parse", "HEAD"))
         } catch (Throwable t) {
             return null
         }
