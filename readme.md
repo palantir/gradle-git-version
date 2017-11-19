@@ -5,8 +5,8 @@ Git-Version Gradle Plugin
 
 When applied, Git-Version adds two methods to the target project.
 
-The first, called `gitVersion()`, runs the JGit equivalent of `git describe` to determine a version string.
-It behaves exactly as the JGit `git describe` method behaves, except that when the repository is in a dirty
+The first, called `gitVersion()`, runs `git describe` to determine a version string.
+It behaves exactly as `git describe` method behaves, except that when the repository is in a dirty
 state, appends `.dirty` to the version string.
 
 The second, called `versionDetails()`, returns an object containing the specific details of the version string:
