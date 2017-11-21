@@ -15,6 +15,7 @@
  */
 package com.palantir.gradle.gitversion
 
+import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
 import com.google.common.collect.Sets
 import groovy.transform.Memoized
@@ -32,6 +33,8 @@ class GitVersionPlugin implements Plugin<Project> {
     private static final int SHA_ABBR_LENGTH = 7
     private static final int VERSION_ABBR_LENGTH = 10
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
+    private static final Splitter LINE_SPLITTER = Splitter.on(System.getProperty("line.separator")).omitEmptyStrings()
+    private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings()
 
     void apply(Project project) {
         project.ext.gitVersion = {
@@ -99,10 +102,9 @@ class GitVersionPlugin implements Plugin<Project> {
             // Get SHAs of all tags, we only need to search for these later on
             Set<String> tagRefs = Sets.newHashSet()
             for (String tag : getLines(GitCli.runGitCommand(project.rootDir, "show-ref", "--tags", "-d"))) {
-                List<String> parts = Splitter.on(' ').splitToList(tag)
-                if (parts.size() == 2 && parts.get(1).matches("^refs/tags/${prefix}.*")) {
-                    tagRefs.add(parts.get(0))
-                }
+                List<String> parts = WORD_SPLITTER.splitToList(tag)
+                Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts)
+                tagRefs.add(parts.get(0))
             }
 
             List<String> revs = getLines(GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD"))
@@ -111,7 +113,9 @@ class GitVersionPlugin implements Plugin<Project> {
                 if (tagRefs.contains(rev)) {
                     String exactTag = GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--exact-match",
                             "--match=${prefix}*", rev)
-                    return depth == 0 ? exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(rev))
+                    if (exactTag != "") {
+                        return depth == 0 ? exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(rev))
+                    }
                 }
             }
 
@@ -124,7 +128,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private List<String> getLines(String s) {
-        return Splitter.on(System.getProperty("line.separator")).splitToList(s)
+        return LINE_SPLITTER.splitToList(s)
     }
 
     @Memoized
