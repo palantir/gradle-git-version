@@ -16,6 +16,7 @@
 package com.palantir.gradle.gitversion
 
 import com.google.common.base.Splitter
+import com.google.common.collect.Sets
 import groovy.transform.Memoized
 import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
@@ -25,8 +26,6 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-
-import java.util.stream.Collectors
 
 class GitVersionPlugin implements Plugin<Project> {
 
@@ -98,13 +97,13 @@ class GitVersionPlugin implements Plugin<Project> {
              */
 
             // Get SHAs of all tags, we only need to search for these later on
-            List<String> tagList = getLines(GitCli.runGitCommand(project.rootDir, "show-ref", "--tags", "-d"))
-            Set<String> tagRefs = tagList.stream()
-                    .map{Splitter.on(' ').splitToList(it)}
-                    .filter{it.size() == 2}
-                    .filter{it.get(1).matches("^refs/tags/${prefix}.*")}
-                    .map{it.get(0) }
-                    .collect(Collectors.toSet())
+            Set<String> tagRefs = Sets.newHashSet()
+            for (String tag : getLines(GitCli.runGitCommand(project.rootDir, "show-ref", "--tags", "-d"))) {
+                List<String> parts = Splitter.on(' ').splitToList(tag)
+                if (parts.size() == 2 && parts.get(1).matches("^refs/tags/${prefix}.*")) {
+                    tagRefs.add(parts.get(0))
+                }
+            }
 
             List<String> revs = getLines(GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD"))
             for (int depth = 0; depth < revs.size(); depth++) {
