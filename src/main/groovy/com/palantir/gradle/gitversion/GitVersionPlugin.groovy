@@ -15,6 +15,9 @@
  */
 package com.palantir.gradle.gitversion
 
+import com.google.common.base.Preconditions
+import com.google.common.base.Splitter
+import com.google.common.collect.Sets
 import groovy.transform.Memoized
 import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
@@ -27,8 +30,11 @@ import org.gradle.api.Project
 
 class GitVersionPlugin implements Plugin<Project> {
 
+    private static final int SHA_ABBR_LENGTH = 7
     private static final int VERSION_ABBR_LENGTH = 10
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
+    private static final Splitter LINE_SPLITTER = Splitter.on(System.getProperty("line.separator")).omitEmptyStrings()
+    private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings()
 
     void apply(Project project) {
         project.ext.gitVersion = {
@@ -88,11 +94,46 @@ class GitVersionPlugin implements Plugin<Project> {
             // first to preserve this behavior in cases where this call would fail but native "git" call does not.
             new DescribeCommand(git.getRepository()).call()
 
-            return GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--always", "--first-parent",
-                    "--match=${prefix}*")
+            /*
+             * Mimick 'git describe --tags --always --first-parent --match=${prefix}*' by using rev-list to
+             * support versions of git < 1.8.4
+             */
+
+            // Get SHAs of all tags, we only need to search for these later on
+            Set<String> tagRefs = Sets.newHashSet()
+            for (String tag : getLines(GitCli.runGitCommand(project.rootDir, "show-ref", "--tags", "-d"))) {
+                List<String> parts = WORD_SPLITTER.splitToList(tag)
+                Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts)
+                tagRefs.add(parts.get(0))
+            }
+
+            List<String> revs = getLines(GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD"))
+            for (int depth = 0; depth < revs.size(); depth++) {
+                String rev = revs.get(depth)
+                if (tagRefs.contains(rev)) {
+                    String exactTag = GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--exact-match",
+                            "--match=${prefix}*", rev)
+                    if (exactTag != "") {
+                        return depth == 0 ? exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(rev))
+                    }
+                }
+            }
+
+            // No tags found, so return commit hash of HEAD
+            return abbrevHash(GitCli.runGitCommand(project.rootDir, "rev-parse", "HEAD"))
         } catch (Throwable t) {
             return null
         }
+    }
+
+    @Memoized
+    private List<String> getLines(String s) {
+        return LINE_SPLITTER.splitToList(s)
+    }
+
+    @Memoized
+    private String abbrevHash(String s) {
+        return s.substring(0, SHA_ABBR_LENGTH)
     }
 
     @Memoized
