@@ -15,6 +15,7 @@
  */
 package com.palantir.gradle.gitversion
 
+import com.google.common.base.Splitter
 import groovy.transform.Memoized
 import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
@@ -25,8 +26,11 @@ import org.eclipse.jgit.lib.Ref
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+import java.util.stream.Collectors
+
 class GitVersionPlugin implements Plugin<Project> {
 
+    private static final int SHA_ABBR_LENGTH = 7
     private static final int VERSION_ABBR_LENGTH = 10
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
 
@@ -79,12 +83,6 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private String gitDescribe(Project project, String prefix) {
-        def abbrevHash = { it.substring(0, 7) }
-
-        def formatDescription = { tag, depth, commitHash ->
-            depth == 0 ? tag : String.format("%s-%s-g%s", tag, depth, abbrevHash(commitHash))
-        }
-
         // verify that "git" command exists (throws exception if it does not)
         GitCli.verifyGitCommandExists()
 
@@ -98,15 +96,24 @@ class GitVersionPlugin implements Plugin<Project> {
              * Mimick 'git describe --tags --always --first-parent --match=${prefix}*' by using rev-list to
              * support versions of git < 1.8.4
              */
-            int depth = 0
-            String revList = GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD")
-            for (String rev : revList.split(System.getProperty("line.separator"))) {
-                String exactTag = GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--exact-match",
-                        "--match=${prefix}*", rev)
-                if (exactTag != "") {
-                    return formatDescription(exactTag, depth, rev)
+
+            // Get SHAs of all tags, we only need to search for these later on
+            List<String> tagList = getLines(GitCli.runGitCommand(project.rootDir, "show-ref", "--tags", "-d"))
+            Set<String> tagRefs = tagList.stream()
+                    .map{Splitter.on(' ').splitToList(it)}
+                    .filter{it.size() == 2}
+                    .filter{it.get(1).matches("^refs/tags/${prefix}.*")}
+                    .map{it.get(0) }
+                    .collect(Collectors.toSet())
+
+            List<String> revs = getLines(GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD"))
+            for (int depth = 0; depth < revs.size(); depth++) {
+                String rev = revs.get(depth)
+                if (tagRefs.contains(rev)) {
+                    String exactTag = GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--exact-match",
+                            "--match=${prefix}*", rev)
+                    return depth == 0 ? exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(rev))
                 }
-                depth += 1
             }
 
             // No tags found, so return commit hash of HEAD
@@ -114,6 +121,16 @@ class GitVersionPlugin implements Plugin<Project> {
         } catch (Throwable t) {
             return null
         }
+    }
+
+    @Memoized
+    private List<String> getLines(String s) {
+        return Splitter.on(System.getProperty("line.separator")).splitToList(s)
+    }
+
+    @Memoized
+    private String abbrevHash(String s) {
+        return s.substring(0, SHA_ABBR_LENGTH)
     }
 
     @Memoized
