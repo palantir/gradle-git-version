@@ -79,7 +79,7 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private Git gitRepo(Project project) {
-        File gitDir = GitCli.getRootGitDir(project.rootDir);
+        File gitDir = GitCli.getRootGitDir(project.projectDir);
         return Git.wrap(new FileRepository(gitDir))
     }
 
