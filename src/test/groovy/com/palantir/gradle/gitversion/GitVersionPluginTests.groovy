@@ -34,6 +34,7 @@ class GitVersionPluginTests extends Specification {
     File buildFile
     File gitIgnoreFile
     File dirtyContentFile
+    File settingsFile
 
     def 'exception when project root does not have a git repo' () {
         given:
@@ -462,6 +463,44 @@ class GitVersionPluginTests extends Specification {
         thrown AssertionError
     }
 
+    def 'test subproject version' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            subprojects {
+                apply plugin: 'com.palantir.git-version'
+                version gitVersion()
+            }
+        '''.stripIndent()
+
+        settingsFile << "include 'sub'"
+
+        gitIgnoreFile << 'build\n'
+        gitIgnoreFile << 'sub\n'
+
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        File subDir = temporaryFolder.newFolder('sub');
+        Git subGit = Git.init().setDirectory(subDir).call();
+        File subDirty = new File(subDir, 'subDirty')
+        subDirty.createNewFile()
+        subGit.add().addFilepattern('.').call()
+        subGit.commit().setMessage('initial commit sub').call()
+        subGit.tag().setAnnotated(true).setMessage('8.8.8').setName('8.8.8').call()
+
+        when:
+        BuildResult buildResult = with('printVersion', ':sub:printVersion').build()
+
+        then:
+        buildResult.output =~ ":printVersion\n1.0.0\n:sub:printVersion\n8.8.8\n"
+    }
+
     private GradleRunner with(String... tasks) {
         GradleRunner.create()
             .withPluginClasspath()
@@ -477,8 +516,12 @@ class GitVersionPluginTests extends Specification {
     def setup() {
         projectDir = temporaryFolder.root
         buildFile = temporaryFolder.newFile('build.gradle')
+        settingsFile = temporaryFolder.newFile('settings.gradle')
         gitIgnoreFile = temporaryFolder.newFile('.gitignore')
         dirtyContentFile = temporaryFolder.newFile('dirty')
+        settingsFile << '''
+            rootProject.name = 'gradle-test'
+        '''.stripIndent()
     }
 
 }
