@@ -88,6 +88,10 @@ class GitVersionPlugin implements Plugin<Project> {
         // verify that "git" command exists (throws exception if it does not)
         GitCli.verifyGitCommandExists()
 
+        def runGitCmd = { String... commands ->
+            return GitCli.runGitCommand(project.projectDir, commands);
+        }
+
         Git git = gitRepo(project)
         try {
             // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
@@ -101,18 +105,17 @@ class GitVersionPlugin implements Plugin<Project> {
 
             // Get SHAs of all tags, we only need to search for these later on
             Set<String> tagRefs = Sets.newHashSet()
-            for (String tag : getLines(GitCli.runGitCommand(project.rootDir, "show-ref", "--tags", "-d"))) {
+            for (String tag : getLines(runGitCmd("show-ref", "--tags", "-d"))) {
                 List<String> parts = WORD_SPLITTER.splitToList(tag)
                 Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts)
                 tagRefs.add(parts.get(0))
             }
 
-            List<String> revs = getLines(GitCli.runGitCommand(project.rootDir, "rev-list", "--first-parent", "HEAD"))
+            List<String> revs = getLines(runGitCmd("rev-list", "--first-parent", "HEAD"))
             for (int depth = 0; depth < revs.size(); depth++) {
                 String rev = revs.get(depth)
                 if (tagRefs.contains(rev)) {
-                    String exactTag = GitCli.runGitCommand(project.rootDir, "describe", "--tags", "--exact-match",
-                            "--match=${prefix}*", rev)
+                    String exactTag = runGitCmd("describe", "--tags", "--exact-match", "--match=${prefix}*", rev)
                     if (exactTag != "") {
                         return depth == 0 ? exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(rev))
                     }
@@ -120,7 +123,7 @@ class GitVersionPlugin implements Plugin<Project> {
             }
 
             // No tags found, so return commit hash of HEAD
-            return abbrevHash(GitCli.runGitCommand(project.rootDir, "rev-parse", "HEAD"))
+            return abbrevHash(runGitCmd("rev-parse", "HEAD"))
         } catch (Throwable t) {
             return null
         }
