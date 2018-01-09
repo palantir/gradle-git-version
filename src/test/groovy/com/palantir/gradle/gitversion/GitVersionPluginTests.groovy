@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeCommand
 import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.revwalk.RevCommit
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -151,6 +152,27 @@ class GitVersionPluginTests extends Specification {
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0\n")
+    }
+
+    def 'git describe when lightweight tag is present' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(false).setName('1.0.0').call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -440,6 +462,56 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output =~ ":printVersionDetails\n1.0.0\n"
+    }
+
+    def 'git describe with commit after annotated tag' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        dirtyContentFile << 'dirty-content'
+        git.add().addFilepattern('.').call()
+        RevCommit latestCommit = git.commit().setMessage('added some stuff').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+        String commitSha = latestCommit.getName()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
+    }
+
+    def 'git describe with commit after lightweight tag' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(false).setName('1.0.0').call()
+        dirtyContentFile << 'dirty-content'
+        git.add().addFilepattern('.').call()
+        RevCommit latestCommit = git.commit().setMessage('added some stuff').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+        String commitSha = latestCommit.getName()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
     }
 
     def 'test valid prefixes' () {

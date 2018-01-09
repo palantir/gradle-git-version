@@ -117,7 +117,8 @@ class GitVersionPlugin implements Plugin<Project> {
                 if (tagRefs.contains(rev)) {
                     String exactTag = runGitCmd("describe", "--tags", "--exact-match", "--match=${prefix}*", rev)
                     if (exactTag != "") {
-                        return depth == 0 ? exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(rev))
+                        return depth == 0 ?
+                                exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(revs.get(0)))
                     }
                 }
             }
