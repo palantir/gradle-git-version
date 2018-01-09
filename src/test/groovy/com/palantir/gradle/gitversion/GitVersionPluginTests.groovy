@@ -442,6 +442,31 @@ class GitVersionPluginTests extends Specification {
         buildResult.output =~ ":printVersionDetails\n1.0.0\n"
     }
 
+    def 'git describe with commit after tag' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        dirtyContentFile << 'dirty-content'
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('added some stuff').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+        String commitSha = (++git.log().call().iterator()).getName()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
+    }
+
     def 'test valid prefixes' () {
         expect:
         GitVersionPlugin.verifyPrefix("@Product@")
