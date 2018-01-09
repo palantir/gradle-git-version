@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeCommand
 import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.revwalk.RevCommit
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -457,11 +458,11 @@ class GitVersionPluginTests extends Specification {
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
         dirtyContentFile << 'dirty-content'
         git.add().addFilepattern('.').call()
-        git.commit().setMessage('added some stuff').call()
+        RevCommit latestCommit = git.commit().setMessage('added some stuff').call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
-        String commitSha = (++git.log().call().iterator()).getName()
+        String commitSha = latestCommit.getName()
 
         then:
         buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
