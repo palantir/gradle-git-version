@@ -160,7 +160,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0\n")
     }
 
-    def 'git describe when unannotated tag is present' () {
+    def 'git describe when lightweight tag is present' () {
         given:
         buildFile << '''
             plugins {
@@ -489,7 +489,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
     }
 
-    def 'git describe with commit after unannotated tag' () {
+    def 'git describe with commit after lightweight tag' () {
         given:
         buildFile << '''
             plugins {
