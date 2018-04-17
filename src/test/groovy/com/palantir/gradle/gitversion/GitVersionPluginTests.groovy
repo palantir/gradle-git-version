@@ -574,10 +574,12 @@ class GitVersionPluginTests extends Specification {
     }
 
     private GradleRunner with(String... tasks) {
+        List<String> arguments = new ArrayList<>(['--stacktrace'])
+        arguments.addAll(tasks)
         GradleRunner.create()
             .withPluginClasspath()
             .withProjectDir(projectDir)
-            .withArguments(tasks)
+            .withArguments(arguments)
     }
 
     private static shortSha(Git git, String commitish) {

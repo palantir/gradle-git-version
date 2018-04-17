@@ -72,14 +72,13 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private Git gitRepo(Project project) {
-        File gitDir = GitCli.getRootGitDir(project.projectDir);
+        File gitDir = GitCli.getRootGitDir(project.projectDir)
         return Git.wrap(new FileRepository(gitDir))
     }
 
     @Memoized
     private String gitDescribe(Project project, String prefix) {
-//        NativeGitDescribe nativeGit = new NativeGitDescribe(project.projectDir)
-//        return nativeGit.describe(prefix)
+        // return new NativeGitDescribe(project.projectDir).describe(prefix)
         return new JGitDescribe(project.projectDir).describe(prefix)
     }
 
@@ -95,7 +94,7 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitHashFull(Project project) {
         Git git = gitRepo(project)
-        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
+        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId()
         if (objectId == null) {
             return null
         }
@@ -115,6 +114,6 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private boolean isClean(Project project) {
         Git git = gitRepo(project)
-        return git.status().call().isClean();
+        return git.status().call().isClean()
     }
 }
