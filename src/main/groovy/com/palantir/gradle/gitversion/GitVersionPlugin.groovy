@@ -78,8 +78,9 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private String gitDescribe(Project project, String prefix) {
-        NativeGitDescribe nativeGit = new NativeGitDescribe(project.projectDir)
-        return nativeGit.describe(prefix)
+//        NativeGitDescribe nativeGit = new NativeGitDescribe(project.projectDir)
+//        return nativeGit.describe(prefix)
+        return new JGitDescribe(project.projectDir).describe(prefix)
     }
 
     @Memoized
