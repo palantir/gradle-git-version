@@ -27,14 +27,6 @@ jobs:
 
       - run: ./gradlew build
 
-      - run:
-          command: |
-            mkdir -p ~/junit
-            find . -type f -regex ".*/build/.*TEST.*xml" -exec cp {} ~/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/junit
-
   deploy:
     docker:
       - image: circleci/openjdk:10-node
