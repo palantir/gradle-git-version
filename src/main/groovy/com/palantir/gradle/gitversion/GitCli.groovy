@@ -51,14 +51,6 @@ class GitCli {
         return builder.toString().trim()
     }
 
-    static Optional<String> safeRunGitCommand(File dir, String... commands) {
-        try {
-            return Optional.of(runGitCommand(dir, commands))
-        } catch (Throwable ignored) {
-            return Optional.empty()
-        }
-    }
-
     static File getRootGitDir(File currentRoot) {
         File gitDir = scanForRootGitDir(currentRoot)
         if (!gitDir.exists()) {
