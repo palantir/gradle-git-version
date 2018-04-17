@@ -1,0 +1,76 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:10-node
+        environment:
+          TERM: dumb
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+
+      - run: ./gradlew --parallel resolveConfigurations
+
+      - save_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+
+      - run: ./gradlew build
+
+      - run:
+          command: |
+            mkdir -p ~/junit
+            find . -type f -regex ".*/build/.*TEST.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+
+  deploy:
+    docker:
+      - image: circleci/openjdk:10-node
+        environment:
+          TERM: dumb
+    steps:
+      - checkout
+      - run: "[ -n \"$CIRCLE_TAG\" ] || (git describe --exact-match --tags HEAD && git tag -d $(git describe --tags)) || true"
+
+      - restore_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+
+      - deploy:
+          command: |
+            if [[ "${CIRCLE_BRANCH}" == "develop" || "${CIRCLE_TAG}" =~ [0-9]+(\.[0-9]+)+((-(beta|rc)[0-9]{1,2})(\.[0-9])?)? ]]; then
+              ./gradlew -i bintrayUpload
+              ./gradlew -i -Dgradle.publish.key=$GRADLE_KEY -Dgradle.publish.secret=$GRADLE_SECRET publishPlugins
+            fi
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build:
+          filters:
+            # run on all branches and tags
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+            # run on all tags
+            tags:
+              only: /.*/
