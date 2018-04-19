@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.palantir.gradle.gitversion;
-
-import groovy.transform.*
+package com.palantir.gradle.gitversion
 
 import java.util.regex.Matcher
 
-@ToString
-@EqualsAndHashCode
-class VersionDetails implements Serializable {
+public class VersionDetails implements Serializable {
 
     // Gradle returns 'unspecified' when no version is set
-    private static final String UNSPECIFIED_VERSION = 'unspecified'
+    private static final String UNSPECIFIED_VERSION = "unspecified";
     private static final long serialVersionUID = -7340444937169877612L;
 
-    final String description;
-    final String gitHash;
-    final String gitHashFull;
-    final String branchName;
-    final boolean isClean;
+    private final String description;
+    private final String gitHash;
+    private final String gitHashFull;
+    private final String branchName;
+    private final boolean isClean;
 
     public VersionDetails(String description, String gitHash, String gitHashFull, String branchName, boolean isClean) {
         this.description = description;
@@ -43,10 +39,10 @@ class VersionDetails implements Serializable {
 
     public String getVersion() {
         if (description == null) {
-            return UNSPECIFIED_VERSION
+            return UNSPECIFIED_VERSION;
         }
 
-        return description + (isClean ? '' : '.dirty')
+        return description + (isClean ? "" : ".dirty");
     }
 
     public boolean getIsCleanTag() {
@@ -59,8 +55,12 @@ class VersionDetails implements Serializable {
         }
 
         Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
-        int commitCount = Integer.valueOf(match[0][2])
+        int commitCount = Integer.valueOf(match[0][2]);
         return commitCount;
+    }
+
+    private boolean descriptionIsPlainTag() {
+        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/);
     }
 
     public String getLastTag() {
@@ -69,11 +69,57 @@ class VersionDetails implements Serializable {
         }
 
         Matcher match = (description =~ /(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}/)
-        String tagName = match[0][1]
+        String tagName = match[0][1];
         return tagName;
     }
 
-    private boolean descriptionIsPlainTag() {
-        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/);
+    public String getGitHash() {
+        return gitHash;
+    }
+
+    /** full 40-character Git commit hash */
+    public String getGitHashFull() {
+        return gitHashFull;
+    }
+
+    /** returns null if the repository in detached HEAD mode */
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        VersionDetails that = (VersionDetails) o
+
+        if (isClean != that.isClean) return false
+        if (branchName != that.branchName) return false
+        if (description != that.description) return false
+        if (gitHash != that.gitHash) return false
+        if (gitHashFull != that.gitHashFull) return false
+
+        return true
+    }
+
+    public int hashCode() {
+        int result
+        result = (description != null ? description.hashCode() : 0)
+        result = 31 * result + (gitHash != null ? gitHash.hashCode() : 0)
+        result = 31 * result + (gitHashFull != null ? gitHashFull.hashCode() : 0)
+        result = 31 * result + (branchName != null ? branchName.hashCode() : 0)
+        result = 31 * result + (isClean ? 1 : 0)
+        return result
+    }
+
+    @Override
+    public String toString() {
+        return "VersionDetails{" +
+                "description='" + description + '\'' +
+                ", gitHash='" + gitHash + '\'' +
+                ", gitHashFull='" + gitHashFull + '\'' +
+                ", branchName='" + branchName + '\'' +
+                ", isClean=" + isClean +
+                '}';
     }
 }
