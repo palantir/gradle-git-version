@@ -35,6 +35,7 @@ class NativeGitDescribe implements GitDescribe {
 
         Git git = Git.wrap(new FileRepository(GitCli.getRootGitDir(directory)))
         if (!GitUtils.isRepoEmpty(git)) {
+            log.debug("Repository is empty")
             return null
         }
 

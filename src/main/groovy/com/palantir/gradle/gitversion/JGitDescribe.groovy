@@ -27,6 +27,7 @@ class JGitDescribe implements GitDescribe {
     String describe(String prefix) {
         Git git = Git.wrap(new FileRepository(GitCli.getRootGitDir(directory)))
         if (!GitUtils.isRepoEmpty(git)) {
+            log.debug("Repository is empty")
             return null
         }
 
