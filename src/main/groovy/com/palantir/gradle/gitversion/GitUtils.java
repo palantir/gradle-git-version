@@ -1,26 +1,27 @@
-package com.palantir.gradle.gitversion
+package com.palantir.gradle.gitversion;
 
-import org.eclipse.jgit.api.DescribeCommand
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.lib.ObjectId
-import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 
 class GitUtils {
 
-    static final int SHA_ABBR_LENGTH = 7
+    static final int SHA_ABBR_LENGTH = 7;
+
+    private GitUtils() {}
 
     static String abbrevHash(String s) {
-        return s.substring(0, SHA_ABBR_LENGTH)
+        return s.substring(0, SHA_ABBR_LENGTH);
     }
 
     static boolean isRepoEmpty(Git git) {
         // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
         // first to preserve this behavior in cases where this call would fail but native "git" call does not.
         try {
-            new DescribeCommand(git.getRepository()).call()
-            return true
+            git.describe().call();
+            return true;
         } catch (Exception ignored) {
-            return false
+            return false;
         }
     }
 
@@ -29,7 +30,7 @@ class GitUtils {
     // null if this ref does not refer to an annotated tag."
     // We use this to check if tag is annotated.
     static boolean isAnnotatedTag(Ref ref) {
-        ObjectId peeledObjectId = ref.getPeeledObjectId()
-        return peeledObjectId != null
+        ObjectId peeledObjectId = ref.getPeeledObjectId();
+        return peeledObjectId != null;
     }
 }
