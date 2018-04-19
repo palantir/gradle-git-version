@@ -31,12 +31,10 @@ class JGitDescribe implements GitDescribe {
             return null
         }
 
-        ObjectId headObjectId
         RevCommit headCommit
-        RevWalk walk
         try {
-            headObjectId = git.getRepository().resolve(Constants.HEAD)
-            walk = new RevWalk(git.getRepository())
+            ObjectId headObjectId = git.getRepository().resolve(Constants.HEAD)
+            RevWalk walk = new RevWalk(git.getRepository())
             headCommit = walk.parseCommit(headObjectId)
         } catch (Throwable ignored) {
             log.debug("HEAD not found")
