@@ -4,8 +4,10 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.ObjectId
+import org.eclipse.jgit.lib.PersonIdent
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
+import org.eclipse.jgit.revwalk.RevTag
 import org.eclipse.jgit.revwalk.RevWalk
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,22 +50,31 @@ class JGitDescribe implements GitDescribe {
                 }
             }
 
-            Map<String, String> hashToTag = new HashMap<>()
-            Map<String, Ref> tags = git.getRepository().getTags()
-            for (Map.Entry<String, Ref> entry : tags) {
-                String tag = entry.getKey()
-                Ref ref = entry.getValue()
-                hashToTag.put(ref.getObjectId().getName(), tag)
+            // Map from commit hash to all refs pointing to it
+            Map<String, List<RefWithTagName>> commitHashToTags = new HashMap<>()
+            for (Map.Entry<String, Ref> entry : git.getRepository().getTags()) {
+                RefWithTagName refWithTagName = new RefWithTagName(entry.getValue(), entry.getKey())
+                addRefToCommitHashMap(commitHashToTags, entry.getValue().getObjectId(), refWithTagName)
+                // Also add dereferenced commit hash if exists
                 ObjectId peeledRef = ref.getPeeledObjectId()
                 if (peeledRef) {
-                    hashToTag.put(peeledRef.getName(), tag)
+                    addRefToCommitHashMap(commitHashToTags, peeledRef, refWithTagName)
                 }
+            }
+
+            // Map from commit hash to tag chosen using defined comparator
+            Map<String, String> commitHashToTag = new HashMap<>()
+            RefWithTagNameComparator comparator = new RefWithTagNameComparator(walk)
+            for (Map.Entry<String, List<RefWithTagName>> entry : commitHashToTags) {
+                String commitHash = entry.getKey()
+                RefWithTagName refWithTagName = entry.getValue().min(comparator)
+                commitHashToTag.put(commitHash, refWithTagName.getTag())
             }
 
             for (int depth = 0; depth < revs.size(); depth++) {
                 String rev = revs.get(depth)
-                if (hashToTag.containsKey(rev)) {
-                    String exactTag = hashToTag.get(rev)
+                if (commitHashToTag.containsKey(rev)) {
+                    String exactTag = commitHashToTag.get(rev)
                     if (exactTag.startsWith(prefix)) {
                         return depth == 0 ?
                                 exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)))
@@ -76,6 +87,15 @@ class JGitDescribe implements GitDescribe {
         } catch (Throwable t) {
             log.debug("JGit describe failed with {}", t)
             return null
+        }
+    }
+
+    private void addRefToCommitHashMap(Map<String, List<RefWithTagName>> map, ObjectId objectId, RefWithTagName ref) {
+        String commitHash = objectId.getName()
+        if (map.containsKey(commitHash)) {
+            map.get(commitHash).add(ref)
+        } else {
+            map.put(commitHash, new ArrayList<RefWithTagName>([ref]))
         }
     }
 }
