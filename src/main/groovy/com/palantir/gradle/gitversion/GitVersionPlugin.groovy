@@ -78,8 +78,20 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private String gitDescribe(Project project, String prefix) {
-        // return new NativeGitDescribe(project.projectDir).describe(prefix)
-        return new JGitDescribe(project.projectDir).describe(prefix)
+        // TODO(mbakovic): Switch to jgit only implementation
+        String nativeGitDescribe = new NativeGitDescribe(project.projectDir).describe(prefix)
+        String jgitDescribe = new JGitDescribe(project.projectDir).describe(prefix)
+        if (nativeGitDescribe == null) {
+            return jgitDescribe
+        } else if (jgitDescribe == null) {
+            return nativeGitDescribe
+        } else {
+            if (nativeGitDescribe != jgitDescribe) {
+                throw new IllegalStateException(String.format(
+                        "Inconsistent git describe, native was %s and jgit was %s", nativeGitDescribe, jgitDescribe))
+            }
+            return nativeGitDescribe
+        }
     }
 
     @Memoized
