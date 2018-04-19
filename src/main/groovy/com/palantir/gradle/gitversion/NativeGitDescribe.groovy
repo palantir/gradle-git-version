@@ -3,11 +3,14 @@ package com.palantir.gradle.gitversion
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
 import com.google.common.collect.Sets
-import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class NativeGitDescribe implements GitDescribe {
+    private static final Logger log = LoggerFactory.getLogger(NativeGitDescribe.class)
+
     private static final Splitter LINE_SPLITTER = Splitter.on(System.getProperty("line.separator")).omitEmptyStrings()
     private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings()
 
@@ -19,19 +22,21 @@ class NativeGitDescribe implements GitDescribe {
 
     @Override
     String describe(String prefix) {
-        // verify that "git" command exists (throws exception if it does not)
-        GitCli.verifyGitCommandExists()
+        if (!gitCommandExists()) {
+            return null
+        }
 
         def runGitCmd = { String... commands ->
             return GitCli.runGitCommand(directory, commands)
         }
 
         Git git = Git.wrap(new FileRepository(GitCli.getRootGitDir(directory)))
-        try {
-            // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-            // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-            new DescribeCommand(git.getRepository()).call()
+        if (!GitUtils.isBackCompatible(git)) {
+            log.debug("Back compatibility check failed")
+            return null
+        }
 
+        try {
             /*
              * Mimick 'git describe --tags --always --first-parent --match=${prefix}*' by using rev-list to
              * support versions of git < 1.8.4
@@ -60,7 +65,19 @@ class NativeGitDescribe implements GitDescribe {
             // No tags found, so return commit hash of HEAD
             return GitUtils.abbrevHash(runGitCmd("rev-parse", "HEAD"))
         } catch (Throwable t) {
+            log.debug("Native git describe failed: {}", t)
             return null
+        }
+    }
+
+    private boolean gitCommandExists() {
+        try {
+            // verify that "git" command exists (throws exception if it does not)
+            GitCli.verifyGitCommandExists()
+            return true
+        } catch (Throwable t) {
+            log.debug("Native git command not found: {}", t)
+            return false
         }
     }
 }

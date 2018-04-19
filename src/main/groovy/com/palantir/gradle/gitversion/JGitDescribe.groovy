@@ -1,6 +1,5 @@
 package com.palantir.gradle.gitversion
 
-import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
@@ -23,12 +22,7 @@ class JGitDescribe implements GitDescribe {
     @Override
     String describe(String prefix) {
         Git git = Git.wrap(new FileRepository(GitCli.getRootGitDir(directory)))
-
-        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-        try {
-            new DescribeCommand(git.getRepository()).call()
-        } catch (Throwable ignored) {
+        if (!GitUtils.isBackCompatible(git)) {
             log.debug("Back compatibility check failed")
             return null
         }
@@ -40,42 +34,48 @@ class JGitDescribe implements GitDescribe {
             log.debug("HEAD not found")
             return null
         }
-        RevWalk walk = new RevWalk(git.getRepository())
-        RevCommit commit = walk.parseCommit(headObjectId)
-        List<String> revs = new ArrayList<>()
-        while (commit) {
-            revs.add(commit.getName())
-            try {
-                commit = commit.getParent(0)
-            } catch (Throwable ignored) {
-                commit = null
-            }
-        }
 
-        Map<String, String> hashToTag = new HashMap<>()
-        Map<String, Ref> tags = git.getRepository().getTags()
-        for (Map.Entry<String, Ref> entry : tags) {
-            String tag = entry.getKey()
-            Ref ref = entry.getValue()
-            hashToTag.put(ref.getObjectId().getName(), tag)
-            ObjectId peeledRef = ref.getPeeledObjectId()
-            if (peeledRef) {
-                hashToTag.put(peeledRef.getName(), tag)
-            }
-        }
-
-        for (int depth = 0; depth < revs.size(); depth++) {
-            String rev = revs.get(depth)
-            if (hashToTag.containsKey(rev)) {
-                String exactTag = hashToTag.get(rev)
-                if (exactTag.startsWith(prefix)) {
-                    return depth == 0 ?
-                            exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)))
+        try {
+            RevWalk walk = new RevWalk(git.getRepository())
+            RevCommit commit = walk.parseCommit(headObjectId)
+            List<String> revs = new ArrayList<>()
+            while (commit) {
+                revs.add(commit.getName())
+                try {
+                    commit = commit.getParent(0)
+                } catch (Throwable ignored) {
+                    break
                 }
             }
-        }
 
-        // No tags found, so return commit hash of HEAD
-        return GitUtils.abbrevHash(headObjectId.getName())
+            Map<String, String> hashToTag = new HashMap<>()
+            Map<String, Ref> tags = git.getRepository().getTags()
+            for (Map.Entry<String, Ref> entry : tags) {
+                String tag = entry.getKey()
+                Ref ref = entry.getValue()
+                hashToTag.put(ref.getObjectId().getName(), tag)
+                ObjectId peeledRef = ref.getPeeledObjectId()
+                if (peeledRef) {
+                    hashToTag.put(peeledRef.getName(), tag)
+                }
+            }
+
+            for (int depth = 0; depth < revs.size(); depth++) {
+                String rev = revs.get(depth)
+                if (hashToTag.containsKey(rev)) {
+                    String exactTag = hashToTag.get(rev)
+                    if (exactTag.startsWith(prefix)) {
+                        return depth == 0 ?
+                                exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)))
+                    }
+                }
+            }
+
+            // No tags found, so return commit hash of HEAD
+            return GitUtils.abbrevHash(headObjectId.getName())
+        } catch (Throwable t) {
+            log.debug("JGit describe failed with {}", t)
+            return null
+        }
     }
 }
