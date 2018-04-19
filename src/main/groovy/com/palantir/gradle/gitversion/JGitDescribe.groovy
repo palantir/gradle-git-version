@@ -32,19 +32,21 @@ class JGitDescribe implements GitDescribe {
         }
 
         RevCommit headCommit
+        RefWithTagNameComparator comparator
         try {
             ObjectId headObjectId = git.getRepository().resolve(Constants.HEAD)
             RevWalk walk = new RevWalk(git.getRepository())
             headCommit = walk.parseCommit(headObjectId)
-        } catch (Throwable ignored) {
-            log.debug("HEAD not found")
+            comparator = new RefWithTagNameComparator(walk)
+        } catch (Exception e) {
+            log.debug("HEAD not found: {}", e)
             return null
         }
 
         try {
             List<String> revs = revList(headCommit)
 
-            Map<String, String> commitHashToTag = mapCommitsToTags(git, walk)
+            Map<String, String> commitHashToTag = mapCommitsToTags(git, comparator)
 
             // Walk back commit ancestors looking for tagged one
             for (int depth = 0; depth < revs.size(); depth++) {
@@ -60,9 +62,9 @@ class JGitDescribe implements GitDescribe {
             }
 
             // No tags found, so return commit hash of HEAD
-            return GitUtils.abbrevHash(headObjectId.getName())
-        } catch (Throwable t) {
-            log.debug("JGit describe failed with {}", t)
+            return GitUtils.abbrevHash(headCommit.toObjectId().getName())
+        } catch (Exception e) {
+            log.debug("JGit describe failed with {}", e)
             return null
         }
     }
@@ -73,8 +75,9 @@ class JGitDescribe implements GitDescribe {
         while (commit) {
             revs.add(commit.getName())
             try {
+                // There is no way to check if this exists without failing
                 commit = commit.getParent(0)
-            } catch (Throwable ignored) {
+            } catch (Exception ignored) {
                 break
             }
         }
@@ -82,7 +85,7 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Maps all commits returned by 'git show-ref --tags -d' to output of 'git describe --tags --exact-match <commit>'
-    private Map<String, String> mapCommitsToTags(Git git, RevWalk walk) {
+    private Map<String, String> mapCommitsToTags(Git git, RefWithTagNameComparator comparator) {
         // Maps commit hash to list of all refs pointing to given commit hash.
         // All keys in this map should be same as commit hashes in 'git show-ref --tags -d'
         Map<String, List<RefWithTagName>> commitHashToTags = new HashMap<>()
@@ -96,13 +99,11 @@ class JGitDescribe implements GitDescribe {
             }
         }
 
-        // Smallest ref (ordered by this comparator) from list of refs is chosen for each commit. This ensures we get
-        // same behavior as in 'git describe --tags --exact-match <commit>'
-        RefWithTagNameComparator comparator = new RefWithTagNameComparator(walk)
-
         // Map from commit hash to chosen tag
         Map<String, String> commitHashToTag = new HashMap<>()
         for (Map.Entry<String, List<RefWithTagName>> entry : commitHashToTags) {
+            // Smallest ref (ordered by this comparator) from list of refs is chosen for each commit.
+            // This ensures we get same behavior as in 'git describe --tags --exact-match <commit>'
             RefWithTagName refWithTagName = entry.getValue().min(comparator)
             commitHashToTag.put(entry.getKey(), refWithTagName.getTag())
         }

@@ -58,7 +58,7 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
             RevTag tag = walk.parseTag(ref.getObjectId())
             PersonIdent identity = tag.getTaggerIdent()
             return identity.getWhen()
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
             return null
         }
     }

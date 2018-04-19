@@ -19,7 +19,7 @@ class GitUtils {
         try {
             new DescribeCommand(git.getRepository()).call()
             return true
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
             return false
         }
     }
