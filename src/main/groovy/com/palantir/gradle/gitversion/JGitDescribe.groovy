@@ -46,13 +46,13 @@ class JGitDescribe implements GitDescribe {
         try {
             List<String> revs = revList(headCommit)
 
-            Map<String, String> commitHashToTag = mapCommitsToTags(git, comparator)
+            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git, comparator)
 
             // Walk back commit ancestors looking for tagged one
             for (int depth = 0; depth < revs.size(); depth++) {
                 String rev = revs.get(depth)
                 if (commitHashToTag.containsKey(rev)) {
-                    String exactTag = commitHashToTag.get(rev)
+                    String exactTag = commitHashToTag.get(rev).getTag()
                     // Mimics '--match=${prefix}*' flag in 'git describe --tags --exact-match'
                     if (exactTag.startsWith(prefix)) {
                         return depth == 0 ?
@@ -85,38 +85,33 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Maps all commits returned by 'git show-ref --tags -d' to output of 'git describe --tags --exact-match <commit>'
-    private Map<String, String> mapCommitsToTags(Git git, RefWithTagNameComparator comparator) {
+    private Map<String, RefWithTagName> mapCommitsToTags(Git git, RefWithTagNameComparator comparator) {
         // Maps commit hash to list of all refs pointing to given commit hash.
         // All keys in this map should be same as commit hashes in 'git show-ref --tags -d'
-        Map<String, List<RefWithTagName>> commitHashToTags = new HashMap<>()
+        Map<String, RefWithTagName> commitHashToTag = new HashMap<>()
         for (Map.Entry<String, Ref> entry : git.getRepository().getTags()) {
             RefWithTagName refWithTagName = new RefWithTagName(entry.getValue(), entry.getKey())
-            addRefToCommitHashMap(commitHashToTags, entry.getValue().getObjectId(), refWithTagName)
+            updateCommitHashMap(commitHashToTag, comparator, entry.getValue().getObjectId(), refWithTagName)
             // Also add dereferenced commit hash if exists
             ObjectId peeledRef = refWithTagName.getRef().getPeeledObjectId()
             if (peeledRef) {
-                addRefToCommitHashMap(commitHashToTags, peeledRef, refWithTagName)
+                updateCommitHashMap(commitHashToTag, comparator, peeledRef, refWithTagName)
             }
         }
-
-        // Map from commit hash to chosen tag
-        Map<String, String> commitHashToTag = new HashMap<>()
-        for (Map.Entry<String, List<RefWithTagName>> entry : commitHashToTags) {
-            // Smallest ref (ordered by this comparator) from list of refs is chosen for each commit.
-            // This ensures we get same behavior as in 'git describe --tags --exact-match <commit>'
-            RefWithTagName refWithTagName = entry.getValue().min(comparator)
-            commitHashToTag.put(entry.getKey(), refWithTagName.getTag())
-        }
-
         return commitHashToTag
     }
 
-    private void addRefToCommitHashMap(Map<String, List<RefWithTagName>> map, ObjectId objectId, RefWithTagName ref) {
+    private void updateCommitHashMap(Map<String, RefWithTagName> map, RefWithTagNameComparator comparator,
+                                       ObjectId objectId, RefWithTagName ref) {
+        // Smallest ref (ordered by this comparator) from list of refs is chosen for each commit.
+        // This ensures we get same behavior as in 'git describe --tags --exact-match <commit>'
         String commitHash = objectId.getName()
         if (map.containsKey(commitHash)) {
-            map.get(commitHash).add(ref)
+            if (comparator.compare(ref, map.get(commitHash)) < 0) {
+                map.put(commitHash, ref)
+            }
         } else {
-            map.put(commitHash, new ArrayList<RefWithTagName>([ref]))
+            map.put(commitHash, ref)
         }
     }
 }

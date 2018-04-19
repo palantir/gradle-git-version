@@ -629,7 +629,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n2.0.0\n")
     }
 
-    def 'test multiple tags on same commit - smaller tag is chosen' () {
+    def 'test multiple tags on same commit - smaller unannotated tag is chosen' () {
         given:
         buildFile << '''
             plugins {
