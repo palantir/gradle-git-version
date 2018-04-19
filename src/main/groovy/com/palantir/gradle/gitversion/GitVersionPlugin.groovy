@@ -27,9 +27,12 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class GitVersionPlugin implements Plugin<Project> {
 
+    private static final Logger log = LoggerFactory.getLogger(GitVersionPlugin.class);
     private static final int SHA_ABBR_LENGTH = 7
     private static final int VERSION_ABBR_LENGTH = 10
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
@@ -126,6 +129,7 @@ class GitVersionPlugin implements Plugin<Project> {
             // No tags found, so return commit hash of HEAD
             return abbrevHash(runGitCmd("rev-parse", "HEAD"))
         } catch (Throwable t) {
+            log.warn("Exception raised while trying to determine git version.", t)
             return null
         }
     }
