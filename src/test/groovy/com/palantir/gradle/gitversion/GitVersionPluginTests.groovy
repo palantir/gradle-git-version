@@ -17,7 +17,6 @@ package com.palantir.gradle.gitversion
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeCommand
-import org.eclipse.jgit.lib.PersonIdent
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
 import org.gradle.testkit.runner.BuildResult
@@ -574,95 +573,11 @@ class GitVersionPluginTests extends Specification {
         buildResult.output =~ ":printVersion\n1.0.0\n:sub:printVersion\n8.8.8\n"
     }
 
-    def 'test multiple tags on same commit - annotated tag is chosen' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-            subprojects {
-                apply plugin: 'com.palantir.git-version'
-                version gitVersion()
-            }
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(false).setName('1.0.0').call()
-        git.tag().setAnnotated(true).setName('2.0.0').call()
-        git.tag().setAnnotated(false).setName('3.0.0').call()
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(":printVersion\n2.0.0\n")
-    }
-
-    def 'test multiple tags on same commit - most recent annotated tag' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-            subprojects {
-                apply plugin: 'com.palantir.git-version'
-                version gitVersion()
-            }
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        PersonIdent ident = new PersonIdent("name", "email@example.com")
-        git.tag().setAnnotated(true).setTagger(new PersonIdent(ident, new Date() - 2)).setName('1.0.0').call()
-        git.tag().setAnnotated(true).setTagger(new PersonIdent(ident, new Date())).setName('2.0.0').call()
-        git.tag().setAnnotated(true).setTagger(new PersonIdent(ident, new Date() - 1)).setName('3.0.0').call()
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(":printVersion\n2.0.0\n")
-    }
-
-    def 'test multiple tags on same commit - smaller tag is chosen' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-            subprojects {
-                apply plugin: 'com.palantir.git-version'
-                version gitVersion()
-            }
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(false).setName('2.0.0').call()
-        git.tag().setAnnotated(false).setName('1.0.0').call()
-        git.tag().setAnnotated(false).setName('3.0.0').call()
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(":printVersion\n1.0.0\n")
-    }
-
     private GradleRunner with(String... tasks) {
-        List<String> arguments = new ArrayList<>(['--stacktrace'])
-        arguments.addAll(tasks)
         GradleRunner.create()
             .withPluginClasspath()
             .withProjectDir(projectDir)
-            .withArguments(arguments)
+            .withArguments(tasks)
     }
 
     private static shortSha(Git git, String commitish) {
