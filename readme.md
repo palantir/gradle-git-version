@@ -5,9 +5,9 @@ Git-Version Gradle Plugin
 
 When applied, Git-Version adds two methods to the target project.
 
-The first, called `gitVersion()`, runs `git describe` to determine a version string.
-It behaves exactly as `git describe` method behaves, except that when the repository is in a dirty
-state, appends `.dirty` to the version string.
+The first, called `gitVersion()`, mimics `git describe --tags --always --first-parent` to determine a version string.
+It behaves exactly as `git describe --tags --always --first-parent` method behaves, except that when the repository is
+in a dirty state, appends `.dirty` to the version string.
 
 The second, called `versionDetails()`, returns an object containing the specific details of the version string:
 the tag name, the commit count since the tag, the current commit hash of HEAD, and an optional branch name of HEAD.
