@@ -15,7 +15,11 @@
  */
 package com.palantir.gradle.gitversion
 
+import com.google.common.base.Preconditions
+import com.google.common.base.Splitter
+import com.google.common.collect.Sets
 import groovy.transform.Memoized
+import org.eclipse.jgit.api.DescribeCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.eclipse.jgit.lib.Constants
@@ -26,8 +30,11 @@ import org.gradle.api.Project
 
 class GitVersionPlugin implements Plugin<Project> {
 
+    private static final int SHA_ABBR_LENGTH = 7
     private static final int VERSION_ABBR_LENGTH = 10
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
+    private static final Splitter LINE_SPLITTER = Splitter.on(System.getProperty("line.separator")).omitEmptyStrings()
+    private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings()
 
     void apply(Project project) {
         project.ext.gitVersion = {
@@ -72,32 +79,65 @@ class GitVersionPlugin implements Plugin<Project> {
 
     @Memoized
     private Git gitRepo(Project project) {
-        File gitDir = GitCli.getRootGitDir(project.projectDir)
+        File gitDir = GitCli.getRootGitDir(project.projectDir);
         return Git.wrap(new FileRepository(gitDir))
     }
 
     @Memoized
     private String gitDescribe(Project project, String prefix) {
-        // This used to be implemented with JGit and replaced with shelling out to installed git (#46) because JGit
-        // didn't support required behavior. Using installed git doesn't work in some environments or
-        // with older versions of git client. We're switching back to implementation with JGit. To make sure we don't
-        // make breaking change, we're keeping both implementations. Plan is to get rid of installed git implementation.
-        // TODO(mbakovic): Use JGit only implementation #87
-        String nativeGitDescribe = new NativeGitDescribe(project.projectDir).describe(prefix)
-        String jgitDescribe = new JGitDescribe(project.projectDir).describe(prefix)
-        if (nativeGitDescribe == null) {
-            return jgitDescribe
-        } else if (jgitDescribe == null) {
-            return nativeGitDescribe
-        } else {
-            if (!nativeGitDescribe.equals(jgitDescribe)) {
-                throw new IllegalStateException(String.format(
-                        "Inconsistent git describe: native was %s and jgit was %s. "
-                        + "Please report this on github.com/palantir/gradle-git-version",
-                        nativeGitDescribe, jgitDescribe))
-            }
-            return nativeGitDescribe
+        // verify that "git" command exists (throws exception if it does not)
+        GitCli.verifyGitCommandExists()
+
+        def runGitCmd = { String... commands ->
+            return GitCli.runGitCommand(project.projectDir, commands);
         }
+
+        Git git = gitRepo(project)
+        try {
+            // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
+            // first to preserve this behavior in cases where this call would fail but native "git" call does not.
+            new DescribeCommand(git.getRepository()).call()
+
+            /*
+             * Mimick 'git describe --tags --always --first-parent --match=${prefix}*' by using rev-list to
+             * support versions of git < 1.8.4
+             */
+
+            // Get SHAs of all tags, we only need to search for these later on
+            Set<String> tagRefs = Sets.newHashSet()
+            for (String tag : getLines(runGitCmd("show-ref", "--tags", "-d"))) {
+                List<String> parts = WORD_SPLITTER.splitToList(tag)
+                Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts)
+                tagRefs.add(parts.get(0))
+            }
+
+            List<String> revs = getLines(runGitCmd("rev-list", "--first-parent", "HEAD"))
+            for (int depth = 0; depth < revs.size(); depth++) {
+                String rev = revs.get(depth)
+                if (tagRefs.contains(rev)) {
+                    String exactTag = runGitCmd("describe", "--tags", "--exact-match", "--match=${prefix}*", rev)
+                    if (exactTag != "") {
+                        return depth == 0 ?
+                                exactTag : String.format("%s-%s-g%s", exactTag, depth, abbrevHash(revs.get(0)))
+                    }
+                }
+            }
+
+            // No tags found, so return commit hash of HEAD
+            return abbrevHash(runGitCmd("rev-parse", "HEAD"))
+        } catch (Throwable t) {
+            return null
+        }
+    }
+
+    @Memoized
+    private List<String> getLines(String s) {
+        return LINE_SPLITTER.splitToList(s)
+    }
+
+    @Memoized
+    private String abbrevHash(String s) {
+        return s.substring(0, SHA_ABBR_LENGTH)
     }
 
     @Memoized
@@ -112,7 +152,7 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private String gitHashFull(Project project) {
         Git git = gitRepo(project)
-        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId()
+        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId();
         if (objectId == null) {
             return null
         }
@@ -132,6 +172,6 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private boolean isClean(Project project) {
         Git git = gitRepo(project)
-        return git.status().call().isClean()
+        return git.status().call().isClean();
     }
 }
