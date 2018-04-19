@@ -8,6 +8,9 @@ import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+/**
+ * Mimics git describe by using rev-list to support versions of git < 1.8.4
+ */
 class NativeGitDescribe implements GitDescribe {
     private static final Logger log = LoggerFactory.getLogger(NativeGitDescribe.class)
 
@@ -31,17 +34,11 @@ class NativeGitDescribe implements GitDescribe {
         }
 
         Git git = Git.wrap(new FileRepository(GitCli.getRootGitDir(directory)))
-        if (!GitUtils.isBackCompatible(git)) {
-            log.debug("Back compatibility check failed")
+        if (!GitUtils.isRepoEmpty(git)) {
             return null
         }
 
         try {
-            /*
-             * Mimick 'git describe --tags --always --first-parent --match=${prefix}*' by using rev-list to
-             * support versions of git < 1.8.4
-             */
-
             // Get SHAs of all tags, we only need to search for these later on
             Set<String> tagRefs = Sets.newHashSet()
             for (String tag : LINE_SPLITTER.splitToList(runGitCmd("show-ref", "--tags", "-d"))) {
