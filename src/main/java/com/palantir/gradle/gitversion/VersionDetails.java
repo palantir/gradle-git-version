@@ -54,7 +54,7 @@ public class VersionDetails {
             return null;
         }
 
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory(), git)
+        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
                 .describe(args.getPrefix());
         String jgitDescribe = new JGitDescribe(git)
                 .describe(args.getPrefix());

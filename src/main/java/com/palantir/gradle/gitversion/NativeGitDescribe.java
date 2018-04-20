@@ -3,7 +3,6 @@ package com.palantir.gradle.gitversion;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
-import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +25,9 @@ class NativeGitDescribe implements GitDescribe {
     private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings();
 
     private final File directory;
-    private final Git git;
 
-    NativeGitDescribe(File directory, Git git) {
+    NativeGitDescribe(File directory) {
         this.directory = directory;
-        this.git = git;
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
