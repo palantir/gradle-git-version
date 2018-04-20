@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.palantir.gradle.gitversion
+package com.palantir.gradle.gitversion;
 
-import java.util.regex.Matcher
-import java.util.regex.Pattern
+import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VersionDetails implements Serializable {
 
@@ -86,31 +87,6 @@ public class VersionDetails implements Serializable {
         return branchName;
     }
 
-    public boolean equals(o) {
-        if (this.is(o)) return true
-        if (getClass() != o.class) return false
-
-        VersionDetails that = (VersionDetails) o
-
-        if (isClean != that.isClean) return false
-        if (branchName != that.branchName) return false
-        if (description != that.description) return false
-        if (gitHash != that.gitHash) return false
-        if (gitHashFull != that.gitHashFull) return false
-
-        return true
-    }
-
-    public int hashCode() {
-        int result
-        result = (description != null ? description.hashCode() : 0)
-        result = 31 * result + (gitHash != null ? gitHash.hashCode() : 0)
-        result = 31 * result + (gitHashFull != null ? gitHashFull.hashCode() : 0)
-        result = 31 * result + (branchName != null ? branchName.hashCode() : 0)
-        result = 31 * result + (isClean ? 1 : 0)
-        return result
-    }
-
     @Override
     public String toString() {
         return "VersionDetails{" +
@@ -120,5 +96,29 @@ public class VersionDetails implements Serializable {
                 ", branchName='" + branchName + '\'' +
                 ", isClean=" + isClean +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        VersionDetails that = (VersionDetails) o;
+
+        if (isClean != that.isClean) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (gitHash != null ? !gitHash.equals(that.gitHash) : that.gitHash != null) return false;
+        if (gitHashFull != null ? !gitHashFull.equals(that.gitHashFull) : that.gitHashFull != null) return false;
+        return branchName != null ? branchName.equals(that.branchName) : that.branchName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = description != null ? description.hashCode() : 0;
+        result = 31 * result + (gitHash != null ? gitHash.hashCode() : 0);
+        result = 31 * result + (gitHashFull != null ? gitHashFull.hashCode() : 0);
+        result = 31 * result + (branchName != null ? branchName.hashCode() : 0);
+        result = 31 * result + (isClean ? 1 : 0);
+        return result;
     }
 }
