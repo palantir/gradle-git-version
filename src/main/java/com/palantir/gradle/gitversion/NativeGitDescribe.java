@@ -94,7 +94,10 @@ class NativeGitDescribe implements GitDescribe {
     private boolean gitCommandExists() {
         try {
             // verify that "git" command exists (throws exception if it does not)
-            GitCli.verifyGitCommandExists();
+            Process gitVersionProcess = new ProcessBuilder("git", "version").start();
+            if (gitVersionProcess.waitFor() != 0) {
+                throw new IllegalStateException("error invoking git command");
+            }
             return true;
         } catch (Exception e) {
             log.debug("Native git command not found: {}", e);
