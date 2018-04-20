@@ -27,6 +27,22 @@ public class VersionDetails {
         this.args = args;
     }
 
+    public String getVersion() {
+        if (description() == null) {
+            return "unspecified";
+        }
+
+        return description() + (isClean() ? "" : ".dirty");
+    }
+
+    private boolean isClean() {
+        try {
+            return git.status().call().isClean();
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private String description() {
         if (maybeCachedDescription == null) {
             String rawDescription = expensiveComputeRawDescription();
@@ -35,17 +51,6 @@ public class VersionDetails {
         }
 
         return maybeCachedDescription;
-    }
-
-    private boolean isRepoEmpty() {
-        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-        try {
-            git.describe().call();
-            return false;
-        } catch (Exception ignored) {
-            return true;
-        }
     }
 
     private String expensiveComputeRawDescription() {
@@ -73,12 +78,15 @@ public class VersionDetails {
         return jgitDescribe;
     }
 
-    public String getVersion() {
-        if (description() == null) {
-            return "unspecified";
+    private boolean isRepoEmpty() {
+        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
+        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
+        try {
+            git.describe().call();
+            return false;
+        } catch (Exception ignored) {
+            return true;
         }
-
-        return description() + (isClean() ? "" : ".dirty");
     }
 
     public boolean getIsCleanTag() {
@@ -105,14 +113,6 @@ public class VersionDetails {
 
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
         return match.matches() ? match.group(1) : null;
-    }
-
-    private boolean isClean() {
-        try {
-            return git.status().call().isClean();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public String getGitHash() {

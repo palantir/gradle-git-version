@@ -13,15 +13,18 @@ import java.io.IOException;
 
 public class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
+
+        final Git git = gitRepo(project);
+
         project.getExtensions().add("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
-                return versionDetails(project, GitVersionArgs.fromGroovyClosure(args)).getVersion();
+                return new VersionDetails(git, GitVersionArgs.fromGroovyClosure(args)).getVersion();
             }
         });
 
         project.getExtensions().add("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
-                return versionDetails(project, GitVersionArgs.fromGroovyClosure(args));
+                return new VersionDetails(git, GitVersionArgs.fromGroovyClosure(args));
             }
         });
 
@@ -36,11 +39,10 @@ public class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
-    private VersionDetails versionDetails(Project project, GitVersionArgs args) {
+    private Git gitRepo(Project project) {
         try {
             File gitDir = getRootGitDir(project.getProjectDir());
-            Git git = Git.wrap(new FileRepository(gitDir));
-            return new VersionDetails(git, args);
+            return Git.wrap(new FileRepository(gitDir));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
