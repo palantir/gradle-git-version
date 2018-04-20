@@ -26,8 +26,6 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import java.nio.file.Files
-
 class GitVersionPluginTests extends Specification {
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
@@ -94,50 +92,6 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(':printVersion\nunspecified\n')
-    }
-
-    def 'short sha1 when no annotated tags are present' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-
-        String expected = shortSha(git, "HEAD")
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(':printVersion\n'+expected+'\n')
-    }
-
-    def 'short sha1 and dirty when no annotated tags are present and dirty content' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        dirtyContentFile << 'dirty-content'
-        String expected = shortSha(git, "HEAD")
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(':printVersion\n'+expected+'.dirty\n')
     }
 
     def 'git describe when annotated tag is present' () {
@@ -273,56 +227,6 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
-    }
-
-    def 'git describe and clean when symlink is present' () {
-
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        File fileToLinkTo = temporaryFolder.newFile('fileToLinkTo')
-        fileToLinkTo << 'content'
-        Files.createSymbolicLink(temporaryFolder.getRoot().toPath().resolve('fileLink'), fileToLinkTo.toPath());
-
-        File folderToLinkTo = temporaryFolder.newFolder('folderToLinkTo')
-        new File(folderToLinkTo, 'dummyFile') << 'content'
-        Files.createSymbolicLink(temporaryFolder.getRoot().toPath().resolve('folderLink'), folderToLinkTo.toPath());
-
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(':printVersion\n1.0.0\n')
-    }
-
-    def 'version details not null when no tags are present' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-            task printVersionDetails() << {
-                println versionDetails()
-            }
-        '''.stripIndent()
-        Git git = Git.init().setDirectory(projectDir).call();
-
-        when:
-        BuildResult buildResult = with('printVersionDetails').build()
-
-        then:
-        buildResult.output.contains(':printVersionDetails\nVersionDetails{description=\'null\', gitHash=\'null\', gitHashFull=\'null\', branchName=\'null\', isClean=false}\n')
     }
 
     def 'version details on commit with a tag' () {
@@ -537,27 +441,6 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
-    }
-
-    def 'test valid prefixes' () {
-        expect:
-        GitVersionPlugin.verifyPrefix("@Product@")
-        GitVersionPlugin.verifyPrefix("abc@")
-        GitVersionPlugin.verifyPrefix("abc@test@")
-        GitVersionPlugin.verifyPrefix("Abc-aBc-abC@")
-        GitVersionPlugin.verifyPrefix("foo-bar@")
-        GitVersionPlugin.verifyPrefix("foo-bar/")
-        GitVersionPlugin.verifyPrefix("foo-bar-")
-        GitVersionPlugin.verifyPrefix("foo/bar@")
-        GitVersionPlugin.verifyPrefix("Foo/Bar@")
-    }
-
-    def 'test requires @ or / or - between prefix and version' () {
-        when:
-        GitVersionPlugin.verifyPrefix("v")
-
-        then:
-        thrown AssertionError
     }
 
     def 'test subproject version' () {

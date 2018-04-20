@@ -1,6 +1,7 @@
 package com.palantir.gradle.gitversion;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevTag;
@@ -27,8 +28,8 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
 
     @Override
     public int compare(RefWithTagName tag1, RefWithTagName tag2) {
-        boolean isTag1Annotated = GitUtils.isAnnotatedTag(tag1.getRef());
-        boolean isTag2Annotated = GitUtils.isAnnotatedTag(tag2.getRef());
+        boolean isTag1Annotated = isAnnotatedTag(tag1.getRef());
+        boolean isTag2Annotated = isAnnotatedTag(tag2.getRef());
 
         // One is annotated, the other isn't
         if (isTag1Annotated && !isTag2Annotated) {
@@ -64,5 +65,15 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+
+    // getPeeledObjectId returns:
+    // "if this ref is an annotated tag the id of the commit (or tree or blob) that the annotated tag refers to;
+    // null if this ref does not refer to an annotated tag."
+    // We use this to check if tag is annotated.
+    private static boolean isAnnotatedTag(Ref ref) {
+        ObjectId peeledObjectId = ref.getPeeledObjectId();
+        return peeledObjectId != null;
     }
 }

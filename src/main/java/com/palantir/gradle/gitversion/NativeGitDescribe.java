@@ -3,12 +3,15 @@ package com.palantir.gradle.gitversion;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
-import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -22,25 +25,40 @@ class NativeGitDescribe implements GitDescribe {
     private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings();
 
     private final File directory;
-    private final Git git;
 
-    NativeGitDescribe(File directory, Git git) {
+    NativeGitDescribe(File directory) {
         this.directory = directory;
-        this.git = git;
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
-        return GitCli.runGitCommand(directory, commands);
+        List<String> cmdInput = new ArrayList<>();
+        cmdInput.add("git");
+        cmdInput.addAll(Arrays.asList(commands));
+        ProcessBuilder pb = new ProcessBuilder(cmdInput);
+        pb.directory(directory);
+        pb.redirectErrorStream(true);
+
+        Process process = pb.start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        StringBuilder builder = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            builder.append(line);
+            builder.append(System.getProperty("line.separator"));
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            return "";
+        }
+
+        return builder.toString().trim();
     }
 
     @Override
     public String describe(String prefix) {
         if (!gitCommandExists()) {
-            return null;
-        }
-
-        if (!GitUtils.isRepoEmpty(git)) {
-            log.debug("Repository is empty");
             return null;
         }
 
@@ -76,7 +94,10 @@ class NativeGitDescribe implements GitDescribe {
     private boolean gitCommandExists() {
         try {
             // verify that "git" command exists (throws exception if it does not)
-            GitCli.verifyGitCommandExists();
+            Process gitVersionProcess = new ProcessBuilder("git", "version").start();
+            if (gitVersionProcess.waitFor() != 0) {
+                throw new IllegalStateException("error invoking git command");
+            }
             return true;
         } catch (Exception e) {
             log.debug("Native git command not found: {}", e);
