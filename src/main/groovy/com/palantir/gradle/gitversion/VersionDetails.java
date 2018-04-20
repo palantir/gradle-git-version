@@ -77,12 +77,12 @@ public class VersionDetails implements Serializable {
         return gitHash;
     }
 
-    /** full 40-character Git commit hash */
+    /** @return full 40-character Git commit hash */
     public String getGitHashFull() {
         return gitHashFull;
     }
 
-    /** returns null if the repository in detached HEAD mode */
+    /** @return null if the repository in detached HEAD mode */
     public String getBranchName() {
         return branchName;
     }
