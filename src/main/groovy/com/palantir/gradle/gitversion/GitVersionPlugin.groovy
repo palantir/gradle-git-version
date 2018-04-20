@@ -84,8 +84,9 @@ class GitVersionPlugin implements Plugin<Project> {
         // make breaking change, we're keeping both implementations. Plan is to get rid of installed git implementation.
         // TODO(mbakovic): Use JGit only implementation #87
 
+        Git git = gitRepo(project);
         String nativeGitDescribe = new NativeGitDescribe(project.projectDir).describe(prefix)
-        String jgitDescribe = new JGitDescribe(project.projectDir).describe(prefix)
+        String jgitDescribe = new JGitDescribe(git).describe(prefix)
 
         // If native failed, return JGit one
         if (nativeGitDescribe == null) {
