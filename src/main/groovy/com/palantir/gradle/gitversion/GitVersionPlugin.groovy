@@ -23,6 +23,7 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Ref
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 
 class GitVersionPlugin implements Plugin<Project> {
 
@@ -40,13 +41,13 @@ class GitVersionPlugin implements Plugin<Project> {
                 return versionDetails(project, args as GitVersionArgs)
         }
 
-        project.tasks.create('printVersion') {
-            group = 'Versioning'
-            description = 'Prints the project\'s configured version to standard out'
+        Task printVersionTask = project.getTasks().create("printVersion", {
             doLast {
                 println project.version
             }
-        }
+        });
+        printVersionTask.setGroup("Versioning")
+        printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
     static void verifyPrefix(String prefix) {
@@ -61,11 +62,12 @@ class GitVersionPlugin implements Plugin<Project> {
     @Memoized
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
         verifyPrefix(args.prefix)
+        Git git = gitRepo(project)
         String description = stripPrefix(gitDescribe(project, args.prefix), args.prefix)
-        String hash = gitHash(project)
-        String fullHash = gitHashFull(project)
-        String branchName = gitBranchName(project)
-        boolean isClean = isClean(project)
+        String hash = gitHash(git)
+        String fullHash = gitHashFull(git)
+        String branchName = gitBranchName(git)
+        boolean isClean = isClean(git)
 
         return new VersionDetails(description, hash, fullHash, branchName, isClean)
     }
@@ -105,8 +107,8 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private String gitHash(Project project) {
-        String gitHashFull = gitHashFull(project)
+    private String gitHash(Git git) {
+        String gitHashFull = gitHashFull(git)
         if (gitHashFull == null) {
             return null
         }
@@ -114,9 +116,8 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private String gitHashFull(Project project) {
-        Git git = gitRepo(project)
-        ObjectId objectId = git.getRepository().getRef("HEAD").getObjectId()
+    private String gitHashFull(Git git) {
+        ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId()
         if (objectId == null) {
             return null
         }
@@ -124,9 +125,8 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private String gitBranchName(Project project) {
-        Git git = gitRepo(project)
-        Ref ref = git.getRepository().getRef(git.repository.branch)
+    private String gitBranchName(Git git) {
+        Ref ref = git.getRepository().findRef(git.getRepository().getBranch())
         if (ref == null) {
             return null
         }
@@ -134,8 +134,7 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Memoized
-    private boolean isClean(Project project) {
-        Git git = gitRepo(project)
+    private boolean isClean(Git git) {
         return git.status().call().isClean()
     }
 }
