@@ -12,17 +12,16 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VersionDetails {
+public final class VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetails.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
     private final Git git;
     private final GitVersionArgs args;
-
     private volatile String maybeCachedDescription = null;
 
-    public VersionDetails(Git git, GitVersionArgs args) {
+    VersionDetails(Git git, GitVersionArgs args) {
         this.git = git;
         this.args = args;
     }
@@ -44,12 +43,13 @@ public class VersionDetails {
     }
 
     private String description() {
-        if (maybeCachedDescription == null) {
-            String rawDescription = expensiveComputeRawDescription();
-            this.maybeCachedDescription = rawDescription == null ?
-                    rawDescription : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        if (maybeCachedDescription != null) {
+            return maybeCachedDescription;
         }
 
+        String rawDescription = expensiveComputeRawDescription();
+        maybeCachedDescription = rawDescription == null ?
+                rawDescription : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return maybeCachedDescription;
     }
 
@@ -115,7 +115,7 @@ public class VersionDetails {
         return match.matches() ? match.group(1) : null;
     }
 
-    public String getGitHash() {
+    public String getGitHash() throws IOException {
         String gitHashFull = getGitHashFull();
         if (gitHashFull == null) {
             return null;
@@ -124,29 +124,21 @@ public class VersionDetails {
         return gitHashFull.substring(0, VERSION_ABBR_LENGTH);
     }
 
-    public String getGitHashFull() {
-        try {
-            ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
-            if (objectId == null) {
-                return null;
-            }
-
-            return objectId.name();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public String getGitHashFull() throws IOException {
+        ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
+        if (objectId == null) {
+            return null;
         }
+
+        return objectId.name();
     }
 
-    public String getBranchName() {
-        try {
-            Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
-            if (ref == null) {
-                return null;
-            }
-
-            return ref.getName().substring(Constants.R_HEADS.length());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public String getBranchName() throws IOException {
+        Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
+        if (ref == null) {
+            return null;
         }
+
+        return ref.getName().substring(Constants.R_HEADS.length());
     }
 }
