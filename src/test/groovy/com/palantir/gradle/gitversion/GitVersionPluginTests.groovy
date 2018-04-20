@@ -515,27 +515,6 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
     }
 
-    def 'test valid prefixes' () {
-        expect:
-        GitVersionPlugin.verifyPrefix("@Product@")
-        GitVersionPlugin.verifyPrefix("abc@")
-        GitVersionPlugin.verifyPrefix("abc@test@")
-        GitVersionPlugin.verifyPrefix("Abc-aBc-abC@")
-        GitVersionPlugin.verifyPrefix("foo-bar@")
-        GitVersionPlugin.verifyPrefix("foo-bar/")
-        GitVersionPlugin.verifyPrefix("foo-bar-")
-        GitVersionPlugin.verifyPrefix("foo/bar@")
-        GitVersionPlugin.verifyPrefix("Foo/Bar@")
-    }
-
-    def 'test requires @ or / or - between prefix and version' () {
-        when:
-        GitVersionPlugin.verifyPrefix("v")
-
-        then:
-        thrown AssertionError
-    }
-
     def 'test subproject version' () {
         given:
         buildFile << '''

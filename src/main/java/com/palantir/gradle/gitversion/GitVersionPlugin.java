@@ -40,16 +40,11 @@ public class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
-    public static void verifyPrefix(final String prefix) {
-        assert prefix != null && (prefix.equals("") || prefix.matches(PREFIX_REGEX)) : "Specified prefix `" + prefix + "` does not match the allowed format regex `" + PREFIX_REGEX + "`.";
-    }
-
     private static String stripPrefix(String description, final String prefix) {
         return description == null ? description : description.replaceFirst("^" + prefix, "");
     }
 
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
-        verifyPrefix(args.getPrefix());
         Git git = gitRepo(project);
         String description = stripPrefix(gitDescribe(project, args.getPrefix()), args.getPrefix());
         String hash = gitHash(git);
@@ -139,6 +134,5 @@ public class GitVersionPlugin implements Plugin<Project> {
     }
 
     private static final int VERSION_ABBR_LENGTH = 10;
-    private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+";
 }
 
