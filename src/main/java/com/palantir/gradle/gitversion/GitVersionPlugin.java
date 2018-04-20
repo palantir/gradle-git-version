@@ -1,7 +1,6 @@
 package com.palantir.gradle.gitversion;
 
 import groovy.lang.Closure;
-import groovy.transform.Memoized;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -49,7 +48,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         return description == null ? description : description.replaceFirst("^" + prefix, "");
     }
 
-    @Memoized
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
         verifyPrefix(args.getPrefix());
         Git git = gitRepo(project);
@@ -62,8 +60,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         return new VersionDetails(description, hash, fullHash, branchName, isClean);
     }
 
-
-    @Memoized
     private Git gitRepo(Project project) {
         try {
             File gitDir = GitCli.getRootGitDir(project.getProjectDir());
@@ -73,7 +69,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
-    @Memoized
     private String gitDescribe(Project project, String prefix) {
         // This used to be implemented with JGit and replaced with shelling out to installed git (#46) because JGit
         // didn't support required behavior. Using installed git doesn't work in some environments or
@@ -100,7 +95,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         return jgitDescribe;
     }
 
-    @Memoized
     private String gitHash(Git git) {
         String gitHashFull = gitHashFull(git);
         if (gitHashFull == null) {
@@ -110,7 +104,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         return gitHashFull.substring(0, VERSION_ABBR_LENGTH);
     }
 
-    @Memoized
     private String gitHashFull(Git git) {
         try {
             ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
@@ -124,7 +117,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
-    @Memoized
     private String gitBranchName(Git git) {
         try {
             Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
@@ -138,7 +130,6 @@ public class GitVersionPlugin implements Plugin<Project> {
         }
     }
 
-    @Memoized
     private boolean isClean(Git git) {
         try {
             return git.status().call().isClean();
