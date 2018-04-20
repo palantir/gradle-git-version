@@ -8,6 +8,7 @@ import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -29,10 +30,12 @@ public class GitVersionPlugin implements Plugin<Project> {
             }
         });
 
-        Task printVersionTask = project.getTasks().create("printVersion", t -> {
-            t.doLast(ignored -> {
+        Task printVersionTask = project.getTasks().create("printVersion");
+        printVersionTask.doLast(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
                 System.out.println(project.getVersion());
-            });
+            }
         });
         printVersionTask.setGroup("Versioning");
         printVersionTask.setDescription("Prints the project's configured version to standard out");
