@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
-        
+
         final Git git = gitRepo(project);
 
         // intentionally not using .getExtension() here for back-compat

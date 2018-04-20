@@ -26,8 +26,6 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import java.nio.file.Files
-
 class GitVersionPluginTests extends Specification {
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
@@ -94,28 +92,6 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(':printVersion\nunspecified\n')
-    }
-
-    def 'short sha1 when no annotated tags are present' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-
-        String expected = shortSha(git, "HEAD")
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(':printVersion\n'+expected+'\n')
     }
 
     def 'short sha1 and dirty when no annotated tags are present and dirty content' () {
