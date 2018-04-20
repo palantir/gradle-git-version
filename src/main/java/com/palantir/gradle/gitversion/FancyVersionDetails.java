@@ -17,17 +17,24 @@ public class FancyVersionDetails implements IVersionDetails {
     private final Git git;
     private final GitVersionArgs args;
 
+    private volatile String maybeCachedDescription = null;
+
     public FancyVersionDetails(Git git, GitVersionArgs args) {
         this.git = git;
         this.args = args;
     }
 
     private String description() {
-        String description = rawDescription();
-        return description == null ? description : description.replaceFirst("^" + args.getPrefix(), "");
+        if (maybeCachedDescription == null) {
+            String rawDescription = expensiveComputeRawDescription();
+            this.maybeCachedDescription = rawDescription == null ?
+                    rawDescription : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        }
+
+        return maybeCachedDescription;
     }
 
-    private String rawDescription() {
+    private String expensiveComputeRawDescription() {
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory(), git)
                 .describe(args.getPrefix());
         String jgitDescribe = new JGitDescribe(git)
