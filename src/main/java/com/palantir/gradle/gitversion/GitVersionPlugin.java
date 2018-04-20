@@ -20,7 +20,7 @@ public class GitVersionPlugin implements Plugin<Project> {
         });
 
         project.getExtensions().add("versionDetails", new Closure<VersionDetails>(this, this) {
-            public IVersionDetails doCall(Object args) {
+            public VersionDetails doCall(Object args) {
                 return versionDetails(project, GitVersionArgs.fromGroovyClosure(args));
             }
         });
@@ -36,11 +36,11 @@ public class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
-    private IVersionDetails versionDetails(Project project, GitVersionArgs args) {
+    private VersionDetails versionDetails(Project project, GitVersionArgs args) {
         try {
             File gitDir = GitCli.getRootGitDir(project.getProjectDir());
             Git git = Git.wrap(new FileRepository(gitDir));
-            return new FancyVersionDetails(git, args);
+            return new VersionDetails(git, args);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
