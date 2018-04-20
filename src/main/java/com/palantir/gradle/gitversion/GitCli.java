@@ -15,13 +15,8 @@
  */
 package com.palantir.gradle.gitversion;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 class GitCli {
     private GitCli() {}
@@ -31,32 +26,6 @@ class GitCli {
         if (gitVersionProcess.waitFor() != 0) {
             throw new IllegalStateException("error invoking git command");
         }
-    }
-
-    static String runGitCommand(File dir, String... commands) throws IOException, InterruptedException {
-        List<String> cmdInput = new ArrayList<>();
-        cmdInput.add("git");
-        cmdInput.addAll(Arrays.asList(commands));
-        ProcessBuilder pb = new ProcessBuilder(cmdInput);
-        pb.directory(dir);
-        pb.redirectErrorStream(true);
-
-        Process process = pb.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-        StringBuilder builder = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-            builder.append(System.getProperty("line.separator"));
-        }
-
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            return "";
-        }
-
-        return builder.toString().trim();
     }
 
     static File getRootGitDir(File currentRoot) {
