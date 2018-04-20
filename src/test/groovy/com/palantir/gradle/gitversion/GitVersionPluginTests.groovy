@@ -322,7 +322,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output.contains(':printVersionDetails\ncom.palantir.gradle.gitversion.VersionDetails(null, null, null, null, false)\n')
+        buildResult.output.contains(':printVersionDetails\nVersionDetails{description=\'null\', gitHash=\'null\', gitHashFull=\'null\', branchName=\'null\', isClean=false}\n')
     }
 
     def 'version details on commit with a tag' () {

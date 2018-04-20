@@ -32,6 +32,8 @@ if (System.env.CIRCLE_TEST_REPORTS) {
 
 group 'com.palantir.gradle.gitversion'
 version gitVersion()
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
