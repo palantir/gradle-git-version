@@ -35,20 +35,14 @@ class JGitDescribe implements GitDescribe {
             return null;
         }
 
-        RevCommit headCommit;
-        RefWithTagNameComparator comparator;
         try {
             ObjectId headObjectId = git.getRepository().resolve(Constants.HEAD);
-            RevWalk walk = new RevWalk(git.getRepository());
-            headCommit = walk.parseCommit(headObjectId);
-            comparator = new RefWithTagNameComparator(walk);
-        } catch (Exception e) {
-            log.debug("HEAD not found: {}", e);
-            return null;
-        }
 
-        try {
-            List<String> revs = revList();
+            RevWalk walk = new RevWalk(git.getRepository());
+            RevCommit headCommit = walk.parseCommit(headObjectId);
+            RefWithTagNameComparator comparator = new RefWithTagNameComparator(walk);
+
+            List<String> revs = revList(headObjectId);
 
             Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git, comparator);
 
@@ -74,11 +68,10 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Mimics 'git rev-list --first-parent <commit>'
-    private List<String> revList() throws IOException {
+    private List<String> revList(ObjectId initialObjectId) throws IOException {
         ArrayList<String> revs = new ArrayList<>();
 
         Repository repo = git.getRepository();
-        ObjectId initialObjectId = repo.findRef(Constants.HEAD).getObjectId();
         try (RevWalk walk = new RevWalk(repo)) {
             RevCommit head = walk.parseCommit(initialObjectId);
 
