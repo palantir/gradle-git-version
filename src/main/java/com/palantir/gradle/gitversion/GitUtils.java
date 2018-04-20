@@ -1,6 +1,5 @@
 package com.palantir.gradle.gitversion;
 
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 
@@ -12,17 +11,6 @@ class GitUtils {
 
     static String abbrevHash(String s) {
         return s.substring(0, SHA_ABBR_LENGTH);
-    }
-
-    static boolean isRepoEmpty(Git git) {
-        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-        try {
-            git.describe().call();
-            return true;
-        } catch (Exception ignored) {
-            return false;
-        }
     }
 
     // getPeeledObjectId returns:

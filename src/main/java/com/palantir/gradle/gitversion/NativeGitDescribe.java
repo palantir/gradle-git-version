@@ -65,11 +65,6 @@ class NativeGitDescribe implements GitDescribe {
             return null;
         }
 
-        if (!GitUtils.isRepoEmpty(git)) {
-            log.debug("Repository is empty");
-            return null;
-        }
-
         try {
             // Get SHAs of all tags, we only need to search for these later on
             Set<String> tagRefs = Sets.newHashSet();

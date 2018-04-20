@@ -30,11 +30,6 @@ class JGitDescribe implements GitDescribe {
 
     @Override
     public String describe(String prefix) {
-        if (!GitUtils.isRepoEmpty(git)) {
-            log.debug("Repository is empty");
-            return null;
-        }
-
         try {
             ObjectId headObjectId = git.getRepository().resolve(Constants.HEAD);
 

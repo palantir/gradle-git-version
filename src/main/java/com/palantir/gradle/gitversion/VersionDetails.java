@@ -5,6 +5,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -12,6 +14,7 @@ import java.util.regex.Pattern;
 
 public class VersionDetails {
 
+    private static final Logger log = LoggerFactory.getLogger(VersionDetails.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
     private final Git git;
@@ -34,7 +37,23 @@ public class VersionDetails {
         return maybeCachedDescription;
     }
 
+    private boolean isRepoEmpty() {
+        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
+        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
+        try {
+            git.describe().call();
+            return false;
+        } catch (Exception ignored) {
+            return true;
+        }
+    }
+
     private String expensiveComputeRawDescription() {
+        if (isRepoEmpty()) {
+            log.debug("Repository is empty");
+            return null;
+        }
+
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory(), git)
                 .describe(args.getPrefix());
         String jgitDescribe = new JGitDescribe(git)
