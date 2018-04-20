@@ -4,11 +4,13 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,22 +35,12 @@ class JGitDescribe implements GitDescribe {
             return null;
         }
 
-        RevCommit headCommit;
-        RefWithTagNameComparator comparator;
         try {
             ObjectId headObjectId = git.getRepository().resolve(Constants.HEAD);
-            RevWalk walk = new RevWalk(git.getRepository());
-            headCommit = walk.parseCommit(headObjectId);
-            comparator = new RefWithTagNameComparator(walk);
-        } catch (Exception e) {
-            log.debug("HEAD not found: {}", e);
-            return null;
-        }
 
-        try {
-            List<String> revs = revList(headCommit);
+            List<String> revs = revList(headObjectId);
 
-            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git, comparator);
+            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git);
 
             // Walk back commit ancestors looking for tagged one
             for (int depth = 0; depth < revs.size(); depth++) {
@@ -64,7 +56,7 @@ class JGitDescribe implements GitDescribe {
             }
 
             // No tags found, so return commit hash of HEAD
-            return GitUtils.abbrevHash(headCommit.toObjectId().getName());
+            return GitUtils.abbrevHash(headObjectId.getName());
         } catch (Exception e) {
             log.debug("JGit describe failed with {}", e);
             return null;
@@ -72,31 +64,44 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Mimics 'git rev-list --first-parent <commit>'
-    private List<String> revList(RevCommit commit) {
-        List<String> revs = new ArrayList<>();
-        while (commit != null) {
-            revs.add(commit.getName());
-            try {
-                // There is no way to check if this exists without failing
-                commit = commit.getParent(0);
-            } catch (Exception ignored) {
-                break;
+    private List<String> revList(ObjectId initialObjectId) throws IOException {
+        ArrayList<String> revs = new ArrayList<>();
+
+        Repository repo = git.getRepository();
+        try (RevWalk walk = new RevWalk(repo)) {
+            RevCommit head = walk.parseCommit(initialObjectId);
+
+            while (true) {
+                revs.add(head.getName());
+
+                RevCommit[] parents = head.getParents();
+                if (parents == null || parents.length == 0) {
+                    break;
+                }
+
+                head = walk.parseCommit(parents[0]);
             }
         }
+
         return revs;
     }
 
     // Maps all commits returned by 'git show-ref --tags -d' to output of 'git describe --tags --exact-match <commit>'
-    private Map<String, RefWithTagName> mapCommitsToTags(Git git, RefWithTagNameComparator comparator) {
+    private Map<String, RefWithTagName> mapCommitsToTags(Git git) {
+        RefWithTagNameComparator comparator = new RefWithTagNameComparator(git);
+
         // Maps commit hash to list of all refs pointing to given commit hash.
         // All keys in this map should be same as commit hashes in 'git show-ref --tags -d'
         Map<String, RefWithTagName> commitHashToTag = new HashMap<>();
         for (Map.Entry<String, Ref> entry : git.getRepository().getTags().entrySet()) {
             RefWithTagName refWithTagName = new RefWithTagName(entry.getValue(), entry.getKey());
-            updateCommitHashMap(commitHashToTag, comparator, entry.getValue().getObjectId(), refWithTagName);
-            // Also add dereferenced commit hash if exists
+
             ObjectId peeledRef = refWithTagName.getRef().getPeeledObjectId();
-            if (peeledRef != null) {
+            if (peeledRef == null) {
+                // lightweight tag (commit object)
+                updateCommitHashMap(commitHashToTag, comparator, entry.getValue().getObjectId(), refWithTagName);
+            } else {
+                // annotated tag (tag object)
                 updateCommitHashMap(commitHashToTag, comparator, peeledRef, refWithTagName);
             }
         }

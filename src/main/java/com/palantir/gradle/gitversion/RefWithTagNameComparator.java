@@ -1,5 +1,6 @@
 package com.palantir.gradle.gitversion;
 
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevTag;
@@ -20,8 +21,8 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
 
     private final RevWalk walk;
 
-    RefWithTagNameComparator(RevWalk walk) {
-        this.walk = walk;
+    RefWithTagNameComparator(Git git) {
+        this.walk = new RevWalk(git.getRepository());
     }
 
     @Override
