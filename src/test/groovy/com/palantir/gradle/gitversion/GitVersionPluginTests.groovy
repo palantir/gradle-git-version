@@ -304,6 +304,30 @@ class GitVersionPluginTests extends Specification {
         buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmaster\ntrue\n"
     }
 
+    def 'version details can be accessed using extra properties method' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails() << {
+                println project.getExtensions().getExtraProperties().get('versionDetails')().lastTag
+                println project.getExtensions().getExtraProperties().get('gitVersion')()
+            }
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call();
+        git.add().addFilepattern('.').call()
+        String sha = git.commit().setMessage('initial commit').call().getName().subSequence(0, 7)
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output =~ ":printVersionDetails\n${sha}\n${sha}\n"
+    }
+
     def 'version details when commit distance to tag is > 0' () {
         given:
         buildFile << '''
