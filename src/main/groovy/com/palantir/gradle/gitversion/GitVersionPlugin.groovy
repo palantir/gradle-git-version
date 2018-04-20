@@ -31,14 +31,12 @@ class GitVersionPlugin implements Plugin<Project> {
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+"
 
     void apply(Project project) {
-        project.ext.gitVersion = {
-            args = [:] ->
-                return versionDetails(project, args as GitVersionArgs).version
+        project.ext.gitVersion = { args ->
+            return versionDetails(project, GitVersionArgs.fromGroovyClosure(args)).version
         }
 
-        project.ext.versionDetails = {
-            args = [:] ->
-                return versionDetails(project, args as GitVersionArgs)
+        project.ext.versionDetails = { args ->
+            return versionDetails(project, GitVersionArgs.fromGroovyClosure(args))
         }
 
         Task printVersionTask = project.getTasks().create("printVersion", {
