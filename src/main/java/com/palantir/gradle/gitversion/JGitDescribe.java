@@ -95,10 +95,13 @@ class JGitDescribe implements GitDescribe {
         Map<String, RefWithTagName> commitHashToTag = new HashMap<>();
         for (Map.Entry<String, Ref> entry : git.getRepository().getTags().entrySet()) {
             RefWithTagName refWithTagName = new RefWithTagName(entry.getValue(), entry.getKey());
-            updateCommitHashMap(commitHashToTag, comparator, entry.getValue().getObjectId(), refWithTagName);
-            // Also add dereferenced commit hash if exists
+
             ObjectId peeledRef = refWithTagName.getRef().getPeeledObjectId();
-            if (peeledRef != null) {
+            if (peeledRef == null) {
+                // lightweight tag (commit object)
+                updateCommitHashMap(commitHashToTag, comparator, entry.getValue().getObjectId(), refWithTagName);
+            } else {
+                // annotated tag (tag object)
                 updateCommitHashMap(commitHashToTag, comparator, peeledRef, refWithTagName);
             }
         }
