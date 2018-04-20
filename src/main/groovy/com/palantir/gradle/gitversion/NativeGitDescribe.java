@@ -1,11 +1,17 @@
-package com.palantir.gradle.gitversion
+package com.palantir.gradle.gitversion;
 
-import com.google.common.base.Preconditions
-import com.google.common.base.Splitter
-import com.google.common.collect.Sets
-import org.eclipse.jgit.api.Git
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Mimics git describe by using rev-list to support versions of git < 1.8.4
  */
@@ -51,7 +57,7 @@ class NativeGitDescribe implements GitDescribe {
             for (int depth = 0; depth < revs.size(); depth++) {
                 String rev = revs.get(depth);
                 if (tagRefs.contains(rev)) {
-                    String exactTag = runGitCmd("describe", "--tags", "--exact-match", "--match=${prefix}*", rev);
+                    String exactTag = runGitCmd("describe", "--tags", "--exact-match", "--match=" + prefix + "*", rev);
                     if (!exactTag.isEmpty()) {
                         return depth == 0 ?
                                 exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
