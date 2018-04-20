@@ -38,12 +38,36 @@ public class GitVersionPlugin implements Plugin<Project> {
 
     private VersionDetails versionDetails(Project project, GitVersionArgs args) {
         try {
-            File gitDir = GitCli.getRootGitDir(project.getProjectDir());
+            File gitDir = getRootGitDir(project.getProjectDir());
             Git git = Git.wrap(new FileRepository(gitDir));
             return new VersionDetails(git, args);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static File getRootGitDir(File currentRoot) {
+        File gitDir = scanForRootGitDir(currentRoot);
+        if (!gitDir.exists()) {
+            throw new IllegalArgumentException("Cannot find '.git' directory");
+        }
+        return gitDir;
+    }
+
+    private static File scanForRootGitDir(File currentRoot) {
+        File gitDir = new File(currentRoot, ".git");
+
+        if (gitDir.exists()) {
+            return gitDir;
+        }
+
+        // stop at the root directory, return non-existing File object;
+        if (currentRoot.getParentFile() == null) {
+            return gitDir;
+        }
+
+        // look in parent directory;
+        return scanForRootGitDir(currentRoot.getParentFile());
     }
 }
 
