@@ -56,8 +56,7 @@ public class VersionDetails implements Serializable {
         }
 
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description);
-        int commitCount = Integer.valueOf(match[0][2]);
-        return commitCount;
+        return match.matches() ? Integer.valueOf(match.group(2)) : null;
     }
 
     private boolean descriptionIsPlainTag() {
@@ -70,8 +69,7 @@ public class VersionDetails implements Serializable {
         }
 
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description);
-        String tagName = match[0][1];
-        return tagName;
+        return match.matches() ? match.group(1) : null;
     }
 
     public String getGitHash() {
