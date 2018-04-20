@@ -16,6 +16,7 @@
 package com.palantir.gradle.gitversion
 
 import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 public class VersionDetails implements Serializable {
 
@@ -60,7 +61,7 @@ public class VersionDetails implements Serializable {
     }
 
     private boolean descriptionIsPlainTag() {
-        return !(description =~ /.*g.?[0-9a-fA-F]{3,}/);
+        return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", description);
     }
 
     public String getLastTag() {
