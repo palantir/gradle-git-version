@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VersionDetails implements Serializable {
+public class VersionDetails implements Serializable, IVersionDetails {
 
     // Gradle returns 'unspecified' when no version is set
     private static final String UNSPECIFIED_VERSION = "unspecified";
@@ -39,6 +39,7 @@ public class VersionDetails implements Serializable {
         this.isClean = isClean;
     }
 
+    @Override
     public String getVersion() {
         if (description == null) {
             return UNSPECIFIED_VERSION;
@@ -47,10 +48,12 @@ public class VersionDetails implements Serializable {
         return description + (isClean ? "" : ".dirty");
     }
 
+    @Override
     public boolean getIsCleanTag() {
         return isClean && descriptionIsPlainTag();
     }
 
+    @Override
     public int getCommitDistance() {
         if (descriptionIsPlainTag()) {
             return 0;
@@ -64,6 +67,7 @@ public class VersionDetails implements Serializable {
         return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", description);
     }
 
+    @Override
     public String getLastTag() {
         if (descriptionIsPlainTag()) {
             return description;
@@ -73,16 +77,18 @@ public class VersionDetails implements Serializable {
         return match.matches() ? match.group(1) : null;
     }
 
+    @Override
     public String getGitHash() {
         return gitHash;
     }
 
-    /** @return full 40-character Git commit hash */
+    @Override
     public String getGitHashFull() {
         return gitHashFull;
     }
 
     /** @return null if the repository in detached HEAD mode */
+    @Override
     public String getBranchName() {
         return branchName;
     }
