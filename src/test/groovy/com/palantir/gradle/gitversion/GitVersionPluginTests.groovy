@@ -94,28 +94,6 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(':printVersion\nunspecified\n')
     }
 
-    def 'short sha1 and dirty when no annotated tags are present and dirty content' () {
-        given:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        dirtyContentFile << 'dirty-content'
-        String expected = shortSha(git, "HEAD")
-
-        when:
-        BuildResult buildResult = with('printVersion').build()
-
-        then:
-        buildResult.output.contains(':printVersion\n'+expected+'.dirty\n')
-    }
-
     def 'git describe when annotated tag is present' () {
         given:
         buildFile << '''
