@@ -656,6 +656,34 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0\n")
     }
 
+    def 'test tag set on deep commit' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        RevCommit latestCommit = git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        int depth = 100
+        for (int i = 0; i < depth; i++) {
+            git.add().addFilepattern('.').call()
+            latestCommit = git.commit().setMessage('commit-' + i).call()
+        }
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+        String commitSha = latestCommit.getName()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0-${depth}-g${commitSha.substring(0, 7)}\n")
+    }
+
     private GradleRunner with(String... tasks) {
         List<String> arguments = new ArrayList<>(['--stacktrace'])
         arguments.addAll(tasks)
