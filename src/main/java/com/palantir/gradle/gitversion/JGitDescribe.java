@@ -77,8 +77,6 @@ class JGitDescribe implements GitDescribe {
 
                 head = walk.parseCommit(parents[0]);
             }
-
-            walk.close();
         }
 
         return revs;
