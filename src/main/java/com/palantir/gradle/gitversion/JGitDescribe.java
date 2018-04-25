@@ -64,6 +64,7 @@ class JGitDescribe implements GitDescribe {
 
         Repository repo = git.getRepository();
         try (RevWalk walk = new RevWalk(repo)) {
+            walk.setRetainBody(false);
             RevCommit head = walk.parseCommit(initialObjectId);
 
             while (true) {
@@ -88,16 +89,19 @@ class JGitDescribe implements GitDescribe {
         // Maps commit hash to list of all refs pointing to given commit hash.
         // All keys in this map should be same as commit hashes in 'git show-ref --tags -d'
         Map<String, RefWithTagName> commitHashToTag = new HashMap<>();
-        for (Map.Entry<String, Ref> entry : git.getRepository().getTags().entrySet()) {
-            RefWithTagName refWithTagName = new RefWithTagName(entry.getValue(), entry.getKey());
+        Repository repository = git.getRepository();
+        for (Map.Entry<String, Ref> entry : repository.getTags().entrySet()) {
+            Ref peeledRef = repository.peel(entry.getValue());
+            RefWithTagName refWithTagName = new RefWithTagName(peeledRef, entry.getKey());
 
-            ObjectId peeledRef = refWithTagName.getRef().getPeeledObjectId();
-            if (peeledRef == null) {
-                // lightweight tag (commit object)
-                updateCommitHashMap(commitHashToTag, comparator, entry.getValue().getObjectId(), refWithTagName);
+            // Peel ref object
+            ObjectId peeledObjectId = peeledRef.getPeeledObjectId();
+            if (peeledObjectId == null) {
+                // Lightweight tag (commit object)
+                updateCommitHashMap(commitHashToTag, comparator, peeledRef.getObjectId(), refWithTagName);
             } else {
-                // annotated tag (tag object)
-                updateCommitHashMap(commitHashToTag, comparator, peeledRef, refWithTagName);
+                // Annotated tag (tag object)
+                updateCommitHashMap(commitHashToTag, comparator, peeledObjectId, refWithTagName);
             }
         }
         return commitHashToTag;

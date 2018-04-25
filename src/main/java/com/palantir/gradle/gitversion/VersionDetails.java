@@ -49,7 +49,7 @@ public final class VersionDetails {
 
         String rawDescription = expensiveComputeRawDescription();
         maybeCachedDescription = rawDescription == null ?
-                rawDescription : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+                null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return maybeCachedDescription;
     }
 
@@ -59,23 +59,7 @@ public final class VersionDetails {
             return null;
         }
 
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
-                .describe(args.getPrefix());
-        String jgitDescribe = new JGitDescribe(git)
-                .describe(args.getPrefix());
-
-        // If native failed, return JGit one
-        if (nativeGitDescribe == null) {
-            return jgitDescribe;
-        }
-
-        // If native succeeded, make sure it's same as JGit one
-        if (!nativeGitDescribe.equals(jgitDescribe)) {
-            throw new IllegalStateException(String.format("Inconsistent git describe: native was %s and jgit was %s. " +
-                    "Please report this on github.com/palantir/gradle-git-version", nativeGitDescribe, jgitDescribe));
-        }
-
-        return jgitDescribe;
+        return new JGitDescribe(git).describe(args.getPrefix());
     }
 
     private boolean isRepoEmpty() {
@@ -140,5 +124,20 @@ public final class VersionDetails {
         }
 
         return ref.getName().substring(Constants.R_HEADS.length());
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return String.format("VersionDetails(%s, %s, %s, %s, %s)",
+                    getVersion(),
+                    getGitHash(),
+                    getGitHashFull(),
+                    getBranchName(),
+                    getIsCleanTag()
+            );
+        } catch (IOException e) {
+            return null;
+        }
     }
 }
