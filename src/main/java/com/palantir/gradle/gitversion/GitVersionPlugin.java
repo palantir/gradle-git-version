@@ -14,17 +14,17 @@ import java.io.IOException;
 public class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
 
-        final Git git = gitRepo(project);
-
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
+                Git git = gitRepo(project);
                 return new VersionDetails(git, GitVersionArgs.fromGroovyClosure(args)).getVersion();
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
+                Git git = gitRepo(project);
                 return new VersionDetails(git, GitVersionArgs.fromGroovyClosure(args));
             }
         });
@@ -40,7 +40,7 @@ public class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
-    private Git gitRepo(Project project) {
+    private static Git gitRepo(Project project) {
         try {
             File gitDir = getRootGitDir(project.getProjectDir());
             return Git.wrap(new FileRepository(gitDir));
