@@ -1,6 +1,7 @@
 package com.palantir.gradle.gitversion;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -75,7 +76,12 @@ class JGitDescribe implements GitDescribe {
                     break;
                 }
 
-                head = walk.parseCommit(parents[0]);
+                try {
+                    head = walk.parseCommit(parents[0]);
+                } catch (MissingObjectException e) {
+                    log.debug("First parent object missing: {}", e);
+                    break;
+                }
             }
         }
 
