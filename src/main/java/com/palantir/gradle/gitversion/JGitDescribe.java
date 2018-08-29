@@ -35,18 +35,15 @@ class JGitDescribe implements GitDescribe {
 
             List<String> revs = revList(headObjectId);
 
-            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git);
+            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git, prefix);
 
             // Walk back commit ancestors looking for tagged one
             for (int depth = 0; depth < revs.size(); depth++) {
                 String rev = revs.get(depth);
                 if (commitHashToTag.containsKey(rev)) {
                     String exactTag = commitHashToTag.get(rev).getTag();
-                    // Mimics '--match=${prefix}*' flag in 'git describe --tags --exact-match'
-                    if (exactTag.startsWith(prefix)) {
                         return depth == 0 ?
                                 exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
-                    }
                 }
             }
 
@@ -83,7 +80,7 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Maps all commits returned by 'git show-ref --tags -d' to output of 'git describe --tags --exact-match <commit>'
-    private Map<String, RefWithTagName> mapCommitsToTags(Git git) {
+    private Map<String, RefWithTagName> mapCommitsToTags(Git git, String prefix) {
         RefWithTagNameComparator comparator = new RefWithTagNameComparator(git);
 
         // Maps commit hash to list of all refs pointing to given commit hash.
@@ -91,17 +88,19 @@ class JGitDescribe implements GitDescribe {
         Map<String, RefWithTagName> commitHashToTag = new HashMap<>();
         Repository repository = git.getRepository();
         for (Map.Entry<String, Ref> entry : repository.getTags().entrySet()) {
-            Ref peeledRef = repository.peel(entry.getValue());
-            RefWithTagName refWithTagName = new RefWithTagName(peeledRef, entry.getKey());
+            if(prefix == null || entry.getKey().startsWith(prefix)) {
+                Ref peeledRef = repository.peel(entry.getValue());
+                RefWithTagName refWithTagName = new RefWithTagName(peeledRef, entry.getKey());
 
-            // Peel ref object
-            ObjectId peeledObjectId = peeledRef.getPeeledObjectId();
-            if (peeledObjectId == null) {
-                // Lightweight tag (commit object)
-                updateCommitHashMap(commitHashToTag, comparator, peeledRef.getObjectId(), refWithTagName);
-            } else {
-                // Annotated tag (tag object)
-                updateCommitHashMap(commitHashToTag, comparator, peeledObjectId, refWithTagName);
+                // Peel ref object
+                ObjectId peeledObjectId = peeledRef.getPeeledObjectId();
+                if (peeledObjectId == null) {
+                    // Lightweight tag (commit object)
+                    updateCommitHashMap(commitHashToTag, comparator, peeledRef.getObjectId(), refWithTagName);
+                } else {
+                    // Annotated tag (tag object)
+                    updateCommitHashMap(commitHashToTag, comparator, peeledObjectId, refWithTagName);
+                }
             }
         }
         return commitHashToTag;
