@@ -478,7 +478,8 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersion', ':sub:printVersion').build()
 
         then:
-        buildResult.output =~ ":printVersion\n1.0.0\n:sub:printVersion\n8.8.8\n"
+        buildResult.output.contains ":printVersion\n1.0.0\n"
+        buildResult.output.contains ":sub:printVersion\n8.8.8\n"
     }
 
     def 'test multiple tags on same commit - annotated tag is chosen' () {
