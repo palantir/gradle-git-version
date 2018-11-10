@@ -614,6 +614,7 @@ class GitVersionPluginTests extends Specification {
         settingsFile << '''
             rootProject.name = 'gradle-test'
         '''.stripIndent()
+        gitIgnoreFile << '/.gradle\n'
     }
 
 }
