@@ -3,18 +3,15 @@
 # To manually manage the CircleCI configuration for this project, remove the .circleci/template.sh file.
 
 version: 2
-
-build-defaults: &build-defaults
-  resource_class: xlarge
-  environment:
-    GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
-    CIRCLE_TEST_REPORTS: /home/circleci/junit
-    CIRCLE_ARTIFACTS: /home/circleci/artifacts
-
 jobs:
   build:
-    docker: [{ image: 'circleci/openjdk:8u181-node' }]
-    <<: *build-defaults
+    docker: [{ image: 'circleci/openjdk:8u171-node' }]
+    resource_class: xlarge
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
+      CIRCLE_TEST_REPORTS: /home/circleci/junit
+      CIRCLE_ARTIFACTS: /home/circleci/artifacts
+      _JAVA_OPTIONS: '-Xmx2048m'
     steps:
       - checkout
       - restore_cache: { key: 'gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
@@ -44,12 +41,17 @@ jobs:
 
   build-11:
     docker: [{ image: 'circleci/openjdk:11-node' }]
-    <<: *build-defaults
+    resource_class: xlarge
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
+      CIRCLE_TEST_REPORTS: /home/circleci/junit
+      CIRCLE_ARTIFACTS: /home/circleci/artifacts
+      _JAVA_OPTIONS: '-XX:ActiveProcessorCount=8 -Xmx2048m'
     steps:
       - checkout
       - restore_cache: { key: 'gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
       - restore_cache: { key: 'gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}' }
-      - run: ./gradlew --no-daemon --parallel --stacktrace  --continue --max-workers=8 --profile build
+      - run: ./gradlew --no-daemon --parallel --stacktrace  --continue --profile build
       - save_cache:
           key: 'gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}'
           paths: [ ~/.gradle/wrapper ]
@@ -62,6 +64,12 @@ jobs:
       - store_test_results: { path: ~/junit }
       - store_artifacts: { path: ~/artifacts }
 
+  markdown:
+    docker: [{ image: 'raviqqe/liche:0.1.1' }]
+    steps:
+      - checkout
+      - run: /liche -d . -r . -v
+
 workflows:
   version: 2
   build:
@@ -70,5 +78,8 @@ workflows:
           # CircleCI2 will ignore tags without this. https://circleci.com/docs/2.0/workflows/#git-tag-job-execution
           filters: { tags: { only: /.*/ } }
       - build-11:
+          # CircleCI2 will ignore tags without this. https://circleci.com/docs/2.0/workflows/#git-tag-job-execution
+          filters: { tags: { only: /.*/ } }
+      - markdown:
           # CircleCI2 will ignore tags without this. https://circleci.com/docs/2.0/workflows/#git-tag-job-execution
           filters: { tags: { only: /.*/ } }
