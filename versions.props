@@ -1,0 +1,7 @@
+org.eclipse.jgit:org.eclipse.jgit = 4.5.4.201711221230-r
+com.google.guava:guava = 20.0
+
+# test dependencies
+junit:junit = 4.12
+org.assertj:assertj-core = 3.11.1
+org.spockframework:spock-core = 1.0-groovy-2.4
