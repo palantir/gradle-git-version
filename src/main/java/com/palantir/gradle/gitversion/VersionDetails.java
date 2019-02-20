@@ -1,5 +1,8 @@
 package com.palantir.gradle.gitversion;
 
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -8,10 +11,6 @@ import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public final class VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetails.class);
@@ -19,7 +18,11 @@ public final class VersionDetails {
 
     private final Git git;
     private final GitVersionArgs args;
+
+    private volatile Boolean maybeCachedIsClean = null;
     private volatile String maybeCachedDescription = null;
+    private volatile String maybeCachedGitHashFull = null;
+    private volatile String maybeCachedBranchName = null;
 
     VersionDetails(Git git, GitVersionArgs args) {
         this.git = git;
@@ -35,11 +38,17 @@ public final class VersionDetails {
     }
 
     private boolean isClean() {
+        if (maybeCachedIsClean != null) {
+            return maybeCachedIsClean;
+        }
+
         try {
-            return git.status().call().isClean();
+            maybeCachedIsClean = git.status().call().isClean();
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         }
+
+        return maybeCachedIsClean;
     }
 
     private String description() {
@@ -109,21 +118,33 @@ public final class VersionDetails {
     }
 
     public String getGitHashFull() throws IOException {
+        if (maybeCachedGitHashFull != null) {
+            return maybeCachedGitHashFull;
+        }
+
         ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
         if (objectId == null) {
             return null;
         }
 
-        return objectId.name();
+        maybeCachedGitHashFull = objectId.name();
+
+        return maybeCachedGitHashFull;
     }
 
     public String getBranchName() throws IOException {
+        if (maybeCachedBranchName != null) {
+            return maybeCachedBranchName;
+        }
+
         Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
         if (ref == null) {
             return null;
         }
 
-        return ref.getName().substring(Constants.R_HEADS.length());
+        maybeCachedBranchName = ref.getName().substring(Constants.R_HEADS.length());
+
+        return maybeCachedBranchName;
     }
 
     @Override

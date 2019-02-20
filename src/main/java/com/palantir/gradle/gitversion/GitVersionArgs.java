@@ -3,6 +3,7 @@ package com.palantir.gradle.gitversion;
 import com.google.common.base.Preconditions;
 
 import java.util.Map;
+import java.util.Objects;
 
 class GitVersionArgs {
     private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+";
@@ -20,6 +21,23 @@ class GitVersionArgs {
                 "Specified prefix `" + prefix + "` does not match the allowed format regex `" + PREFIX_REGEX + "`.");
 
         this.prefix = prefix;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        GitVersionArgs that = (GitVersionArgs) other;
+        return Objects.equals(prefix, that.prefix);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(prefix);
     }
 
     // groovy closure invocation allows any number of args
