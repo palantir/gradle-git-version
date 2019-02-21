@@ -1,15 +1,6 @@
 package com.palantir.gradle.gitversion;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.MergeCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,7 +11,16 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class JGitDescribeTest {
 
@@ -44,6 +44,17 @@ public class JGitDescribeTest {
         git.tag().setAnnotated(true).setMessage("1.0.0").setName("1.0.0").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
+    }
+
+    @Test
+    public void test_on_annotated_tag_2() throws Exception {
+        git.add().addFilepattern(".").call();
+        git.commit().setMessage("initial commit").call();
+        git.tag().setAnnotated(true).setMessage("1.0.1").setName("1.0.1").call();
+
+        assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribe());
     }
 
     @Test
@@ -53,6 +64,7 @@ public class JGitDescribeTest {
         git.tag().setAnnotated(false).setName("1.0.0").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -70,6 +82,7 @@ public class JGitDescribeTest {
                 .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -88,6 +101,7 @@ public class JGitDescribeTest {
         git.tag().setAnnotated(true).setMessage("2.0.0").setName("2.0.0").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -99,6 +113,7 @@ public class JGitDescribeTest {
         git.checkout().setName(commit1.getId().getName()).call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -110,6 +125,7 @@ public class JGitDescribeTest {
         git.commit().setMessage("added some stuff").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -123,6 +139,7 @@ public class JGitDescribeTest {
         }
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -134,6 +151,7 @@ public class JGitDescribeTest {
         git.commit().setMessage("added some stuff").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -147,6 +165,7 @@ public class JGitDescribeTest {
         }
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -158,6 +177,7 @@ public class JGitDescribeTest {
         git.tag().setAnnotated(false).setName("3.0.0").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -172,6 +192,7 @@ public class JGitDescribeTest {
                 new PersonIdent(identity, new Date(0, 0, 5))).setName("3.0.0").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     @Test
@@ -183,14 +204,23 @@ public class JGitDescribeTest {
         git.tag().setAnnotated(false).setName("3.0.0").call();
 
         assertThat(jgitDescribe()).isEqualTo(nativeGitDescribe());
+        assertThat(jgitDescribe(ReleasingModel.RELEASE_BRANCH)).isEqualTo(nativeGitDescribeLong());
     }
 
     private String jgitDescribe() throws GitAPIException {
-        return new JGitDescribe(git).describe("");
+        return new JGitDescribe(git, ReleasingModel.DEVELOP).describe("");
+    }
+
+    private String jgitDescribe(ReleasingModel model) throws GitAPIException {
+        return new JGitDescribe(git, model).describe("");
     }
 
     private String nativeGitDescribe() throws IOException, InterruptedException, RuntimeException {
         return runGitCmd(projectDir, "describe", "--tags", "--always", "--first-parent", "HEAD");
+    }
+
+    private String nativeGitDescribeLong() throws IOException, InterruptedException, RuntimeException {
+        return runGitCmd(projectDir, "describe", "--tags", "--always", "--long", "--first-parent", "HEAD");
     }
 
     private String runGitCmd(File directory, String... commands)

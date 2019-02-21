@@ -1,5 +1,11 @@
 package com.palantir.gradle.gitversion;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -10,12 +16,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * JGit implementation of git describe with required flags. JGit support for describe is minimal and there is no support
  * for --first-parent behavior.
@@ -23,9 +23,11 @@ import java.util.Map;
 class JGitDescribe implements GitDescribe {
     private static final Logger log = LoggerFactory.getLogger(JGitDescribe.class);
     private final Git git;
+    private final ReleasingModel model;
 
-    JGitDescribe(Git git) {
+    JGitDescribe(Git git, ReleasingModel model) {
         this.git = git;
+        this.model = model;
     }
 
     @Override
@@ -44,8 +46,16 @@ class JGitDescribe implements GitDescribe {
                     String exactTag = commitHashToTag.get(rev).getTag();
                     // Mimics '--match=${prefix}*' flag in 'git describe --tags --exact-match'
                     if (exactTag.startsWith(prefix)) {
-                        return depth == 0 ?
-                                exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
+                        String longDescription = longDescription(revs, depth, exactTag);
+                        if (depth == 0) {
+                            if (model == ReleasingModel.RELEASE_BRANCH && exactTag.endsWith(".0")) {
+                                return longDescription;
+                            } else {
+                                return exactTag;
+                            }
+                        } else {
+                            return longDescription;
+                        }
                     }
                 }
             }
@@ -56,6 +66,10 @@ class JGitDescribe implements GitDescribe {
             log.debug("JGit describe failed with {}", e);
             return null;
         }
+    }
+
+    private String longDescription(List<String> revs, int depth, String exactTag) {
+        return String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
     }
 
     // Mimics 'git rev-list --first-parent <commit>'
