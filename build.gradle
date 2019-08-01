@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.5'
+    id 'com.jfrog.bintray' version '1.8.4'
     id 'com.gradle.plugin-publish' version '0.9.9'
     id 'com.palantir.configuration-resolver' version '0.2.0'
     id 'com.palantir.git-version' version '0.4.0'
