@@ -59,7 +59,23 @@ public final class VersionDetails {
             return null;
         }
 
-        return new JGitDescribe(git).describe(args.getPrefix());
+        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
+                .describe(args.getPrefix());
+        String jgitDescribe = new JGitDescribe(git)
+                .describe(args.getPrefix());
+
+        // If native failed, return JGit one
+        if (nativeGitDescribe == null) {
+            return jgitDescribe;
+        }
+
+        // If native succeeded, make sure it's same as JGit one
+        if (!nativeGitDescribe.equals(jgitDescribe)) {
+            throw new IllegalStateException(String.format("Inconsistent git describe: native was %s and jgit was %s. " +
+                    "Please report this on github.com/palantir/gradle-git-version", nativeGitDescribe, jgitDescribe));
+        }
+
+        return jgitDescribe;
     }
 
     private boolean isRepoEmpty() {
