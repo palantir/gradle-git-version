@@ -49,7 +49,7 @@ public final class VersionDetails {
 
         String rawDescription = expensiveComputeRawDescription();
         maybeCachedDescription = rawDescription == null ?
-                rawDescription : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+                null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return maybeCachedDescription;
     }
 
