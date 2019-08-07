@@ -1,43 +1,29 @@
 buildscript {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://palantir.bintray.com/releases' }
+    }
     dependencies {
-        // TODO(dsanduleac): remove once we apply baseline
-        classpath 'com.netflix.nebula:nebula-dependency-recommender:6.0.0'
+        classpath 'com.netflix.nebula:nebula-publishing-plugin:12.0.4'
     }
 }
 
 plugins {
     id 'com.jfrog.bintray' version '1.8.4'
     id 'com.gradle.plugin-publish' version '0.9.9'
-    id 'com.palantir.configuration-resolver' version '0.2.0'
-    id 'com.palantir.git-version' version '0.4.0'
+    id 'com.palantir.git-version' version '0.11.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
+    id 'com.palantir.baseline' version '1.10.0'
+    id 'com.palantir.consistent-versions' version '1.9.2'
+    id 'java-gradle-plugin'
+    id 'groovy'
 }
 
 apply from: 'gradle/publish-jar.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'groovy'
-apply plugin: 'idea'
-apply plugin: 'java-gradle-plugin'
-apply plugin: 'maven-publish'
-
-// TODO(dsanduleac): remove once we apply baseline
-apply plugin: 'nebula.dependency-recommender'
-
-// TODO(dsanduleac): remove once we apply baseline
-dependencyRecommendations {
-    strategy OverrideTransitives
-    propertiesFile file: rootProject.file("versions.props")
-}
-
-// TODO(dsanduleac): remove once we apply baseline
-configurations.all {
-    resolutionStrategy {
-        failOnVersionConflict()
-    }
-}
 
 repositories {
     jcenter()
+    maven { url 'https://palantir.bintray.com/releases' }
 }
 
 dependencies {

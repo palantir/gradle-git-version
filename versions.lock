@@ -1,0 +1,16 @@
+# Run ./gradlew --write-locks to regenerate this file
+com.google.guava:guava:20.0 (1 constraints: d604f530)
+com.googlecode.javaewah:JavaEWAH:0.7.9 (1 constraints: 500e8e50)
+com.jcraft:jsch:0.1.53 (1 constraints: 790ef15e)
+commons-codec:commons-codec:1.6 (1 constraints: c60f9b71)
+commons-logging:commons-logging:1.1.3 (1 constraints: 2210a791)
+org.apache.httpcomponents:httpclient:4.3.6 (1 constraints: 4d0e9350)
+org.apache.httpcomponents:httpcore:4.3.3 (1 constraints: 2710bc91)
+org.eclipse.jgit:org.eclipse.jgit:4.5.4.201711221230-r (1 constraints: 32085399)
+org.slf4j:slf4j-api:1.7.2 (1 constraints: 4a0e8c50)
+
+[Test dependencies]
+junit:junit:4.12 (2 constraints: df1167f6)
+org.assertj:assertj-core:3.13.2 (1 constraints: 3b05403b)
+org.hamcrest:hamcrest-core:1.3 (1 constraints: cc05fe3f)
+org.spockframework:spock-core:1.0-groovy-2.4 (1 constraints: 3908a476)
