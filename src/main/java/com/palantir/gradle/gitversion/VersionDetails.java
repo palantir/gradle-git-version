@@ -141,4 +141,19 @@ public final class VersionDetails {
 
         return ref.getName().substring(Constants.R_HEADS.length());
     }
+
+    @Override
+    public String toString() {
+        try {
+            return String.format("VersionDetails(%s, %s, %s, %s, %s)",
+                    getVersion(),
+                    getGitHash(),
+                    getGitHashFull(),
+                    getBranchName(),
+                    getIsCleanTag()
+            );
+        } catch (IOException e) {
+            return null;
+        }
+    }
 }
