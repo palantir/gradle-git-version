@@ -13,6 +13,7 @@ plugins {
     id 'com.palantir.idea-test-fix' version '0.1.0'
 }
 
+apply from: 'gradle/publish-jar.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'groovy'
 apply plugin: 'idea'
@@ -52,52 +53,12 @@ dependencies {
     }
 }
 
-if (System.env.CIRCLE_TEST_REPORTS) {
-    test.reports.junitXml.destination = new File(System.env.CIRCLE_TEST_REPORTS, getName())
-}
-
 group 'com.palantir.gradle.gitversion'
 version gitVersion()
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
-}
-
-publishing {
-    publications {
-        bintray(MavenPublication) {
-            from components.java
-            artifact(sourceJar)
-            artifact(publishPluginJavaDocsJar)
-        }
-    }
-}
-
-tasks.publish {
-    dependsOn 'bintrayUpload', 'publishPlugins'
-}
-
-bintray {
-    user = System.env.BINTRAY_USER
-    key = System.env.BINTRAY_KEY
-    publish = true
-    pkg {
-        repo = 'releases'
-        name = 'gradle-git-version'
-        userOrg = 'palantir'
-        licenses = ['Apache-2.0']
-        publications = ['bintray']
-    }
-}
-
-bintrayUpload.dependsOn 'generatePomFileForBintrayPublication', 'sourceJar', 'build'
-
-bintrayUpload.onlyIf {
-    System.env.BINTRAY_USER && System.env.BINTRAY_KEY && System.env.CIRCLE_TAG
-}
+tasks.publish.dependsOn 'publishPlugins'
 
 pluginBundle {
     website = 'https://github.com/palantir/gradle-git-version'
