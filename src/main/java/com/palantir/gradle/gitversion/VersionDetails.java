@@ -1,5 +1,6 @@
 package com.palantir.gradle.gitversion;
 
+import com.google.common.base.Preconditions;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -103,7 +104,8 @@ public final class VersionDetails {
         }
 
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
-        return match.matches() ? Integer.valueOf(match.group(2)) : null;
+        Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", description());
+        return Integer.parseInt(match.group(2));
     }
 
     public String getLastTag() {

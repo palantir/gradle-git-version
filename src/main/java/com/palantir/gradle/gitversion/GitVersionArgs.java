@@ -1,7 +1,6 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
-
 import java.util.Map;
 
 class GitVersionArgs {
@@ -17,7 +16,8 @@ class GitVersionArgs {
         Preconditions.checkNotNull(prefix, "prefix must not be null");
 
         Preconditions.checkState(prefix.matches(PREFIX_REGEX),
-                "Specified prefix `" + prefix + "` does not match the allowed format regex `" + PREFIX_REGEX + "`.");
+                "Specified prefix `%s` does not match the allowed format regex `%s`.",
+                prefix, PREFIX_REGEX);
 
         this.prefix = prefix;
     }
