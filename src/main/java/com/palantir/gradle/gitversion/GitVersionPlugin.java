@@ -1,15 +1,15 @@
 package com.palantir.gradle.gitversion;
 
 import groovy.lang.Closure;
+import java.io.File;
+import java.io.IOException;
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType.Object;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-
-import java.io.File;
-import java.io.IOException;
 
 public class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
@@ -73,4 +73,3 @@ public class GitVersionPlugin implements Plugin<Project> {
         return scanForRootGitDir(currentRoot.getParentFile());
     }
 }
-

@@ -1,14 +1,13 @@
 package com.palantir.gradle.gitversion;
 
+import java.util.Comparator;
+import java.util.Date;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
-
-import java.util.Comparator;
-import java.util.Date;
 
 /**
  * Mimick tags comparator used by native git when doing `git describe --tags` and commit have multiple tags.
