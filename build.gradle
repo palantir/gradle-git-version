@@ -44,6 +44,10 @@ version gitVersion()
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
+tasks.test {
+    targetCompatibility = 1.8
+}
+
 pluginBundle {
     website = 'https://github.com/palantir/gradle-git-version'
     vcsUrl = 'https://github.com/palantir/gradle-git-version'
