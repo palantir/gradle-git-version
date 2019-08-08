@@ -1,5 +1,5 @@
 org.eclipse.jgit:org.eclipse.jgit = 4.5.4.201711221230-r
-com.google.guava:guava = 25.0-jre
+com.google.guava:guava = 23.5-jre
 
 # test dependencies
 junit:junit = 4.12
