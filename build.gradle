@@ -44,8 +44,6 @@ version gitVersion()
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-tasks.publish.dependsOn 'publishPlugins'
-
 pluginBundle {
     website = 'https://github.com/palantir/gradle-git-version'
     vcsUrl = 'https://github.com/palantir/gradle-git-version'
@@ -60,7 +58,8 @@ pluginBundle {
     }
 }
 
-publishPlugins.onlyIf {
-    System.env.CIRCLE_TAG
-}
-
+// Configure the publishPlugins task
+publishPlugins.onlyIf { System.env.CIRCLE_TAG }
+tasks.publish.dependsOn publishPlugins
+project.ext.'gradle.publish.key' = System.env["GRADLE_KEY"]
+project.ext.'gradle.publish.secret' = System.env["GRADLE_SECRET"]
