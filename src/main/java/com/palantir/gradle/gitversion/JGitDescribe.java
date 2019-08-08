@@ -1,3 +1,19 @@
+/*
+ * (c) Copyright 2019 Palantir Technologies Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.palantir.gradle.gitversion;
 
 import java.io.IOException;
@@ -43,8 +59,9 @@ class JGitDescribe implements GitDescribe {
                     String exactTag = commitHashToTag.get(rev).getTag();
                     // Mimics '--match=${prefix}*' flag in 'git describe --tags --exact-match'
                     if (exactTag.startsWith(prefix)) {
-                        return depth == 0 ?
-                                exactTag : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
+                        return depth == 0
+                                ? exactTag
+                                : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
                     }
                 }
             }
@@ -59,7 +76,7 @@ class JGitDescribe implements GitDescribe {
 
     // Mimics 'git rev-list --first-parent <commit>'
     private List<String> revList(ObjectId initialObjectId) throws IOException {
-        ArrayList<String> revs = new ArrayList<>();
+        List<String> revs = new ArrayList<>();
 
         Repository repo = git.getRepository();
         try (RevWalk walk = new RevWalk(repo)) {
@@ -81,7 +98,7 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Maps all commits returned by 'git show-ref --tags -d' to output of 'git describe --tags --exact-match <commit>'
-    private Map<String, RefWithTagName> mapCommitsToTags(Git git) {
+    private static Map<String, RefWithTagName> mapCommitsToTags(Git git) {
         RefWithTagNameComparator comparator = new RefWithTagNameComparator(git);
 
         // Maps commit hash to list of all refs pointing to given commit hash.
@@ -102,8 +119,11 @@ class JGitDescribe implements GitDescribe {
         return commitHashToTag;
     }
 
-    private void updateCommitHashMap(Map<String, RefWithTagName> map, RefWithTagNameComparator comparator,
-                                       ObjectId objectId, RefWithTagName ref) {
+    private static void updateCommitHashMap(
+            Map<String, RefWithTagName> map,
+            RefWithTagNameComparator comparator,
+            ObjectId objectId,
+            RefWithTagName ref) {
         // Smallest ref (ordered by this comparator) from list of refs is chosen for each commit.
         // This ensures we get same behavior as in 'git describe --tags --exact-match <commit>'
         String commitHash = objectId.getName();
