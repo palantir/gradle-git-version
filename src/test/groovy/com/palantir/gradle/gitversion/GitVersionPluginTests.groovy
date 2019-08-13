@@ -64,7 +64,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        file(projectDir, 'settings.gradle').createNewFile()
+        new File(projectDir, 'settings.gradle').createNewFile()
         Git git = Git.init().setDirectory(rootFolder).call();
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
