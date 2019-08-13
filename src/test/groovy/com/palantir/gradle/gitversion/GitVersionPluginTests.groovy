@@ -237,14 +237,14 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().gitHashFull
                 println versionDetails().branchName
                 println versionDetails().isCleanTag
-            }
+            }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
@@ -266,10 +266,10 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println project.getExtensions().getExtraProperties().get('versionDetails')().lastTag
                 println project.getExtensions().getExtraProperties().get('gitVersion')()
-            }
+            }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
@@ -290,13 +290,13 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
                 println versionDetails().isCleanTag
-            }
+            }}
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -320,9 +320,9 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().isCleanTag
-            }
+            }}
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -345,12 +345,12 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
-            }
+            }}
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -375,9 +375,9 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion(prefix:"my-product@")
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails(prefix:"my-product@").lastTag
-            }
+            }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
