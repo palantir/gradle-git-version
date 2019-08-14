@@ -5,12 +5,13 @@
 version: 2
 jobs:
   compile:
-    docker: [{ image: 'circleci/openjdk:8u171-node' }]
+    docker: [{ image: 'circleci/openjdk:8u222-stretch-node' }]
     resource_class: large
     environment:
       CIRCLE_TEST_REPORTS: /home/circleci/junit
       CIRCLE_ARTIFACTS: /home/circleci/artifacts
       GRADLE_OPTS: -Dorg.gradle.jvmargs='-Xms6144m -Xmx6144m'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=4 -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
     steps:
       - checkout
       - run:
@@ -53,9 +54,10 @@ jobs:
           paths: [ project, .gradle/init.gradle ]
 
   check:
-    docker: [{ image: 'circleci/openjdk:8u171-node' }]
+    docker: [{ image: 'circleci/openjdk:8u222-stretch-node' }]
     environment:
       GRADLE_OPTS: -Dorg.gradle.jvmargs='-Xms3072m -Xmx3072m'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=2 -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
     steps:
       - attach_workspace: { at: /home/circleci }
       - restore_cache: { key: 'gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
@@ -71,9 +73,10 @@ jobs:
       - store_artifacts: { path: ~/artifacts }
 
   unit-test:
-    docker: [{ image: 'circleci/openjdk:8u171-node' }]
+    docker: [{ image: 'circleci/openjdk:8u222-stretch-node' }]
     environment:
       GRADLE_OPTS: -Dorg.gradle.jvmargs='-Xms3072m -Xmx3072m'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=2 -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
     steps:
       - attach_workspace: { at: /home/circleci }
       - restore_cache: { key: 'gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
@@ -93,6 +96,7 @@ jobs:
     resource_class: large
     environment:
       GRADLE_OPTS: -Dorg.gradle.jvmargs='-Xms6144m -Xmx6144m'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=4 -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
     steps:
       - checkout
       - restore_cache: { key: 'gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
@@ -108,9 +112,10 @@ jobs:
       - store_artifacts: { path: ~/artifacts }
 
   trial-publish:
-    docker: [{ image: 'circleci/openjdk:8u171-node' }]
+    docker: [{ image: 'circleci/openjdk:8u222-stretch-node' }]
     environment:
       GRADLE_OPTS: -Dorg.gradle.jvmargs='-Xms3072m -Xmx3072m'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=2 -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
     steps:
       - attach_workspace: { at: /home/circleci }
       - restore_cache: { key: 'gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
@@ -123,9 +128,10 @@ jobs:
       - store_artifacts: { path: ~/artifacts }
 
   publish:
-    docker: [{ image: 'circleci/openjdk:8u171-node' }]
+    docker: [{ image: 'circleci/openjdk:8u222-stretch-node' }]
     environment:
       GRADLE_OPTS: -Dorg.gradle.jvmargs='-Xms3072m -Xmx3072m'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=2 -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
     steps:
       - attach_workspace: { at: /home/circleci }
       - restore_cache: { key: 'gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
