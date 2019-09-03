@@ -1,42 +1,29 @@
 buildscript {
-    dependencies {
-        // TODO(dsanduleac): remove once we apply baseline
-        classpath 'com.netflix.nebula:nebula-dependency-recommender:6.0.0'
+    repositories {
+        maven { url "http://palantir.bintray.com/releases" }
     }
 }
 
 plugins {
     id 'com.jfrog.bintray' version '1.8.4'
     id 'com.gradle.plugin-publish' version '0.9.9'
-    id 'com.palantir.configuration-resolver' version '0.2.0'
     id 'com.palantir.git-version' version '0.4.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
+    id 'com.palantir.baseline' version '1.18.0'
 }
 
-apply plugin: 'eclipse'
+apply plugin: 'com.palantir.baseline'
 apply plugin: 'groovy'
-apply plugin: 'idea'
 apply plugin: 'java-gradle-plugin'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
-// TODO(dsanduleac): remove once we apply baseline
-apply plugin: 'nebula.dependency-recommender'
-
-// TODO(dsanduleac): remove once we apply baseline
-dependencyRecommendations {
-    strategy OverrideTransitives
-    propertiesFile file: rootProject.file("versions.props")
-}
-
-// TODO(dsanduleac): remove once we apply baseline
-configurations.all {
-    resolutionStrategy {
-        failOnVersionConflict()
-    }
-}
+group 'com.palantir.gradle.gitversion'
+version gitVersion()
 
 repositories {
     jcenter()
+    maven { url "http://palantir.bintray.com/releases" }
 }
 
 dependencies {
@@ -52,14 +39,13 @@ dependencies {
     }
 }
 
-if (System.env.CIRCLE_TEST_REPORTS) {
-    test.reports.junitXml.destination = new File(System.env.CIRCLE_TEST_REPORTS, getName())
+java {  sourceCompatibility JavaVersion.VERSION_1_8
 }
 
-group 'com.palantir.gradle.gitversion'
-version gitVersion()
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Werror', '-Xlint:deprecation']
+}
+
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
