@@ -2,11 +2,14 @@ buildscript {
     repositories {
         maven { url "http://palantir.bintray.com/releases" }
     }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'com.netflix.nebula:nebula-publishing-plugin:13.2.0'
+    }
 }
 
 plugins {
     id 'com.gradle.plugin-publish' version '0.9.9'
-    id 'com.jfrog.bintray' version '1.8.4'
     id 'com.palantir.baseline' version '1.18.0'
     id 'com.palantir.git-version' version '0.11.0'
 }
@@ -15,7 +18,7 @@ apply plugin: 'com.palantir.baseline'
 apply plugin: 'groovy'
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+apply from: "${rootDir}/gradle/publish-jar.gradle"
 
 group 'com.palantir.gradle.gitversion'
 version gitVersion()
@@ -46,45 +49,6 @@ tasks.withType(JavaCompile) {
     options.compilerArgs += ['-Werror', '-Xlint:deprecation']
 }
 
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
-}
-
-publishing {
-    publications {
-        bintray(MavenPublication) {
-            from components.java
-            artifact(sourceJar)
-            artifact(publishPluginJavaDocsJar)
-        }
-    }
-}
-
-tasks.publish {
-    dependsOn 'bintrayUpload', 'publishPlugins'
-}
-
-bintray {
-    user = System.env.BINTRAY_USER
-    key = System.env.BINTRAY_KEY
-    publish = true
-    pkg {
-        repo = 'releases'
-        name = 'gradle-git-version'
-        userOrg = 'palantir'
-        licenses = ['Apache-2.0']
-        publications = ['bintray']
-    }
-}
-
-bintrayUpload.dependsOn 'generatePomFileForBintrayPublication', 'sourceJar', 'build'
-
-bintrayUpload.onlyIf {
-    System.env.BINTRAY_USER && System.env.BINTRAY_KEY && System.env.CIRCLE_TAG
-}
-
 pluginBundle {
     website = 'https://github.com/palantir/gradle-git-version'
     vcsUrl = 'https://github.com/palantir/gradle-git-version'
@@ -99,7 +63,8 @@ pluginBundle {
     }
 }
 
-publishPlugins.onlyIf {
-    System.env.CIRCLE_TAG
-}
+// Configure the publishPlugins task
+tasks.publish.dependsOn publishPlugins
+project.ext.'gradle.publish.key' = System.env["GRADLE_KEY"]
+project.ext.'gradle.publish.secret' = System.env["GRADLE_SECRET"]
 
