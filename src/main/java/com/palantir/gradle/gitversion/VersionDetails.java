@@ -1,5 +1,24 @@
+/*
+ * (c) Copyright 2019 Palantir Technologies Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.palantir.gradle.gitversion;
 
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -7,10 +26,6 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class VersionDetails {
 
@@ -48,8 +63,9 @@ public final class VersionDetails {
         }
 
         String rawDescription = expensiveComputeRawDescription();
-        maybeCachedDescription = rawDescription == null ?
-                null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        maybeCachedDescription = rawDescription == null
+                ? null
+                : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return maybeCachedDescription;
     }
 
@@ -71,8 +87,8 @@ public final class VersionDetails {
 
         // If native succeeded, make sure it's same as JGit one
         if (!nativeGitDescribe.equals(jgitDescribe)) {
-            throw new IllegalStateException(String.format("Inconsistent git describe: native was %s and jgit was %s. " +
-                    "Please report this on github.com/palantir/gradle-git-version", nativeGitDescribe, jgitDescribe));
+            throw new IllegalStateException(String.format("Inconsistent git describe: native was %s and jgit was %s. "
+                    + "Please report this on github.com/palantir/gradle-git-version", nativeGitDescribe, jgitDescribe));
         }
 
         return jgitDescribe;
@@ -103,7 +119,7 @@ public final class VersionDetails {
         }
 
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
-        return match.matches() ? Integer.valueOf(match.group(2)) : null;
+        return match.matches() ? Integer.parseInt(match.group(2)) : 0;
     }
 
     public String getLastTag() {
@@ -153,7 +169,7 @@ public final class VersionDetails {
                     getIsCleanTag()
             );
         } catch (IOException e) {
-            return null;
+            return "";
         }
     }
 }
