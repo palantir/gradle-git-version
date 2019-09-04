@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Correctly publish gradle-git-version as a gradle plugin
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/160
