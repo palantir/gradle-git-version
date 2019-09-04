@@ -3,8 +3,8 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- *
  * You may obtain a copy of the License at
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -19,7 +19,6 @@ package com.palantir.gradle.gitversion;
 import groovy.lang.Closure;
 import java.io.File;
 import java.io.IOException;
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType.Object;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.gradle.api.Action;
@@ -28,7 +27,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 
 public final class GitVersionPlugin implements Plugin<Project> {
-    @SuppressWarnings("BanSystemOut")
+    @Override
     public void apply(final Project project) {
         final Git git = gitRepo(project);
 
@@ -48,6 +47,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
         Task printVersionTask = project.getTasks().create("printVersion");
         printVersionTask.doLast(new Action<Task>() {
             @Override
+            @SuppressWarnings("BanSystemOut")
             public void execute(Task task) {
                 System.out.println(project.getVersion());
             }
