@@ -21,6 +21,9 @@ plugins {
 
 apply from: 'gradle/publish-jar.gradle'
 
+group 'com.palantir.gradle.gitversion'
+version gitVersion()
+
 repositories {
     jcenter()
     maven { url 'https://palantir.bintray.com/releases' }
