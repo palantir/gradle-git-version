@@ -29,7 +29,6 @@ import org.gradle.api.Task;
 public final class GitVersionPlugin implements Plugin<Project> {
     @Override
     public void apply(final Project project) {
-
         final Git git = gitRepo(project);
 
         // intentionally not using .getExtension() here for back-compat

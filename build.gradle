@@ -1,28 +1,32 @@
 buildscript {
     repositories {
-        maven { url "http://palantir.bintray.com/releases" }
+        gradlePluginPortal()
+        maven { url 'https://palantir.bintray.com/releases' }
+    }
+    dependencies {
+        classpath 'com.netflix.nebula:nebula-publishing-plugin:12.0.4'
     }
 }
 
 plugins {
-    id 'com.gradle.plugin-publish' version '0.9.9'
     id 'com.jfrog.bintray' version '1.8.4'
-    id 'com.palantir.baseline' version '1.18.0'
+    id 'com.gradle.plugin-publish' version '0.10.1'
     id 'com.palantir.git-version' version '0.11.0'
+    id 'com.palantir.idea-test-fix' version '0.1.0'
+    id 'com.palantir.baseline' version '1.18.0'
+    id 'com.palantir.consistent-versions' version '1.9.2'
+    id 'java-gradle-plugin'
+    id 'groovy'
 }
 
-apply plugin: 'com.palantir.baseline'
-apply plugin: 'groovy'
-apply plugin: 'java-gradle-plugin'
-apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+apply from: 'gradle/publish-jar.gradle'
 
 group 'com.palantir.gradle.gitversion'
 version gitVersion()
 
 repositories {
     jcenter()
-    maven { url "http://palantir.bintray.com/releases" }
+    maven { url 'https://palantir.bintray.com/releases' }
 }
 
 dependencies {
@@ -46,45 +50,6 @@ tasks.withType(JavaCompile) {
     options.compilerArgs += ['-Werror', '-Xlint:deprecation']
 }
 
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
-}
-
-publishing {
-    publications {
-        bintray(MavenPublication) {
-            from components.java
-            artifact(sourceJar)
-            artifact(publishPluginJavaDocsJar)
-        }
-    }
-}
-
-tasks.publish {
-    dependsOn 'bintrayUpload', 'publishPlugins'
-}
-
-bintray {
-    user = System.env.BINTRAY_USER
-    key = System.env.BINTRAY_KEY
-    publish = true
-    pkg {
-        repo = 'releases'
-        name = 'gradle-git-version'
-        userOrg = 'palantir'
-        licenses = ['Apache-2.0']
-        publications = ['bintray']
-    }
-}
-
-bintrayUpload.dependsOn 'generatePomFileForBintrayPublication', 'sourceJar', 'build'
-
-bintrayUpload.onlyIf {
-    System.env.BINTRAY_USER && System.env.BINTRAY_KEY && System.env.CIRCLE_TAG
-}
-
 pluginBundle {
     website = 'https://github.com/palantir/gradle-git-version'
     vcsUrl = 'https://github.com/palantir/gradle-git-version'
@@ -99,7 +64,8 @@ pluginBundle {
     }
 }
 
-publishPlugins.onlyIf {
-    System.env.CIRCLE_TAG
-}
-
+// Configure the publishPlugins task
+publishPlugins.onlyIf { System.env.CIRCLE_TAG }
+tasks.publish.dependsOn publishPlugins
+project.ext.'gradle.publish.key' = System.env["GRADLE_KEY"]
+project.ext.'gradle.publish.secret' = System.env["GRADLE_SECRET"]

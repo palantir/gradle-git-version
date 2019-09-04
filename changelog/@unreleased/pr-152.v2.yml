@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Fix publishing to bintray and gradle.
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/152

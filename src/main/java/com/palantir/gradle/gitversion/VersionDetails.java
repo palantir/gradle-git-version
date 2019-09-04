@@ -16,6 +16,7 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,10 +87,11 @@ public final class VersionDetails {
         }
 
         // If native succeeded, make sure it's same as JGit one
-        if (!nativeGitDescribe.equals(jgitDescribe)) {
-            throw new IllegalStateException(String.format("Inconsistent git describe: native was %s and jgit was %s. "
-                    + "Please report this on github.com/palantir/gradle-git-version", nativeGitDescribe, jgitDescribe));
-        }
+        Preconditions.checkState(
+                nativeGitDescribe.equals(jgitDescribe),
+                "Inconsistent git describe: native was %s and jgit was %s. "
+                        + "Please report this on github.com/palantir/gradle-git-version",
+                nativeGitDescribe, jgitDescribe);
 
         return jgitDescribe;
     }
@@ -119,7 +121,8 @@ public final class VersionDetails {
         }
 
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
-        return match.matches() ? Integer.parseInt(match.group(2)) : 0;
+        Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", description());
+        return Integer.parseInt(match.group(2));
     }
 
     public String getLastTag() {

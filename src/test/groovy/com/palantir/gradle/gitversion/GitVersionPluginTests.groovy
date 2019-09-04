@@ -3,6 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
+ *
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -64,6 +65,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
+        new File(projectDir, 'settings.gradle').createNewFile()
         Git git = Git.init().setDirectory(rootFolder).call();
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
@@ -236,14 +238,14 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().gitHashFull
                 println versionDetails().branchName
                 println versionDetails().isCleanTag
-            }
+            }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
@@ -265,10 +267,10 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println project.getExtensions().getExtraProperties().get('versionDetails')().lastTag
                 println project.getExtensions().getExtraProperties().get('gitVersion')()
-            }
+            }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
@@ -289,13 +291,13 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
                 println versionDetails().isCleanTag
-            }
+            }}
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -319,9 +321,9 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().isCleanTag
-            }
+            }}
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -344,12 +346,12 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails().lastTag
                 println versionDetails().commitDistance
                 println versionDetails().gitHash
                 println versionDetails().branchName
-            }
+            }}
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
@@ -374,9 +376,9 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion(prefix:"my-product@")
-            task printVersionDetails() << {
+            task printVersionDetails { doLast {
                 println versionDetails(prefix:"my-product@").lastTag
-            }
+            }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call();
