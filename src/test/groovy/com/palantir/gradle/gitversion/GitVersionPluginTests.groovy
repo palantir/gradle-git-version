@@ -163,7 +163,8 @@ class GitVersionPluginTests extends Specification {
 
         // switch back to main branch and merge hotfix branch into main branch
         git.checkout().setName(master).call()
-        git.merge().include(git.getRepository().getRef("hotfix")).setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
+        git.merge().include(git.getRepository().getRefDatabase().findRef("hotfix"))
+                .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -197,7 +198,8 @@ class GitVersionPluginTests extends Specification {
 
         // switch back to main branch and merge hotfix branch into main branch
         git.checkout().setName(master).call()
-        git.merge().include(git.getRepository().getRef("hotfix")).setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
+        git.merge().include(git.getRepository().getRefDatabase().findRef("hotfix"))
+                .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
 
         // tag merge commit on main branch as 2.0.0
         git.tag().setAnnotated(true).setMessage('2.0.0').setName('2.0.0').call()
