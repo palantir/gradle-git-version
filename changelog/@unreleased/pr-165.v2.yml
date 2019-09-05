@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Upgrade Jgit to 5.3.2.201906051522-r
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/165
