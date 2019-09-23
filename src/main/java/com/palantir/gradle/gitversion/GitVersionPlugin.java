@@ -48,7 +48,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.doLast(new Action<Task>() {
             @Override
             @SuppressWarnings("BanSystemOut")
-            public void execute(Task task) {
+            public void execute(Task _task) {
                 System.out.println(project.getVersion());
             }
         });
