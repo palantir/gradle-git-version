@@ -3,5 +3,5 @@ com.google.guava:guava = 23.5-jre
 
 # test dependencies
 junit:junit = 4.12
-org.assertj:assertj-core = 3.13.2
+org.assertj:assertj-core = 3.14.0
 org.spockframework:spock-core = 1.0-groovy-2.4
