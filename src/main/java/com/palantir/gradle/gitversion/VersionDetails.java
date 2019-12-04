@@ -102,7 +102,7 @@ public final class VersionDetails {
         try {
             git.describe().call();
             return false;
-        } catch (Exception ignored) {
+        } catch (GitAPIException | RuntimeException ignored) {
             return true;
         }
     }
