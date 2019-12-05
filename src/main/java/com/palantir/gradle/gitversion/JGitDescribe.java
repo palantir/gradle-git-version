@@ -68,7 +68,7 @@ class JGitDescribe implements GitDescribe {
 
             // No tags found, so return commit hash of HEAD
             return GitUtils.abbrevHash(headObjectId.getName());
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             log.debug("JGit describe failed with {}", e);
             return null;
         }

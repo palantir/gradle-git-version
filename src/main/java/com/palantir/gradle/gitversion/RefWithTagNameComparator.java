@@ -16,6 +16,7 @@
 
 package com.palantir.gradle.gitversion;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Date;
 import org.eclipse.jgit.api.Git;
@@ -77,7 +78,7 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
             RevTag tag = walk.parseTag(ref.getObjectId());
             PersonIdent identity = tag.getTaggerIdent();
             return identity.getWhen();
-        } catch (Exception ignored) {
+        } catch (IOException | RuntimeException ignored) {
             return null;
         }
     }
