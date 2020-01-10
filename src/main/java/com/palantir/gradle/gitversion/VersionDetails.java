@@ -20,6 +20,9 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -70,6 +73,11 @@ public final class VersionDetails {
         return maybeCachedDescription;
     }
 
+    private boolean isWorktree() {
+        // When using a git worktree .git is a file and not a directory.
+        return git.getRepository().getDirectory().isFile();
+    }
+
     private String expensiveComputeRawDescription() {
         if (isRepoEmpty()) {
             log.debug("Repository is empty");
@@ -78,6 +86,14 @@ public final class VersionDetails {
 
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
                 .describe(args.getPrefix());
+
+        if (isWorktree()) {
+            // JGit doesn't handle worktrees, so we'll have to rely on whatever native git
+            // produces. FWIW it's probably fairly safe to assume git is available if worktrees
+            // are being used.
+            return nativeGitDescribe;
+        }
+
         String jgitDescribe = new JGitDescribe(git)
                 .describe(args.getPrefix());
 
@@ -97,6 +113,10 @@ public final class VersionDetails {
     }
 
     private boolean isRepoEmpty() {
+        if (isWorktree()) {
+            return false; // not implemented for worktrees yet
+        }
+
         // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
         // first to preserve this behavior in cases where this call would fail but native "git" call does not.
         try {

@@ -18,7 +18,6 @@ package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +25,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ class NativeGitDescribe implements GitDescribe {
         cmdInput.add("git");
         cmdInput.addAll(Arrays.asList(commands));
         ProcessBuilder pb = new ProcessBuilder(cmdInput);
-        pb.directory(directory);
+        pb.directory(directory.getParentFile());
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
@@ -81,7 +81,7 @@ class NativeGitDescribe implements GitDescribe {
 
         try {
             // Get SHAs of all tags, we only need to search for these later on
-            Set<String> tagRefs = Sets.newHashSet();
+            Set<String> tagRefs = new HashSet<>();
             for (String tag : LINE_SPLITTER.splitToList(runGitCmd("show-ref", "--tags", "-d"))) {
                 List<String> parts = WORD_SPLITTER.splitToList(tag);
                 Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts);
