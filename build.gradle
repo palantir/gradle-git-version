@@ -4,7 +4,7 @@ buildscript {
         maven { url 'https://palantir.bintray.com/releases' }
     }
     dependencies {
-        classpath 'com.netflix.nebula:gradle-info-plugin:5.2.0'
+        classpath 'com.netflix.nebula:gradle-info-plugin:6.0.0'
         classpath 'com.netflix.nebula:nebula-publishing-plugin:16.0.0'
     }
 }
