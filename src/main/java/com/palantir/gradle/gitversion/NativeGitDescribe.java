@@ -37,7 +37,8 @@ import org.slf4j.LoggerFactory;
 class NativeGitDescribe implements GitDescribe {
     private static final Logger log = LoggerFactory.getLogger(NativeGitDescribe.class);
 
-    private static final Splitter LINE_SPLITTER = Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
+    private static final Splitter LINE_SPLITTER =
+            Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
     private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings();
 
     private final File directory;
@@ -55,8 +56,8 @@ class NativeGitDescribe implements GitDescribe {
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
 
         StringBuilder builder = new StringBuilder();
         String line = null;

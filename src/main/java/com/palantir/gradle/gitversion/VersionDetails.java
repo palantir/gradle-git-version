@@ -64,9 +64,8 @@ public final class VersionDetails {
         }
 
         String rawDescription = expensiveComputeRawDescription();
-        maybeCachedDescription = rawDescription == null
-                ? null
-                : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        maybeCachedDescription =
+                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return maybeCachedDescription;
     }
 
@@ -76,10 +75,8 @@ public final class VersionDetails {
             return null;
         }
 
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
-                .describe(args.getPrefix());
-        String jgitDescribe = new JGitDescribe(git)
-                .describe(args.getPrefix());
+        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
+        String jgitDescribe = new JGitDescribe(git).describe(args.getPrefix());
 
         // If native failed, return JGit one
         if (nativeGitDescribe == null) {
@@ -91,7 +88,8 @@ public final class VersionDetails {
                 nativeGitDescribe.equals(jgitDescribe),
                 "Inconsistent git describe: native was %s and jgit was %s. "
                         + "Please report this on github.com/palantir/gradle-git-version",
-                nativeGitDescribe, jgitDescribe);
+                nativeGitDescribe,
+                jgitDescribe);
 
         return jgitDescribe;
     }
@@ -164,13 +162,9 @@ public final class VersionDetails {
     @Override
     public String toString() {
         try {
-            return String.format("VersionDetails(%s, %s, %s, %s, %s)",
-                    getVersion(),
-                    getGitHash(),
-                    getGitHashFull(),
-                    getBranchName(),
-                    getIsCleanTag()
-            );
+            return String.format(
+                    "VersionDetails(%s, %s, %s, %s, %s)",
+                    getVersion(), getGitHash(), getGitHashFull(), getBranchName(), getIsCleanTag());
         } catch (IOException e) {
             return "";
         }

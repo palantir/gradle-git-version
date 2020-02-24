@@ -4,6 +4,7 @@ buildscript {
         maven { url 'https://palantir.bintray.com/releases' }
     }
     dependencies {
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:0.3.26'
         classpath 'com.netflix.nebula:gradle-info-plugin:7.1.2'
         classpath 'com.netflix.nebula:nebula-publishing-plugin:17.0.5'
     }
@@ -63,6 +64,9 @@ pluginBundle {
             displayName = 'Palantir Gradle Git-Version'
         }
     }
+allprojects {
+    apply plugin: 'com.palantir.java-format'
+}
 }
 
 // Configure the publishPlugins task

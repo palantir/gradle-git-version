@@ -31,9 +31,11 @@ class GitVersionArgs {
     public void setPrefix(String prefix) {
         Preconditions.checkNotNull(prefix, "prefix must not be null");
 
-        Preconditions.checkState(prefix.matches(PREFIX_REGEX),
+        Preconditions.checkState(
+                prefix.matches(PREFIX_REGEX),
                 "Specified prefix `%s` does not match the allowed format regex `%s`.",
-                prefix, PREFIX_REGEX);
+                prefix,
+                PREFIX_REGEX);
 
         this.prefix = prefix;
     }

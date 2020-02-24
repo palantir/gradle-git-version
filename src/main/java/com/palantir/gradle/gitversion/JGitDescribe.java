@@ -105,7 +105,8 @@ class JGitDescribe implements GitDescribe {
         // All keys in this map should be same as commit hashes in 'git show-ref --tags -d'
         Map<String, RefWithTagName> commitHashToTag = new HashMap<>();
         for (Ref ref : git.getRepository().getRefDatabase().getRefsByPrefix(Constants.R_TAGS)) {
-            RefWithTagName refWithTagName = new RefWithTagName(ref, ref.getName().substring(Constants.R_TAGS.length()));
+            RefWithTagName refWithTagName =
+                    new RefWithTagName(ref, ref.getName().substring(Constants.R_TAGS.length()));
             ObjectId peeledRef = refWithTagName.getRef().getPeeledObjectId();
             if (peeledRef == null) {
                 // lightweight tag (commit object)
