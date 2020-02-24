@@ -37,8 +37,7 @@ public final class VersionDetails {
     private final GitVersionArgs args;
     private volatile String maybeCachedDescription = null;
 
-    VersionDetails(Git git, GitVersionArgs args) {
-        this.git = git;
+    VersionDetails(GitVersionArgs args) {
         this.args = args;
     }
 
@@ -71,40 +70,14 @@ public final class VersionDetails {
     }
 
     private String expensiveComputeRawDescription() {
-        if (isRepoEmpty()) {
-            log.debug("Repository is empty");
-            return null;
-        }
+        //TODO(callumr): Check what happens when git repo is empty
 
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
                 .describe(args.getPrefix());
-        String jgitDescribe = new JGitDescribe(git)
-                .describe(args.getPrefix());
 
-        // If native failed, return JGit one
-        if (nativeGitDescribe == null) {
-            return jgitDescribe;
-        }
+        //TODO(callumr): Throw an error here saying jgit has been removed and you need git >1.8.4
 
-        // If native succeeded, make sure it's same as JGit one
-        Preconditions.checkState(
-                nativeGitDescribe.equals(jgitDescribe),
-                "Inconsistent git describe: native was %s and jgit was %s. "
-                        + "Please report this on github.com/palantir/gradle-git-version",
-                nativeGitDescribe, jgitDescribe);
-
-        return jgitDescribe;
-    }
-
-    private boolean isRepoEmpty() {
-        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-        try {
-            git.describe().call();
-            return false;
-        } catch (GitAPIException | RuntimeException ignored) {
-            return true;
-        }
+        return nativeGitDescribe;
     }
 
     public boolean getIsCleanTag() {
