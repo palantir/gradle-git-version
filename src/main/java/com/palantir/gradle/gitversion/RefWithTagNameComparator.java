@@ -83,7 +83,6 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
         }
     }
 
-
     // getPeeledObjectId returns:
     // "if this ref is an annotated tag the id of the commit (or tree or blob) that the annotated tag refers to;
     // null if this ref does not refer to an annotated tag."
