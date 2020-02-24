@@ -37,7 +37,7 @@ public final class VersionDetails {
     private final GitVersionArgs args;
     private volatile String maybeCachedDescription = null;
 
-    VersionDetails(GitVersionArgs args) {
+    VersionDetails(Project project, GitVersionArgs args) {
         this.args = args;
     }
 
@@ -126,6 +126,8 @@ public final class VersionDetails {
     }
 
     public String getBranchName() throws IOException {
+        GradleProcessExecutor.exec();
+
         Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
         if (ref == null) {
             return null;
