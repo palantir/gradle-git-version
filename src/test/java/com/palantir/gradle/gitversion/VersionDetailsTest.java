@@ -36,9 +36,10 @@ public class VersionDetailsTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     private Git git;
-    private PersonIdent identity = new PersonIdent("name", "email@address",
-            new Date(1234L), TimeZone.getTimeZone("UTC"));
+    private PersonIdent identity =
+            new PersonIdent("name", "email@address", new Date(1234L), TimeZone.getTimeZone("UTC"));
 
     @Before
     public void before() throws GitAPIException {
@@ -64,7 +65,11 @@ public class VersionDetailsTest {
     @Test
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.add().addFilepattern(".").call();
-        git.commit().setAuthor(identity).setCommitter(identity).setMessage("initial commit").call();
+        git.commit()
+                .setAuthor(identity)
+                .setCommitter(identity)
+                .setMessage("initial commit")
+                .call();
 
         assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed");
     }
@@ -72,7 +77,11 @@ public class VersionDetailsTest {
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.add().addFilepattern(".").call();
-        git.commit().setAuthor(identity).setCommitter(identity).setMessage("initial commit").call();
+        git.commit()
+                .setAuthor(identity)
+                .setCommitter(identity)
+                .setMessage("initial commit")
+                .call();
         write(temporaryFolder.newFile("foo"));
 
         assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed.dirty");

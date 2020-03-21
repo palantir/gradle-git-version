@@ -63,15 +63,13 @@ public final class VersionDetails {
         }
 
         String rawDescription = expensiveComputeRawDescription();
-        maybeCachedDescription = rawDescription == null
-                ? null
-                : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        maybeCachedDescription =
+                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return maybeCachedDescription;
     }
 
     private String expensiveComputeRawDescription() {
         //TODO(callumr): Check what happens when git repo is empty
-
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
                 .describe(args.getPrefix());
 
@@ -139,13 +137,9 @@ public final class VersionDetails {
     @Override
     public String toString() {
         try {
-            return String.format("VersionDetails(%s, %s, %s, %s, %s)",
-                    getVersion(),
-                    getGitHash(),
-                    getGitHashFull(),
-                    getBranchName(),
-                    getIsCleanTag()
-            );
+            return String.format(
+                    "VersionDetails(%s, %s, %s, %s, %s)",
+                    getVersion(), getGitHash(), getGitHashFull(), getBranchName(), getIsCleanTag());
         } catch (IOException e) {
             return "";
         }

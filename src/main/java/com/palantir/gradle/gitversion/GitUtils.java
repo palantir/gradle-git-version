@@ -20,8 +20,7 @@ final class GitUtils {
 
     static final int SHA_ABBR_LENGTH = 7;
 
-    private GitUtils() {
-    }
+    private GitUtils() {}
 
     static String abbrevHash(String hash) {
         return hash.substring(0, SHA_ABBR_LENGTH);

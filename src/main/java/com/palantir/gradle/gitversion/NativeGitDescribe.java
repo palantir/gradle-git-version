@@ -18,7 +18,6 @@ package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +25,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -37,7 +37,8 @@ import org.slf4j.LoggerFactory;
 class NativeGitDescribe implements GitDescribe {
     private static final Logger log = LoggerFactory.getLogger(NativeGitDescribe.class);
 
-    private static final Splitter LINE_SPLITTER = Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
+    private static final Splitter LINE_SPLITTER =
+            Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
     private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings();
 
     private final File directory;
@@ -55,8 +56,8 @@ class NativeGitDescribe implements GitDescribe {
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
 
         StringBuilder builder = new StringBuilder();
         String line = null;
@@ -81,7 +82,7 @@ class NativeGitDescribe implements GitDescribe {
 
         try {
             // Get SHAs of all tags, we only need to search for these later on
-            Set<String> tagRefs = Sets.newHashSet();
+            Set<String> tagRefs = new HashSet<>();
             for (String tag : LINE_SPLITTER.splitToList(runGitCmd("show-ref", "--tags", "-d"))) {
                 List<String> parts = WORD_SPLITTER.splitToList(tag);
                 Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts);
