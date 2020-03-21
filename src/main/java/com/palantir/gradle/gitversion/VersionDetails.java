@@ -69,11 +69,10 @@ public final class VersionDetails {
     }
 
     private String expensiveComputeRawDescription() {
-        //TODO(callumr): Check what happens when git repo is empty
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory())
-                .describe(args.getPrefix());
+        // TODO(callumr): Check what happens when git repo is empty
+        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
 
-        //TODO(callumr): Throw an error here saying jgit has been removed and you need git >1.8.4
+        // TODO(callumr): Throw an error here saying jgit has been removed and you need git >1.8.4
 
         return nativeGitDescribe;
     }
