@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 final class Timer {
-    private final ConcurrentMap<String, Long> totalTimesTakeMillis = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> totalTimesTakenMillis = new ConcurrentHashMap<>();
 
     public <T> T record(String name, Supplier<T> codeToTime) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -35,14 +35,14 @@ final class Timer {
             stopwatch.stop();
             long timeTakenMillis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
-            totalTimesTakeMillis.compute(
+            totalTimesTakenMillis.compute(
                     name, (_ignored, previousValue) -> timeTakenMillis + (previousValue == null ? 0 : previousValue));
         }
     }
 
     public String toJson() {
         Map<String, Long> withTotal = ImmutableMap.<String, Long>builder()
-                .putAll(totalTimesTakeMillis)
+                .putAll(totalTimesTakenMillis)
                 .put("total", totalMillis())
                 .build();
 
@@ -50,6 +50,6 @@ final class Timer {
     }
 
     public long totalMillis() {
-        return totalTimesTakeMillis.values().stream().mapToLong(time -> time).sum();
+        return totalTimesTakenMillis.values().stream().mapToLong(time -> time).sum();
     }
 }
