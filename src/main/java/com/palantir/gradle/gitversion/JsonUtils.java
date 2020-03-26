@@ -23,6 +23,8 @@ final class JsonUtils {
     private JsonUtils() {}
 
     static String mapToJson(Map<String, ?> map) {
+        // Manually writing the json string here rather than using a library to avoid dependencies in this incredibly
+        // widely used plugin.
         String middleJson = map.entrySet().stream()
                 .map(entry -> String.format(
                         "\"%s\":%s", entry.getKey(), entry.getValue().toString()))
