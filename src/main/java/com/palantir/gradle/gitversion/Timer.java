@@ -19,15 +19,13 @@ package com.palantir.gradle.gitversion;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import org.immutables.value.Value;
 
 final class Timer {
-    private final ConcurrentMap<String, Stats> totalTimesTakeMillis = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> totalTimesTakeMillis = new ConcurrentHashMap<>();
 
     public <T> T record(String name, Supplier<T> codeToTime) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -37,11 +35,8 @@ final class Timer {
             stopwatch.stop();
             long timeTakenMillis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
-            totalTimesTakeMillis.compute(name, (_ignored, previousValue) -> {
-                return Optional.ofNullable(previousValue)
-                        .orElseGet(Stats::empty)
-                        .add(timeTakenMillis);
-            });
+            totalTimesTakeMillis.compute(
+                    name, (_ignored, previousValue) -> timeTakenMillis + (previousValue == null ? 0 : previousValue));
         }
     }
 
@@ -56,23 +51,5 @@ final class Timer {
 
     public long totalMillis() {
         return totalTimesTakeMillis.values().stream().mapToLong(time -> time).sum();
-    }
-
-    @Value.Immutable
-    interface Stats {
-        long timesCalled();
-
-        long timeTakenMillis();
-
-        default Stats add(long anotherTimeTakenMillis) {
-            return ImmutableStats.builder()
-                    .timesCalled(timesCalled() + 1)
-                    .timeTakeMillis(timeTakenMillis() + anotherTimeTakenMillis)
-                    .build();
-        }
-
-        static Stats empty() {
-            return ImmutableStats.builder().timesCalled(0).timeTakeMillis(0).build();
-        }
     }
 }
