@@ -32,10 +32,19 @@ repositories {
     maven { url 'https://palantir.bintray.com/releases' }
 }
 
+// Access groovy code from src/main/java sources
+sourceSets {
+    groovy
+    main.output.dir groovy.output
+}
+
 dependencies {
     implementation gradleApi()
     implementation 'org.eclipse.jgit:org.eclipse.jgit'
     implementation 'com.google.guava:guava'
+
+    runtimeOnly configurations.groovyRuntimeClasspath
+    implementation configurations.groovyCompile
 
     annotationProcessor 'org.immutables:value'
     compileOnly 'org.immutables:value::annotations'
@@ -58,14 +67,6 @@ java {
 
 tasks.withType(JavaCompile) {
     options.compilerArgs += ['-Werror', '-Xlint:deprecation']
-}
-
-// Access groovy from java sourceset
-sourceSets {
-    main {
-        java { srcDirs = [] }
-        groovy { srcDirs += ['src/main/java'] }
-    }
 }
 
 pluginBundle {
