@@ -28,7 +28,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class VersionDetailsImpl implements VersionDetails {
+final class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;

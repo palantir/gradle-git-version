@@ -27,20 +27,27 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 
 public final class GitVersionPlugin implements Plugin<Project> {
+    private final Timer timer = new Timer();
+
     @Override
     public void apply(final Project project) {
+        project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
+
         final Git git = gitRepo(project);
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
-                return new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)).getVersion();
+                return TimingVersionDetails.wrap(
+                                timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
+                        .getVersion();
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
-                return new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args));
+                return TimingVersionDetails.wrap(
+                        timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
             }
         });
 
@@ -54,6 +61,10 @@ public final class GitVersionPlugin implements Plugin<Project> {
         });
         printVersionTask.setGroup("Versioning");
         printVersionTask.setDescription("Prints the project's configured version to standard out");
+    }
+
+    Timer timings() {
+        return timer;
     }
 
     private Git gitRepo(Project project) {
