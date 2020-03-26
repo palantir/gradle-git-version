@@ -33,19 +33,23 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
-    compile 'org.eclipse.jgit:org.eclipse.jgit'
-    compile 'com.google.guava:guava'
+    implementation gradleApi()
+    implementation 'org.eclipse.jgit:org.eclipse.jgit'
+    implementation 'com.google.guava:guava'
 
     annotationProcessor 'org.immutables:value'
     compileOnly 'org.immutables:value::annotations'
 
-    testCompile gradleTestKit()
-    testCompile 'junit:junit'
-    testCompile 'org.assertj:assertj-core'
-    testCompile('org.spockframework:spock-core') {
+    testImplementation gradleTestKit()
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine") {
+        because 'allows JUnit 3 and JUnit 4 tests to run'
+    }
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation('org.spockframework:spock-core') {
         exclude module: 'groovy-all'
     }
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 java {
