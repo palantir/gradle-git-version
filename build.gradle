@@ -32,10 +32,8 @@ repositories {
     maven { url 'https://palantir.bintray.com/releases' }
 }
 
-// Access groovy code from src/main/java sources
 sourceSets {
     groovy
-    main.output.dir groovy.output
 }
 
 dependencies {
@@ -43,8 +41,13 @@ dependencies {
     implementation 'org.eclipse.jgit:org.eclipse.jgit'
     implementation 'com.google.guava:guava'
 
+    groovyImplementation localGroovy()
+    groovyImplementation gradleApi()
+
+    // Access code written in groovy from src/main/java sources
     runtimeOnly configurations.groovyRuntimeClasspath
     implementation configurations.groovyCompile
+    implementation sourceSets.groovy.output
 
     annotationProcessor 'org.immutables:value'
     compileOnly 'org.immutables:value::annotations'
