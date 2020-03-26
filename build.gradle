@@ -34,6 +34,7 @@ repositories {
 
 sourceSets {
     groovy
+    main.output.dir groovy.output
 }
 
 dependencies {
