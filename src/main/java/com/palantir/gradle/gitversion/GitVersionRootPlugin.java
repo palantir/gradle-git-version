@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.gradle.api.Plugin;
@@ -31,24 +32,20 @@ final class GitVersionRootPlugin implements Plugin<Project> {
         }
 
         BuildScanPluginInterop.addBuildScanCustomValues(project, () -> {
-            Map<String, String> projectPathToTimingJson = project.getAllprojects().stream()
+            Map<String, Timer> projectPathToTimers = project.getAllprojects().stream()
                     .filter(someProject -> someProject.getPlugins().hasPlugin(GitVersionPlugin.class))
                     .collect(Collectors.toMap(Project::getPath, someProject -> someProject
                             .getPlugins()
                             .getPlugin(GitVersionPlugin.class)
-                            .timings()
-                            .toJson()));
+                            .timer()));
 
-            long totalTime = project.getAllprojects().stream()
-                    .filter(someProject -> someProject.getPlugins().hasPlugin(GitVersionPlugin.class))
-                    .mapToLong(someProject -> someProject
-                            .getPlugins()
-                            .getPlugin(GitVersionPlugin.class)
-                            .timings()
-                            .totalMillis())
+            Map<String, String> projectPathToTimerJson = Maps.transformValues(projectPathToTimers, Timer::toJson);
+
+            long totalTime = projectPathToTimers.values().stream()
+                    .mapToLong(Timer::totalMillis)
                     .sum();
 
-            String allProjectTimingData = JsonUtils.mapToJson(projectPathToTimingJson);
+            String allProjectTimingData = JsonUtils.mapToJson(projectPathToTimerJson);
 
             return ImmutableMap.of(
                     "com.palantir.git-version.timings",

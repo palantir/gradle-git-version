@@ -63,7 +63,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
-    Timer timings() {
+    Timer timer() {
         return timer;
     }
 
