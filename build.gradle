@@ -7,6 +7,7 @@ buildscript {
         classpath 'com.palantir.javaformat:gradle-palantir-java-format:0.3.26'
         classpath 'com.netflix.nebula:gradle-info-plugin:7.1.3'
         classpath 'com.netflix.nebula:nebula-publishing-plugin:17.2.1'
+        classpath 'gradle.plugin.org.inferred:gradle-processors:3.3.0'
     }
 }
 
@@ -24,24 +25,44 @@ plugins {
 apply from: 'gradle/publish-jar.gradle'
 
 group 'com.palantir.gradle.gitversion'
-version gitVersion()
+version System.env.CIRCLE_TAG ?: gitVersion()
 
 repositories {
     jcenter()
     maven { url 'https://palantir.bintray.com/releases' }
 }
 
-dependencies {
-    compile gradleApi()
-    compile 'org.eclipse.jgit:org.eclipse.jgit'
-    compile 'com.google.guava:guava'
+sourceSets {
+    groovy
+    main.output.dir groovy.output
+}
 
-    testCompile gradleTestKit()
-    testCompile 'junit:junit'
-    testCompile 'org.assertj:assertj-core'
-    testCompile('org.spockframework:spock-core') {
+dependencies {
+    implementation gradleApi()
+    implementation 'org.eclipse.jgit:org.eclipse.jgit'
+    implementation 'com.google.guava:guava'
+
+    groovyImplementation localGroovy()
+    groovyImplementation gradleApi()
+
+    // Access code written in groovy from src/main/java sources
+    runtimeOnly configurations.groovyRuntimeClasspath
+    implementation configurations.groovyCompile
+    implementation sourceSets.groovy.output
+
+    annotationProcessor 'org.immutables:value'
+    compileOnly 'org.immutables:value::annotations'
+
+    testImplementation gradleTestKit()
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine") {
+        because 'allows JUnit 3 and JUnit 4 tests to run'
+    }
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation('org.spockframework:spock-core') {
         exclude module: 'groovy-all'
     }
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 java {

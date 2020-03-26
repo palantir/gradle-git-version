@@ -16,20 +16,20 @@
 
 package com.palantir.gradle.gitversion;
 
-import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public interface VersionDetails {
-    String getBranchName() throws IOException;
+final class JsonUtils {
+    private JsonUtils() {}
 
-    String getGitHashFull() throws IOException;
+    static String mapToJson(Map<String, ?> map) {
+        // Manually writing the json string here rather than using a library to avoid dependencies in this incredibly
+        // widely used plugin.
+        String middleJson = map.entrySet().stream()
+                .map(entry -> String.format(
+                        "\"%s\":%s", entry.getKey(), entry.getValue().toString()))
+                .collect(Collectors.joining(","));
 
-    String getGitHash() throws IOException;
-
-    String getLastTag();
-
-    int getCommitDistance();
-
-    boolean getIsCleanTag();
-
-    String getVersion();
+        return "{" + middleJson + "}";
+    }
 }

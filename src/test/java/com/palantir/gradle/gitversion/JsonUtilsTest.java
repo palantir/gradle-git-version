@@ -16,20 +16,24 @@
 
 package com.palantir.gradle.gitversion;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public interface VersionDetails {
-    String getBranchName() throws IOException;
+import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
+import org.junit.jupiter.api.Test;
 
-    String getGitHashFull() throws IOException;
+class JsonUtilsTest {
+    @Test
+    void converts_empty_map_to_empty_json_object() {
+        String json = JsonUtils.mapToJson(Collections.emptyMap());
 
-    String getGitHash() throws IOException;
+        assertThat(json).isEqualTo("{}");
+    }
 
-    String getLastTag();
+    @Test
+    void converts_map_of_string_to_long_correctly() {
+        String json = JsonUtils.mapToJson(ImmutableMap.of("foo", 20, "bar", 40));
 
-    int getCommitDistance();
-
-    boolean getIsCleanTag();
-
-    String getVersion();
+        assertThat(json).isEqualTo("{\"foo\":20,\"bar\":40}");
+    }
 }

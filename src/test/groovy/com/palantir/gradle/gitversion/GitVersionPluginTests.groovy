@@ -596,13 +596,89 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0-${depth}-g${commitSha.substring(0, 7)}\n")
     }
 
+    def 'does not crash when setting build scan custom values when Gradle 5 build scan plugin is applied'() {
+        when:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+                id 'com.gradle.build-scan' version '3.2'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        then:
+        with(Optional.of('5.6.4'), 'printVersion').build()
+    }
+
+    def 'does not crash when setting build scan custom values when Gradle 6 enterprise plugin 3.2 is applied'() {
+        when:
+        settingsFile.text = '''
+            plugins {
+              id "com.gradle.enterprise" version "3.2"
+            }
+        '''.stripIndent() + settingsFile.text
+
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        then:
+        with('printVersion').build()
+    }
+
+    def 'does not crash when setting build scan custom values when Gradle 6 enterprise plugin 3.1 is applied'() {
+        when:
+        settingsFile.text = '''
+            plugins {
+              id "com.gradle.enterprise" version "3.1"
+            }
+        '''.stripIndent() + settingsFile.text
+
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        then:
+        with('printVersion').build()
+    }
+
     private GradleRunner with(String... tasks) {
+        return with(Optional.empty(), tasks)
+    }
+
+    private GradleRunner with(Optional<String> gradleVersion, String... tasks) {
         List<String> arguments = new ArrayList<>(['--stacktrace'])
         arguments.addAll(tasks)
-        GradleRunner.create()
-            .withPluginClasspath()
-            .withProjectDir(projectDir)
-            .withArguments(arguments)
+
+        def gradleRunner = GradleRunner.create()
+                .withPluginClasspath()
+                .withProjectDir(projectDir)
+                .withArguments(arguments)
+
+        gradleVersion.ifPresent({ version -> gradleRunner.withGradleVersion(version) })
+
+        return gradleRunner
     }
 
     private static shortSha(Git git, String commitish) {
