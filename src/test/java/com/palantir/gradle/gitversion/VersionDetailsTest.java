@@ -93,6 +93,6 @@ public class VersionDetailsTest {
     }
 
     private VersionDetails versionDetails() {
-        return new VersionDetails(git, new GitVersionArgs());
+        return new VersionDetailsImpl(git, new GitVersionArgs());
     }
 }

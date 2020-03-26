@@ -34,13 +34,13 @@ public final class GitVersionPlugin implements Plugin<Project> {
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
-                return new VersionDetails(git, GitVersionArgs.fromGroovyClosure(args)).getVersion();
+                return new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)).getVersion();
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
-                return new VersionDetails(git, GitVersionArgs.fromGroovyClosure(args));
+                return new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args));
             }
         });
 
