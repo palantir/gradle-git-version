@@ -18,15 +18,6 @@
     <module name="NewlineAtEndOfFile"> <!-- Java Style Guide: Line ending: LF -->
         <property name="lineSeparator" value="lf"/>
     </module>
-    <module name="RegexpHeader">
-        <property name="header" value="^/\*$\n^ \* \(c\) Copyright \d{4} Palantir Technologies Inc\. All rights reserved\.$"/>
-        <property name="fileExtensions" value=".java,.ts"/>
-    </module>
-    <module name="RegexpMultiline"> <!-- Development Practices: Writing good unit tests -->
-        <property name="fileExtensions" value="java"/>
-        <property name="format" value="@VisibleForTesting\s+(protected|public)"/>
-        <property name="message" value="@VisibleForTesting members should be package-private."/>
-    </module>
     <module name="RegexpSingleline"> <!-- No reference needed as this is evident. -->
         <property name="format" value="&lt;&lt;&lt;&lt;&lt;&lt;&lt;"/>
         <property name="message" value="Found (&lt;&lt;&lt;&lt;&lt;&lt;&lt;), so it looks like you had a merge conflict that compiles. Please fix it."/>
@@ -202,7 +193,6 @@
             <property name="sortStaticImportsAlphabetically" value="true"/>
         </module>
         <module name="InnerAssignment"/> <!-- Java Coding Guidelines: Inner assignments: Not used -->
-        <module name="LeftCurly"/> <!-- Java Style Guide: Nonempty blocks: K & R style -->
         <module name="LineLength"> <!-- Java Style Guide: No line-wrapping -->
             <property name="max" value="120"/>
             <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
@@ -247,7 +237,6 @@
             <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="ParameterAssignment"/> <!-- Java Coding Guidelines: Final variables and parameters -->
-        <module name="ParenPad"/> <!-- Java Style Guide: Horizontal whitespace -->
         <module name="RedundantImport"/> <!-- Java Style Guide: No unused imports -->
         <module name="RedundantModifier"/> <!-- Java Coding Guidelines: Avoid redundant modifiers -->
         <module name="RegexpSinglelineJava"> <!-- Java Coding Guidelines: Use appropriate assertion methods -->
