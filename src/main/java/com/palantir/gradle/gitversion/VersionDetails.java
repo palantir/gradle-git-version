@@ -29,6 +29,8 @@ public interface VersionDetails {
 
     int getCommitDistance();
 
+    String getLastCommitMessage() throws IOException;
+
     boolean getIsCleanTag();
 
     String getVersion();

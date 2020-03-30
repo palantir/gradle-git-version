@@ -25,6 +25,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +126,24 @@ final class VersionDetailsImpl implements VersionDetails {
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
         Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", description());
         return Integer.parseInt(match.group(2));
+    }
+
+    @Override
+    public String getLastCommitMessage() throws IOException {
+        final ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
+        if (objectId == null) {
+            return null;
+        }
+
+        final RevWalk walk = new RevWalk(git.getRepository());
+
+        try {
+            final RevCommit commit = walk.parseCommit(objectId);
+            return commit.getFullMessage();
+        } finally {
+            walk.dispose();
+            walk.close();
+        }
     }
 
     @Override

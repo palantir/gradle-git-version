@@ -87,6 +87,24 @@ public class VersionDetailsTest {
         assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed.dirty");
     }
 
+    @Test
+    public void last_commit_message_when_exists_more_than_one_commits() throws Exception {
+        git.add().addFilepattern(".").call();
+        git.commit()
+                .setAuthor(identity)
+                .setCommitter(identity)
+                .setMessage("first commit")
+                .call();
+
+        git.commit()
+                .setAuthor(identity)
+                .setCommitter(identity)
+                .setMessage("second commit")
+                .call();
+
+        assertThat(versionDetails().getLastCommitMessage()).isEqualTo("second commit");
+    }
+
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
         return file;
