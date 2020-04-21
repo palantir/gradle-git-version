@@ -16,11 +16,6 @@
 
 package com.palantir.gradle.gitversion;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -30,6 +25,12 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JGit implementation of git describe with required flags. JGit support for describe is minimal and there is no support
@@ -50,7 +51,7 @@ class JGitDescribe implements GitDescribe {
 
             List<String> revs = revList(headObjectId);
 
-            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git);
+            Map<String, RefWithTagName> commitHashToTag = mapCommitsToTags(git, prefix);
 
             // Walk back commit ancestors looking for tagged one
             for (int depth = 0; depth < revs.size(); depth++) {
@@ -98,7 +99,7 @@ class JGitDescribe implements GitDescribe {
     }
 
     // Maps all commits returned by 'git show-ref --tags -d' to output of 'git describe --tags --exact-match <commit>'
-    private static Map<String, RefWithTagName> mapCommitsToTags(Git git) throws IOException {
+    private static Map<String, RefWithTagName> mapCommitsToTags(Git git, String prefix) throws IOException {
         RefWithTagNameComparator comparator = new RefWithTagNameComparator(git);
 
         // Maps commit hash to list of all refs pointing to given commit hash.
@@ -108,6 +109,12 @@ class JGitDescribe implements GitDescribe {
             RefWithTagName refWithTagName =
                     new RefWithTagName(ref, ref.getName().substring(Constants.R_TAGS.length()));
             ObjectId peeledRef = refWithTagName.getRef().getPeeledObjectId();
+
+            if (prefix != null && !prefix.equals("") && !refWithTagName.getTag().startsWith(prefix)) {
+                // Ignore all tags, which do not start with the given prefix.
+                // This is necessary in case we have multiple tags with different prefixes for the same commit.
+                continue;
+            }
             if (peeledRef == null) {
                 // lightweight tag (commit object)
                 updateCommitHashMap(commitHashToTag, comparator, ref.getObjectId(), refWithTagName);

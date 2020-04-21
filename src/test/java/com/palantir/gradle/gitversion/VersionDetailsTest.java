@@ -16,14 +16,6 @@
 
 package com.palantir.gradle.gitversion;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Date;
-import java.util.TimeZone;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -31,6 +23,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Date;
+import java.util.TimeZone;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class VersionDetailsTest {
 
@@ -87,6 +88,33 @@ public class VersionDetailsTest {
         assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed.dirty");
     }
 
+    @Test
+    public void find_correct_tag_using_prefix() throws GitAPIException {
+        final String PROJECT_A_PREFIX = "PROJECTA@";
+        final String PROJECT_A_VERSION = "1.0.0";
+        final String PROJECT_B_PREFIX = "PROJECTB@";
+        final String PROJECT_B_VERSION = "2.0.0";
+
+        git.add().addFilepattern(".").call();
+        git.commit()
+                .setAuthor(identity)
+                .setCommitter(identity)
+                .setMessage("initial commit")
+                .call();
+        // Tag the current commit with 2 tags.
+        git.tag()
+                .setAnnotated(false)
+                .setName(PROJECT_A_PREFIX + PROJECT_A_VERSION)
+                .call();
+        git.tag()
+                .setAnnotated(false)
+                .setName(PROJECT_B_PREFIX + PROJECT_B_VERSION)
+                .call();
+
+        assertThat(versionDetails(PROJECT_A_PREFIX).getVersion()).isEqualTo(PROJECT_A_VERSION);
+        assertThat(versionDetails(PROJECT_B_PREFIX).getVersion()).isEqualTo(PROJECT_B_VERSION);
+    }
+
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
         return file;
@@ -94,5 +122,11 @@ public class VersionDetailsTest {
 
     private VersionDetails versionDetails() {
         return new VersionDetailsImpl(git, new GitVersionArgs());
+    }
+
+    private VersionDetails versionDetails(String prefix) {
+        GitVersionArgs args = new GitVersionArgs();
+        args.setPrefix(prefix);
+        return new VersionDetailsImpl(git, args);
     }
 }
