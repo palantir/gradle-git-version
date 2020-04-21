@@ -115,6 +115,20 @@ public class VersionDetailsTest {
         assertThat(versionDetails(PROJECT_B_PREFIX).getVersion()).isEqualTo(PROJECT_B_VERSION);
     }
 
+    @Test
+    public void different_prefixes_are_allowed() throws GitAPIException {
+        git.add().addFilepattern(".").call();
+        git.commit()
+                .setAuthor(identity)
+                .setCommitter(identity)
+                .setMessage("initial commit")
+                .call();
+
+        // If these don't throw, we are fine:
+        assertThat(versionDetails("TagWithNumber1@").getVersion()).isEqualTo("6f0c7ed");
+        assertThat(versionDetails("TagWith-Minus@").getVersion()).isEqualTo("6f0c7ed");
+    }
+
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
         return file;

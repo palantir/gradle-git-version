@@ -17,10 +17,11 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+
 import java.util.Map;
 
 class GitVersionArgs {
-    private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+";
+    private static final String PREFIX_REGEX = "[/@]?([-A-Za-z0-9]+[/@-])+";
 
     private String prefix = "";
 
