@@ -90,10 +90,10 @@ public class VersionDetailsTest {
 
     @Test
     public void find_correct_tag_using_prefix() throws GitAPIException {
-        final String PROJECT_A_PREFIX = "PROJECTA@";
-        final String PROJECT_A_VERSION = "1.0.0";
-        final String PROJECT_B_PREFIX = "PROJECTB@";
-        final String PROJECT_B_VERSION = "2.0.0";
+        final String PROJECTA_PREFIX = "PROJECTA@";
+        final String PROJECTA_VERSION = "1.0.0";
+        final String PROJECTB_PREFIX = "PROJECTB@";
+        final String PROJECTB_VERSION = "2.0.0";
 
         git.add().addFilepattern(".").call();
         git.commit()
@@ -104,15 +104,15 @@ public class VersionDetailsTest {
         // Tag the current commit with 2 tags.
         git.tag()
                 .setAnnotated(false)
-                .setName(PROJECT_A_PREFIX + PROJECT_A_VERSION)
+                .setName(PROJECTA_PREFIX + PROJECTA_VERSION)
                 .call();
         git.tag()
                 .setAnnotated(false)
-                .setName(PROJECT_B_PREFIX + PROJECT_B_VERSION)
+                .setName(PROJECTB_PREFIX + PROJECTB_VERSION)
                 .call();
 
-        assertThat(versionDetails(PROJECT_A_PREFIX).getVersion()).isEqualTo(PROJECT_A_VERSION);
-        assertThat(versionDetails(PROJECT_B_PREFIX).getVersion()).isEqualTo(PROJECT_B_VERSION);
+        assertThat(versionDetails(PROJECTA_PREFIX).getVersion()).isEqualTo(PROJECTA_VERSION);
+        assertThat(versionDetails(PROJECTB_PREFIX).getVersion()).isEqualTo(PROJECTB_VERSION);
     }
 
     private File write(File file) throws IOException {
