@@ -12,7 +12,7 @@ org.bouncycastle:bcprov-jdk15on:1.60 (3 constraints: e027607a)
 org.checkerframework:checker-qual:2.0.0 (1 constraints: 140ae5b4)
 org.codehaus.mojo:animal-sniffer-annotations:1.14 (1 constraints: ea09d5aa)
 org.eclipse.jgit:org.eclipse.jgit:5.3.2.201906051522-r (1 constraints: 3a087299)
-org.immutables:value:2.8.6 (1 constraints: 12051336)
+org.immutables:value:2.8.7 (1 constraints: 13051436)
 org.slf4j:slf4j-api:1.7.2 (1 constraints: 4a0e8c50)
 
 [Test dependencies]
