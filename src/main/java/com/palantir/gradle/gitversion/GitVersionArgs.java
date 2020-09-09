@@ -41,6 +41,7 @@ class GitVersionArgs {
     }
 
     // groovy closure invocation allows any number of args
+    @SuppressWarnings("rawtypes")
     static GitVersionArgs fromGroovyClosure(Object... objects) {
         if (objects != null && objects.length > 0 && objects[0] instanceof Map) {
             GitVersionArgs instance = new GitVersionArgs();
