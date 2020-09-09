@@ -24,7 +24,7 @@ final class TimingVersionDetails {
 
     public static VersionDetails wrap(Timer timer, VersionDetails versionDetails) {
         return (VersionDetails) Proxy.newProxyInstance(
-                VersionDetails.class.getClassLoader(), new Class[] {VersionDetails.class}, (proxy, method, args) -> {
+                VersionDetails.class.getClassLoader(), new Class[] {VersionDetails.class}, (_proxy, method, args) -> {
                     return timer.record(method.getName(), () -> {
                         try {
                             return method.invoke(versionDetails, args);
