@@ -38,6 +38,7 @@ public class VersionDetailsTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private Git git;
+
     @SuppressWarnings("JdkObsolete") // Suppress usage of 'java.util.Date'
     private PersonIdent identity =
             new PersonIdent("name", "email@address", new Date(1234L), TimeZone.getTimeZone("UTC"));
