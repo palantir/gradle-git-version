@@ -17,8 +17,8 @@
 package com.palantir.gradle.gitversion;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Comparator;
-import java.util.Date;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -61,8 +61,8 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
         }
 
         // Both tags are annotated, try to return most recent one
-        Date timeTag1 = getAnnotatedTagDate(tag1.getRef());
-        Date timeTag2 = getAnnotatedTagDate(tag2.getRef());
+        Instant timeTag1 = getAnnotatedTagDate(tag1.getRef());
+        Instant timeTag2 = getAnnotatedTagDate(tag2.getRef());
         if (timeTag1 != null && timeTag2 != null) {
             // Smaller date means greater tag
             return timeTag2.compareTo(timeTag1);
@@ -73,11 +73,12 @@ class RefWithTagNameComparator implements Comparator<RefWithTagName> {
     }
 
     // Gets date information from annotated tag. Returns null if information isn't present.
-    private Date getAnnotatedTagDate(Ref ref) {
+    @SuppressWarnings("JdkObsolete") // Suppress usage of 'java.util.Date'
+    private Instant getAnnotatedTagDate(Ref ref) {
         try {
             RevTag tag = walk.parseTag(ref.getObjectId());
             PersonIdent identity = tag.getTaggerIdent();
-            return identity.getWhen();
+            return identity.getWhen().toInstant();
         } catch (IOException | RuntimeException ignored) {
             return null;
         }
