@@ -4,7 +4,7 @@ buildscript {
         maven { url 'https://palantir.bintray.com/releases' }
     }
     dependencies {
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:1.1.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.0.1'
         classpath 'com.netflix.nebula:gradle-info-plugin:9.1.2'
         classpath 'com.netflix.nebula:nebula-publishing-plugin:17.3.2'
         classpath 'gradle.plugin.org.inferred:gradle-processors:3.3.0'
