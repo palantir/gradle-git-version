@@ -4,7 +4,7 @@ org.immutables:* = 2.8.8
 
 # test dependencies
 junit:junit = 4.13.1
-org.assertj:assertj-core = 3.18.1
+org.assertj:assertj-core = 3.19.0
 org.spockframework:spock-core = 1.0-groovy-2.4
 org.junit.jupiter:* = 5.7.0
 org.junit.vintage:* = 5.7.0
