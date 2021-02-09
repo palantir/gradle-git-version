@@ -20,7 +20,7 @@ import com.google.common.base.Preconditions;
 import java.util.Map;
 
 class GitVersionArgs {
-    private static final String PREFIX_REGEX = "[/@]?([A-Za-z]+[/@-])+";
+    private static final String PREFIX_REGEX = "[/@]?([A-Za-z][0-9A-Za-z]*[/@-])+";
 
     private String prefix = "";
 
