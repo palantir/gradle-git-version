@@ -16,7 +16,7 @@ plugins {
     id 'com.gradle.plugin-publish' version '0.13.0'
     id 'com.palantir.git-version' version '0.12.3'
     id 'com.palantir.idea-test-fix' version '0.1.0'
-    id 'com.palantir.baseline' version '3.63.3'
+    id 'com.palantir.baseline' version '3.75.0'
     id 'com.palantir.consistent-versions' version '1.28.0'
     id 'java-gradle-plugin'
     id 'groovy'
