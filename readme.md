@@ -20,20 +20,36 @@ Usage
 -----
 Apply the plugin using standard Gradle convention:
 
+**Groovy**
 ```groovy
 plugins {
     id 'com.palantir.git-version' version '<current version>'
 }
 ```
 
+**Kotlin**
+```kotlin
+plugins {
+    id("com.palantir.git-version") version "<current version>"
+}
+```
+
 Set the version of a project by calling:
 
+**Groovy**
 ```groovy
 version gitVersion()
 ```
 
+**Kotlin**
+```kotlin
+val gitVersion: groovy.lang.Closure<String> by extra
+version = gitVersion()
+```
+
 You can get an object containing more detailed information by calling:
 
+**Groovy**
 ```groovy
 def details = versionDetails()
 details.lastTag
@@ -44,10 +60,29 @@ details.branchName // is null if the repository in detached HEAD mode
 details.isCleanTag
 ```
 
+**Kotlin**
+```kotlin
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+val details = versionDetails()
+details.lastTag
+details.commitDistance
+details.gitHash
+details.gitHashFull // full 40-character Git commit hash
+details.branchName // is null if the repository in detached HEAD mode
+details.isCleanTag
+```
+
 You can optionally search a subset of tags with `prefix`. Example when the tag is my-product@2.15.0:
 
+**Groovy**
 ```groovy
 gitVersion(prefix:'my-product@') // -> 2.15.0
+```
+
+**Kotlin**
+```kotlin
+val gitVersion: groovy.lang.Closure<String> by extra
+gitVersion(mapOf("prefix" to "my-product@")) // -> 2.15.0
 ```
 
 Valid prefixes are defined by the regex `[/@]?([A-Za-z]+[/@-])+`.
