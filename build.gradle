@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.gradle.plugin-publish' version '0.13.0'
+    id 'com.gradle.plugin-publish' version '0.14.0'
     id 'com.palantir.git-version' version '0.12.3'
     id 'com.palantir.idea-test-fix' version '0.1.0'
     id 'com.palantir.baseline' version '3.63.3'
