@@ -2,7 +2,6 @@ buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        maven { url 'https://palantir.bintray.com/releases' }
         jcenter()
     }
     dependencies {
@@ -29,7 +28,6 @@ version System.env.CIRCLE_TAG ?: gitVersion()
 
 repositories {
     mavenCentral()
-    maven { url 'https://palantir.bintray.com/releases' }
     jcenter()
 }
 
