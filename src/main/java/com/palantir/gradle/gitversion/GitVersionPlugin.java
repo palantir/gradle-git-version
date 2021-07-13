@@ -19,8 +19,13 @@ package com.palantir.gradle.gitversion;
 import groovy.lang.Closure;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.text.ParseException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -69,9 +74,50 @@ public final class GitVersionPlugin implements Plugin<Project> {
 
     private Git gitRepo(Project project) {
         try {
-            File gitDir = getRootGitDir(project.getProjectDir());
-            return Git.wrap(new FileRepository(gitDir));
+            // holds the working data but maybe not the git data (in git submodules)
+            File projectDir = getRootGitDir(project.getProjectDir());
+
+            Git git; // return value
+            // read .git file/directory to properly identify the repo's git dir
+            // fixing https://github.com/palantir/gradle-git-version/issues/111
+            // working around [TODO: submit issue to JGit]
+            File dotGitFile = new File(projectDir.getPath());
+            if (dotGitFile.isFile()) { // this is a submodule
+                RepositoryBuilder builder = new RepositoryBuilder();
+                builder.setWorkTree(new File(projectDir.getParent()));
+
+                // set Git Dir manually
+                String[] pair =
+                        new String(Files.readAllBytes(dotGitFile.toPath()), StandardCharsets.UTF_8).split(":", 2);
+                if (pair.length != 2) {
+                    throw new ParseException(dotGitFile.toString(), 0);
+                }
+                if (!pair[0].trim().equals(new String("gitdir"))) {
+                    throw new ParseException(pair[0], 0);
+                }
+                if (pair[1].trim().contains("\n")) {
+                    throw new ParseException(pair[1], pair[1].indexOf('\n'));
+                }
+                String gitDirStr = pair[1].trim();
+
+                File gitDirFile;
+                if (!new File(gitDirStr).isAbsolute()) {
+                    gitDirFile = new File(new File(projectDir.getParent()), gitDirStr);
+                } else {
+                    gitDirFile = new File(gitDirStr);
+                }
+                builder.setGitDir(gitDirFile);
+
+                Repository subRepo = builder.build();
+                git = Git.wrap(subRepo);
+            } else { // this is a superrepo
+                git = Git.wrap(new FileRepository(projectDir)); // JGit::wrap works as expected for superrepos
+            }
+
+            return git;
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
