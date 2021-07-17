@@ -2,7 +2,6 @@ buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        jcenter()
     }
     dependencies {
         classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.2.1'
@@ -28,7 +27,6 @@ version System.env.CIRCLE_TAG ?: gitVersion()
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 sourceSets {
