@@ -27,15 +27,14 @@ import java.util.TimeZone;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class VersionDetailsTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     private Git git;
 
@@ -43,7 +42,7 @@ public class VersionDetailsTest {
     private PersonIdent identity =
             new PersonIdent("name", "email@address", new Date(1234L), TimeZone.getTimeZone("UTC"));
 
-    @Before
+    @BeforeEach
     public void before() throws GitAPIException {
         git = Git.init().setDirectory(temporaryFolder.getRoot()).call();
     }
