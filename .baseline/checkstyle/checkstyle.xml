@@ -342,7 +342,7 @@
         </module>
         <module name="RegexpSinglelineJava">
             <property name="format" value="\bCharset.defaultCharset\("/>
-            <property name="message" value="Use explicit charset (e.g. StandardCharsets.UTF-8) instead of default."/>
+            <property name="message" value="Use explicit charset (e.g. StandardCharsets.UTF_8) instead of default."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="format" value="\bIOUtils\.toString\("/>
@@ -405,7 +405,7 @@
             <property name="ignoredAnnotations" value="ParameterizedTest, Test, Before, BeforeEach, After, AfterEach, BeforeClass, BeforeAll, AfterClass, AfterAll"/>
         </module>
         <module name="JavadocMethod"> <!-- Java Style Guide: Where Javadoc is used -->
-            <property name="scope" value="public"/>
+            <property name="accessModifiers" value="public"/>
             <property name="allowMissingParamTags" value="true"/>
             <property name="allowMissingReturnTag" value="true"/>
             <property name="allowedAnnotations" value="Override, Test"/>

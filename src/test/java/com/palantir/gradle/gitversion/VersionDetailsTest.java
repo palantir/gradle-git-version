@@ -39,8 +39,8 @@ public class VersionDetailsTest {
 
     private Git git;
 
-    @SuppressWarnings("JdkObsolete") // Suppress usage of 'java.util.Date'
-    private PersonIdent identity =
+    @SuppressWarnings({"JdkObsolete", "JavaUtilDate"}) // Suppress usage of 'java.util.Date'
+    private static final PersonIdent IDENTITY =
             new PersonIdent("name", "email@address", new Date(1234L), TimeZone.getTimeZone("UTC"));
 
     @Before
@@ -68,8 +68,8 @@ public class VersionDetailsTest {
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.add().addFilepattern(".").call();
         git.commit()
-                .setAuthor(identity)
-                .setCommitter(identity)
+                .setAuthor(IDENTITY)
+                .setCommitter(IDENTITY)
                 .setMessage("initial commit")
                 .call();
 
@@ -80,8 +80,8 @@ public class VersionDetailsTest {
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.add().addFilepattern(".").call();
         git.commit()
-                .setAuthor(identity)
-                .setCommitter(identity)
+                .setAuthor(IDENTITY)
+                .setCommitter(IDENTITY)
                 .setMessage("initial commit")
                 .call();
         write(temporaryFolder.newFile("foo"));
