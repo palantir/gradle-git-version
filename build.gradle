@@ -44,7 +44,7 @@ dependencies {
 
     // Access code written in groovy from src/main/java sources
     runtimeOnly configurations.groovyRuntimeClasspath
-    implementation configurations.groovyCompile
+    implementation configurations.groovyImplementation
     implementation sourceSets.groovy.output
 
     annotationProcessor 'org.immutables:value'
