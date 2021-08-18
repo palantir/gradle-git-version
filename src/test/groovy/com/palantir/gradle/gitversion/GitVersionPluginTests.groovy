@@ -15,6 +15,7 @@
  */
 package com.palantir.gradle.gitversion
 
+import java.nio.file.Files
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeCommand
 import org.eclipse.jgit.lib.PersonIdent
@@ -22,19 +23,33 @@ import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.revwalk.RevCommit
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class GitVersionPluginTests extends Specification {
-    @Rule
-    TemporaryFolder temporaryFolder = new TemporaryFolder()
 
+    File temporaryFolder
     File projectDir
     File buildFile
     File gitIgnoreFile
     File dirtyContentFile
     File settingsFile
+
+    def setup() {
+        temporaryFolder = File.createTempDir('GitVersionPluginTest')
+        projectDir = temporaryFolder
+        buildFile = new File(temporaryFolder, 'build.gradle')
+        buildFile.createNewFile()
+        settingsFile = new File(temporaryFolder, 'settings.gradle')
+        settingsFile.createNewFile()
+        gitIgnoreFile = new File(temporaryFolder, '.gitignore')
+        gitIgnoreFile.createNewFile()
+        dirtyContentFile = new File(temporaryFolder, 'dirty')
+        dirtyContentFile.createNewFile()
+        settingsFile << '''
+            rootProject.name = 'gradle-test'
+        '''.stripIndent()
+        gitIgnoreFile << '.gradle\n'
+    }
 
     def 'exception when project root does not have a git repo' () {
         given:
@@ -54,9 +69,10 @@ class GitVersionPluginTests extends Specification {
 
     def 'git describe works when git repo is multiple levels up' () {
         given:
-        File rootFolder = temporaryFolder.root
-        projectDir = temporaryFolder.newFolder('level1', 'level2')
-        buildFile = temporaryFolder.newFile('level1/level2/build.gradle')
+        File rootFolder = temporaryFolder
+        projectDir = Files.createDirectories(rootFolder.toPath().resolve('level1/level2')).toFile()
+        buildFile = new File(projectDir, 'build.gradle')
+        buildFile.createNewFile()
         buildFile << '''
             plugins {
                 id 'com.palantir.git-version'
@@ -65,7 +81,7 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
-        Git git = Git.init().setDirectory(rootFolder).call();
+        Git git = Git.init().setDirectory(rootFolder).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -86,7 +102,7 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
         '''.stripIndent()
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git.init().setDirectory(projectDir).call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -104,7 +120,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -125,7 +141,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(false).setName('1.0.0').call()
@@ -148,13 +164,13 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
-        String master = git.getRepository().getFullBranch();
+        String master = git.getRepository().getFullBranch()
         Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
         git.checkout().setName(hotfixBranch.getName()).call()
         git.commit().setMessage("hot fix for issue").call()
@@ -183,13 +199,13 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
-        String master = git.getRepository().getFullBranch();
+        String master = git.getRepository().getFullBranch()
         Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
         git.checkout().setName(hotfixBranch.getName()).call()
         git.commit().setMessage("hot fix for issue").call()
@@ -219,7 +235,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -249,7 +265,7 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -274,7 +290,7 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         String sha = git.commit().setMessage('initial commit').call().getName().subSequence(0, 7)
 
@@ -302,7 +318,7 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -328,7 +344,7 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         dirtyContentFile << 'dirty-content'
@@ -356,7 +372,7 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         def commit1 = git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -382,7 +398,7 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('my-product@1.0.0').setName('my-product@1.0.0').call()
@@ -405,7 +421,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -430,7 +446,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(false).setName('1.0.0').call()
@@ -464,13 +480,13 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build\n'
         gitIgnoreFile << 'sub\n'
 
-        Git git = Git.init().setDirectory(projectDir).call();
+        Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
-        File subDir = temporaryFolder.newFolder('sub');
-        Git subGit = Git.init().setDirectory(subDir).call();
+        File subDir = Files.createDirectory(temporaryFolder.toPath().resolve('sub')).toFile()
+        Git subGit = Git.init().setDirectory(subDir).call()
         File subDirty = new File(subDir, 'subDirty')
         subDirty.createNewFile()
         subGit.add().addFilepattern('.').call()
@@ -679,22 +695,4 @@ class GitVersionPluginTests extends Specification {
 
         return gradleRunner
     }
-
-    private static shortSha(Git git, String commitish) {
-        final int VERSION_ABBR_LENGTH = 7
-        git.getRepository().getRef(commitish).getObjectId().abbreviate(VERSION_ABBR_LENGTH).name()
-    }
-
-    def setup() {
-        projectDir = temporaryFolder.root
-        buildFile = temporaryFolder.newFile('build.gradle')
-        settingsFile = temporaryFolder.newFile('settings.gradle')
-        gitIgnoreFile = temporaryFolder.newFile('.gitignore')
-        dirtyContentFile = temporaryFolder.newFile('dirty')
-        settingsFile << '''
-            rootProject.name = 'gradle-test'
-        '''.stripIndent()
-        gitIgnoreFile << '.gradle\n'
-    }
-
 }
