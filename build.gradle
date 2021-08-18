@@ -21,6 +21,7 @@ plugins {
 }
 
 apply plugin: 'com.palantir.external-publish-jar'
+apply plugin: 'com.palantir.java-format'
 
 group 'com.palantir.gradle.gitversion'
 version System.env.CIRCLE_TAG ?: gitVersion()
@@ -44,7 +45,7 @@ dependencies {
 
     // Access code written in groovy from src/main/java sources
     runtimeOnly configurations.groovyRuntimeClasspath
-    implementation configurations.groovyCompile
+    implementation configurations.groovyImplementation
     implementation sourceSets.groovy.output
 
     annotationProcessor 'org.immutables:value'
@@ -52,6 +53,7 @@ dependencies {
 
     testImplementation gradleTestKit()
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'junit:junit'
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine") {
         because 'allows JUnit 3 and JUnit 4 tests to run'
     }
@@ -82,9 +84,6 @@ pluginBundle {
             displayName = 'Palantir Gradle Git-Version'
         }
     }
-allprojects {
-    apply plugin: 'com.palantir.java-format'
-}
 }
 
 // Configure the publishPlugins task
