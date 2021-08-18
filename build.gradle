@@ -21,6 +21,7 @@ plugins {
 }
 
 apply plugin: 'com.palantir.external-publish-jar'
+apply plugin: 'com.palantir.java-format'
 
 group 'com.palantir.gradle.gitversion'
 version System.env.CIRCLE_TAG ?: gitVersion()
@@ -83,9 +84,6 @@ pluginBundle {
             displayName = 'Palantir Gradle Git-Version'
         }
     }
-allprojects {
-    apply plugin: 'com.palantir.java-format'
-}
 }
 
 // Configure the publishPlugins task
