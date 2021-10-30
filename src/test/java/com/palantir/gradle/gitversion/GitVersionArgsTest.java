@@ -16,7 +16,8 @@
 
 package com.palantir.gradle.gitversion;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class GitVersionArgsTest {
     @Test
@@ -32,8 +33,10 @@ public class GitVersionArgsTest {
         new GitVersionArgs().setPrefix("Foo/Bar@");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void require_dash_or_at_symbol_at_prefix_end() throws Exception {
-        new GitVersionArgs().setPrefix("v");
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            new GitVersionArgs().setPrefix("v");
+        });
     }
 }
