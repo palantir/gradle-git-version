@@ -44,17 +44,18 @@ public class VersionDetailsTest {
 
     @BeforeEach
     public void before() throws GitAPIException {
-        git = Git.init().setDirectory(temporaryFolder.getRoot()).call();
+        git = Git.init().setDirectory(temporaryFolder).call();
     }
 
     @Test
     public void symlinks_should_result_in_clean_git_tree() throws Exception {
-        File fileToLinkTo = write(temporaryFolder.newFile("fileToLinkTo"));
-        Files.createSymbolicLink(temporaryFolder.getRoot().toPath().resolve("fileLink"), fileToLinkTo.toPath());
+        File fileToLinkTo = write(new File(temporaryFolder, "fileToLinkTo"));
+        Files.createSymbolicLink(temporaryFolder.toPath().resolve("fileLink"), fileToLinkTo.toPath());
 
-        File folderToLinkTo = temporaryFolder.newFolder("folderToLinkTo");
+        File folderToLinkTo = new File(temporaryFolder, "folderToLinkTo");
+        assertThat(folderToLinkTo.mkdir()).isTrue();
         write(new File(folderToLinkTo, "dummyFile"));
-        Files.createSymbolicLink(temporaryFolder.getRoot().toPath().resolve("folderLink"), folderToLinkTo.toPath());
+        Files.createSymbolicLink(temporaryFolder.toPath().resolve("folderLink"), folderToLinkTo.toPath());
 
         git.add().addFilepattern(".").call();
         git.commit().setMessage("initial commit").call();
@@ -83,7 +84,7 @@ public class VersionDetailsTest {
                 .setCommitter(IDENTITY)
                 .setMessage("initial commit")
                 .call();
-        write(temporaryFolder.newFile("foo"));
+        write(new File(temporaryFolder, "foo"));
 
         assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed.dirty");
     }
