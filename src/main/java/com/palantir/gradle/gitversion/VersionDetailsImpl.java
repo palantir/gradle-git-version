@@ -70,6 +70,11 @@ final class VersionDetailsImpl implements VersionDetails {
         return maybeCachedDescription;
     }
 
+    private boolean isWorktree() {
+        // When using a git worktree .git is a file and not a directory.
+        return git.getRepository().getDirectory().isFile();
+    }
+
     private String expensiveComputeRawDescription() {
         if (isRepoEmpty()) {
             log.debug("Repository is empty");
@@ -77,6 +82,14 @@ final class VersionDetailsImpl implements VersionDetails {
         }
 
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
+
+        if (isWorktree()) {
+            // JGit doesn't handle worktrees, so we'll have to rely on whatever native git
+            // produces. FWIW it's probably fairly safe to assume git is available if worktrees
+            // are being used.
+            return nativeGitDescribe;
+        }
+
         String jgitDescribe = new JGitDescribe(git).describe(args.getPrefix());
 
         // If native failed, return JGit one
@@ -96,6 +109,9 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean isRepoEmpty() {
+        if (isWorktree()) {
+            return false; // not implemented for worktrees yet
+        }
         // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
         // first to preserve this behavior in cases where this call would fail but native "git" call does not.
         try {

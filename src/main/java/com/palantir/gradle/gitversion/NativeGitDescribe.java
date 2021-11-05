@@ -41,21 +41,15 @@ class NativeGitDescribe implements GitDescribe {
             Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
     private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings();
 
-    private final File directory;
+    private final File directory; // aka `.git` directory
 
     NativeGitDescribe(File directory) {
         this.directory = directory;
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
-        List<String> cmdInput = new ArrayList<>();
-        cmdInput.add("git");
-        cmdInput.addAll(Arrays.asList(commands));
-        ProcessBuilder pb = new ProcessBuilder(cmdInput);
-        pb.directory(directory);
-        pb.redirectErrorStream(true);
+        Process process = startProcess(directory, commands);
 
-        Process process = pb.start();
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
 
@@ -72,6 +66,23 @@ class NativeGitDescribe implements GitDescribe {
         }
 
         return builder.toString().trim();
+    }
+
+    private static Process startProcess(File gitDirectory, String... commands) throws IOException {
+        List<String> cmdInput = new ArrayList<>();
+        cmdInput.add("git");
+        cmdInput.addAll(Arrays.asList(commands));
+
+        ProcessBuilder pb = new ProcessBuilder(cmdInput);
+
+        // Executing commands from the parent directory containing the .git
+        // directory lets us work with git-worktree (where .git is in fact a
+        // file and not a directory)
+        pb.directory(gitDirectory.getParentFile());
+
+        pb.redirectErrorStream(true);
+
+        return pb.start();
     }
 
     @Override
