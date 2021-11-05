@@ -1,0 +1,7 @@
+type: feature
+feature:
+  description: Elementary support for git-worktree
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/530
+  tags:
+  - highlight
