@@ -108,9 +108,8 @@ public class VersionDetailsTest {
 
         gitDescribe.runGitCmd("worktree", "add", temporaryWorktreeFolder.getAbsolutePath(), "test");
 
-        git = Git.open(temporaryWorktreeFolder);
-
-        assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed");
+        assertThat(new VersionDetailsImpl(git, new GitVersionArgs(), temporaryWorktreeFolder).getVersion())
+                .isEqualTo("6f0c7ed");
     }
 
     private File write(File file) throws IOException {

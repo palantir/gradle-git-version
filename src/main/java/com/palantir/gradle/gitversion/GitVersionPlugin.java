@@ -39,7 +39,9 @@ public final class GitVersionPlugin implements Plugin<Project> {
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
                 return TimingVersionDetails.wrap(
-                                timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
+                                timer,
+                                new VersionDetailsImpl(
+                                        git, GitVersionArgs.fromGroovyClosure(args), project.getProjectDir()))
                         .getVersion();
             }
         });
@@ -47,7 +49,8 @@ public final class GitVersionPlugin implements Plugin<Project> {
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
                 return TimingVersionDetails.wrap(
-                        timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
+                        timer,
+                        new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args), project.getProjectDir()));
             }
         });
 

@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,11 +36,19 @@ final class VersionDetailsImpl implements VersionDetails {
 
     private final Git git;
     private final GitVersionArgs args;
+    private final File repo;
     private volatile String maybeCachedDescription = null;
 
     VersionDetailsImpl(Git git, GitVersionArgs args) {
         this.git = git;
         this.args = args;
+        this.repo = git.getRepository().getDirectory();
+    }
+
+    VersionDetailsImpl(Git git, GitVersionArgs args, File repoDirectory) {
+        this.git = git;
+        this.args = args;
+        this.repo = repoDirectory;
     }
 
     @Override
@@ -72,7 +81,7 @@ final class VersionDetailsImpl implements VersionDetails {
 
     private boolean isWorktree() {
         // When using a git worktree .git is a file and not a directory.
-        return git.getRepository().getDirectory().isFile();
+        return repo.isFile();
     }
 
     private String expensiveComputeRawDescription() {
@@ -81,7 +90,7 @@ final class VersionDetailsImpl implements VersionDetails {
             return null;
         }
 
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
+        String nativeGitDescribe = new NativeGitDescribe(this.repo).describe(args.getPrefix());
 
         if (isWorktree()) {
             // JGit doesn't handle worktrees, so we'll have to rely on whatever native git
