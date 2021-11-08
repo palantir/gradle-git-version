@@ -36,7 +36,12 @@ public class VersionDetailsTest {
     @TempDir
     public File temporaryFolder;
 
+    @TempDir
+    public File temporaryWorktreeFolder;
+
     private Git git;
+
+    private NativeGitDescribe gitDescribe;
 
     @SuppressWarnings({"JdkObsolete", "JavaUtilDate"}) // Suppress usage of 'java.util.Date'
     private static final PersonIdent IDENTITY =
@@ -45,6 +50,7 @@ public class VersionDetailsTest {
     @BeforeEach
     public void before() throws GitAPIException {
         git = Git.init().setDirectory(temporaryFolder).call();
+        gitDescribe = new NativeGitDescribe(git.getRepository().getDirectory());
     }
 
     @Test
@@ -87,6 +93,24 @@ public class VersionDetailsTest {
         write(new File(temporaryFolder, "foo"));
 
         assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed.dirty");
+    }
+
+    @Test
+    public void test_worktree_should_return_version() throws Exception {
+        git.add().addFilepattern(".").call();
+        git.commit()
+                .setAuthor(IDENTITY)
+                .setCommitter(IDENTITY)
+                .setMessage("initial commit")
+                .call();
+
+        git.branchCreate().setName("test").call();
+
+        gitDescribe.runGitCmd("worktree", "add", temporaryWorktreeFolder.getAbsolutePath(), "test");
+
+        git = Git.open(temporaryWorktreeFolder);
+
+        assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed");
     }
 
     private File write(File file) throws IOException {

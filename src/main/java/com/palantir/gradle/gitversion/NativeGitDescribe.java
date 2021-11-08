@@ -16,6 +16,7 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import java.io.BufferedReader;
@@ -47,7 +48,8 @@ class NativeGitDescribe implements GitDescribe {
         this.directory = directory;
     }
 
-    private String runGitCmd(String... commands) throws IOException, InterruptedException {
+    @VisibleForTesting
+    String runGitCmd(String... commands) throws IOException, InterruptedException {
         Process process = startProcess(directory, commands);
 
         BufferedReader reader =
@@ -78,7 +80,8 @@ class NativeGitDescribe implements GitDescribe {
         // Executing commands from the parent directory containing the .git
         // directory lets us work with git-worktree (where .git is in fact a
         // file and not a directory)
-        pb.directory(gitDirectory.getParentFile());
+        File parentFile = gitDirectory.getParentFile();
+        pb.directory(parentFile);
 
         pb.redirectErrorStream(true);
 
