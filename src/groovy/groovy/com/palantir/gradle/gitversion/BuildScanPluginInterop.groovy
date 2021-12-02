@@ -21,24 +21,35 @@ import org.gradle.api.Project
 
 class BuildScanPluginInterop {
     static void addBuildScanCustomValues(Project rootProject, Supplier<Map<String, String>> customValues) {
-        // After evaluate because while we can detect the <5.x com.gradle.build-scan project on the root project,
-        // there is no way to detect the >6.x com.gradle.enterprise settings plugins using withPlugin
-        rootProject.afterEvaluate {
-            def gradleEnterpriseExtension = rootProject.extensions.findByName('gradleEnterprise')
-
-            // In Gradle Enterprise Plugin 3.2, the root project's buildScan extension was deprecated and you now need
-            // to call gradleEnterprise.buildScan
-            def buildScan = Optional.ofNullable(gradleEnterpriseExtension)
-                    .map({ gradleEnterprise -> gradleEnterprise.buildScan })
-                    .orElseGet({ rootProject.extensions.findByName('buildScan') })
-
-            if (buildScan == null) {
-                return
+        // Fix #353: Detect when the root project is already evaluated, thus anything is afterEvaluate
+        // and we can just execute immediately. This is due to afterEvaluate changes in Gradle 7.
+        if (rootProject.getState().hasCompleted()) {
+            applyBuildScanCustomValues(rootProject, customValues)
+        } else {
+            // After evaluate because while we can detect the <5.x com.gradle.build-scan project on the root project,
+            // there is no way to detect the >6.x com.gradle.enterprise settings plugins using withPlugin
+            rootProject.afterEvaluate {
+                applyBuildScanCustomValues(rootProject, customValues)
             }
+        }
 
-            buildScan.buildFinished {
-                customValues.get().forEach({ name, value ->  rootProject.buildScan.value(name, value) })
-            }
+    }
+
+    private static void applyBuildScanCustomValues(Project rootProject, Supplier<Map<String, String>> customValues) {
+        def gradleEnterpriseExtension = rootProject.extensions.findByName('gradleEnterprise')
+
+        // In Gradle Enterprise Plugin 3.2, the root project's buildScan extension was deprecated and you now need
+        // to call gradleEnterprise.buildScan
+        def buildScan = Optional.ofNullable(gradleEnterpriseExtension)
+                .map({ gradleEnterprise -> gradleEnterprise.buildScan })
+                .orElseGet({ rootProject.extensions.findByName('buildScan') })
+
+        if (buildScan == null) {
+            return
+        }
+
+        buildScan.buildFinished {
+            customValues.get().forEach({ name, value ->  rootProject.buildScan.value(name, value) })
         }
     }
 }

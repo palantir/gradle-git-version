@@ -94,6 +94,34 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0\n")
     }
 
+    def 'git version can be applied on sub modules' () {
+        given:
+        File subModuleDir = Files.createDirectories(projectDir.toPath().resolve('submodule')).toFile()
+        File subModuleBuildFile = new File(subModuleDir, 'build.gradle')
+        subModuleBuildFile.createNewFile()
+        subModuleBuildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+
+        settingsFile << '''
+            include 'submodule'
+        '''.stripIndent()
+
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+
+        when:
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0\n")
+    }
+
     def 'unspecified when no tags are present' () {
         given:
         buildFile << '''
