@@ -1,6 +1,6 @@
 org.eclipse.jgit:org.eclipse.jgit = 5.3.2.201906051522-r
 com.google.guava:guava = 31.0.1-jre
-org.immutables:* = 2.8.8
+org.immutables:* = 2.9.0
 
 # test dependencies
 junit:junit = 4.13.2
