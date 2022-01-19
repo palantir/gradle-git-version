@@ -105,7 +105,7 @@ class NativeGitDescribe implements GitDescribe {
             // No tags found, so return commit hash of HEAD
             return GitUtils.abbrevHash(runGitCmd("rev-parse", "HEAD"));
         } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git describe failed: {}", e);
+            log.debug("Native git describe failed", e);
             return null;
         }
     }
@@ -119,7 +119,7 @@ class NativeGitDescribe implements GitDescribe {
             }
             return true;
         } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git command not found: {}", e);
+            log.debug("Native git command not found", e);
             return false;
         }
     }
