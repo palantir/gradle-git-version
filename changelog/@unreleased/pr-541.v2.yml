@@ -1,15 +1,6 @@
 type: fix
 fix:
   description: |-
-    [Fix] 353: Evaluate Buildscan Directly When Root is Evaluated
-
-    ## Before this PR
-    Issue is described at length: https://github.com/palantir/gradle-git-version/issues/353
-
-    ## After this PR
-    Usages of `git-version` on submodules no longer errors out.
-
-    ## Possible downsides?
-    It's possible that this [check](https://github.com/palantir/gradle-git-version/blob/develop/src/main/java/com/palantir/gradle/gitversion/GitVersionRootPlugin.java#L29) was meant to fail when a user does not apply the plugin at the root, but as it stands all it does is runtime check that our code properly calls out to a project's root and then applies it. So an alternative fix is to hard error when this is called in submodules. However, fixing that "bug" is a breaking change.
+    Evaluate Buildscan directly when the root project is evaluated
   links:
   - https://github.com/palantir/gradle-git-version/pull/541
