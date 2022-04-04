@@ -24,7 +24,7 @@ class BuildScanPluginInterop {
         // Fix #353: Detect when the root project is already evaluated, thus anything is afterEvaluate
         // and we can just execute immediately. This is due to afterEvaluate changes in Gradle 7.
         //
-        // Note: We cannot use hasCompleted() because we need to support gradle 5
+        // Note: We cannot use hasCompleted() in order to continue supporting gradle 5, a minor inconvenience
         if (rootProject.getState().isUnconfigured() || rootProject.getState().isConfiguring()) {
             // After evaluate because while we can detect the <5.x com.gradle.build-scan project on the root project,
             // there is no way to detect the >6.x com.gradle.enterprise settings plugins using withPlugin
