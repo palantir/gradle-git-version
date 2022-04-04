@@ -1,0 +1,12 @@
+type: fix
+fix:
+  description: |-
+    Bumped dependency versions
+    ## Before this PR
+    Issue is described at length: https://github.com/palantir/gradle-git-version/issues/468
+    ## After this PR
+    Usages of `git-version` on submodules no longer errors out.
+    ## Possible downsides?
+    New versions have breaking changes to the used APIs.
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/581
