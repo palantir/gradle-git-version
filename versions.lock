@@ -12,9 +12,9 @@ org.immutables:value:2.8.8 (1 constraints: 14051536)
 org.slf4j:slf4j-api:1.7.30 (1 constraints: 7b0e085f)
 
 [Test dependencies]
-com.fasterxml.jackson.core:jackson-annotations:2.13.3 (1 constraints: 89123821)
-com.fasterxml.jackson.core:jackson-core:2.13.3 (1 constraints: 89123821)
-com.fasterxml.jackson.core:jackson-databind:2.13.3 (1 constraints: 3b053b3b)
+com.fasterxml.jackson.core:jackson-annotations:2.13.4 (1 constraints: 8a123921)
+com.fasterxml.jackson.core:jackson-core:2.13.4 (1 constraints: 8a123921)
+com.fasterxml.jackson.core:jackson-databind:2.13.4.1 (1 constraints: 9b054146)
 junit:junit:4.13.2 (2 constraints: eb154ef7)
 net.bytebuddy:byte-buddy:1.12.10 (1 constraints: 7b0bbcea)
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 896455cc)
