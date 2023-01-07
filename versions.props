@@ -1,10 +1,10 @@
 org.eclipse.jgit:org.eclipse.jgit = 6.1.0.202203080745-r
 com.google.guava:guava = 31.1-jre
-org.immutables:* = 2.8.8
+org.immutables:* = 2.9.3
 
 # test dependencies
 junit:junit = 4.13.2
-org.assertj:assertj-core = 3.23.1
+org.assertj:assertj-core = 3.24.1
 org.spockframework:spock-core = 2.1-groovy-3.0
 org.junit.jupiter:* = 5.9.1
 org.junit.vintage:* = 5.9.1
