@@ -32,13 +32,10 @@ final class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
-
-    private final Git git;
     private final GitVersionArgs args;
     private volatile String maybeCachedDescription = null;
 
-    VersionDetailsImpl(Git git, GitVersionArgs args) {
-        this.git = git;
+    VersionDetailsImpl(GitVersionArgs args) {
         this.args = args;
     }
 
@@ -60,14 +57,10 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private String description() {
-        if (maybeCachedDescription != null) {
-            return maybeCachedDescription;
-        }
 
         String rawDescription = expensiveComputeRawDescription();
-        maybeCachedDescription =
-                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
-        return maybeCachedDescription;
+        String processedDescription = rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        return processedDescription;
     }
 
     private String expensiveComputeRawDescription() {
@@ -77,22 +70,8 @@ final class VersionDetailsImpl implements VersionDetails {
         }
 
         String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
-        String jgitDescribe = new JGitDescribe(git).describe(args.getPrefix());
 
-        // If native failed, return JGit one
-        if (nativeGitDescribe == null) {
-            return jgitDescribe;
-        }
-
-        // If native succeeded, make sure it's same as JGit one
-        Preconditions.checkState(
-                nativeGitDescribe.equals(jgitDescribe),
-                "Inconsistent git describe: native was %s and jgit was %s. "
-                        + "Please report this on github.com/palantir/gradle-git-version",
-                nativeGitDescribe,
-                jgitDescribe);
-
-        return jgitDescribe;
+        return nativeGitDescribe;
     }
 
     private boolean isRepoEmpty() {

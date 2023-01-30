@@ -33,13 +33,11 @@ public final class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
 
-        final Git git = gitRepo(project);
-
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
                 return TimingVersionDetails.wrap(
-                                timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
+                                timer, new VersionDetailsImpl(GitVersionArgs.fromGroovyClosure(args)))
                         .getVersion();
             }
         });
@@ -47,7 +45,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
                 return TimingVersionDetails.wrap(
-                        timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
+                        timer, new VersionDetailsImpl(GitVersionArgs.fromGroovyClosure(args)));
             }
         });
 
