@@ -20,11 +20,6 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +28,12 @@ final class VersionDetailsImpl implements VersionDetails {
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
     private final GitVersionArgs args;
-    private volatile String maybeCachedDescription = null;
+
+    private NativeGitImpl nativeGitInvoker;
 
     VersionDetailsImpl(GitVersionArgs args) {
         this.args = args;
+        this.nativeGitInvoker = new NativeGitImpl();
     }
 
     @Override
@@ -49,11 +46,7 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean isClean() {
-        try {
-            return git.status().call().isClean();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
+        return nativeGitInvoker.isClean();
     }
 
     private String description() {
@@ -64,25 +57,10 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private String expensiveComputeRawDescription() {
-        if (isRepoEmpty()) {
-            log.debug("Repository is empty");
-            return null;
-        }
 
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
+        String nativeGitDescribe = nativeGitInvoker.describe(args.getPrefix());
 
         return nativeGitDescribe;
-    }
-
-    private boolean isRepoEmpty() {
-        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-        try {
-            git.describe().call();
-            return false;
-        } catch (GitAPIException | RuntimeException ignored) {
-            return true;
-        }
     }
 
     @Override
@@ -127,22 +105,12 @@ final class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHashFull() throws IOException {
-        ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
-        if (objectId == null) {
-            return null;
-        }
-
-        return objectId.name();
+        return nativeGitInvoker.getCurrentHeadFullHash();
     }
 
     @Override
     public String getBranchName() throws IOException {
-        Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
-        if (ref == null) {
-            return null;
-        }
-
-        return ref.getName().substring(Constants.R_HEADS.length());
+        return nativeGitInvoker.getCurrentBranch();
     }
 
     @Override

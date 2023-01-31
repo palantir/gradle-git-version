@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Mimics git describe by using rev-list to support versions of git < 1.8.4.
  */
-class NativeGitDescribe implements GitDescribe {
-    private static final Logger log = LoggerFactory.getLogger(NativeGitDescribe.class);
+class NativeGitImpl implements NativeGit {
+    private static final Logger log = LoggerFactory.getLogger(NativeGitImpl.class);
 
     private static final Splitter LINE_SPLITTER =
             Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
@@ -43,8 +43,9 @@ class NativeGitDescribe implements GitDescribe {
 
     private final File directory;
 
-    NativeGitDescribe(File directory) {
-        this.directory = directory;
+    NativeGitImpl() {
+        String currentDir = System.getProperty("user.dir");
+        this.directory = new File(currentDir);
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
@@ -72,6 +73,53 @@ class NativeGitDescribe implements GitDescribe {
         }
 
         return builder.toString().trim();
+    }
+
+    @Override
+    public String getCurrentBranch() {
+        if (!gitCommandExists()) {
+            return null;
+        }
+        try {
+            return runGitCmd("branch", "--show-current");
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git branch --show-current failed", e);
+            return null;
+        }
+    }
+
+    @Override
+    public String getCurrentHeadFullHash() {
+        if (!gitCommandExists()) {
+            return null;
+        }
+        try {
+            String branch = getCurrentBranch();
+            if (branch == null) {
+                return null;
+            }
+            return runGitCmd("--show-ref", branch, "--hash");
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git branch --show-current failed", e);
+            return null;
+        }
+    }
+
+    @Override
+    public Boolean isClean() {
+        if (!gitCommandExists()) {
+            return null;
+        }
+        try {
+            String result = runGitCmd("status", "--porcelain");
+            if (result.isEmpty()) {
+                return true;
+            }
+            return false;
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git status --porcelain failed", e);
+            return null;
+        }
     }
 
     @Override

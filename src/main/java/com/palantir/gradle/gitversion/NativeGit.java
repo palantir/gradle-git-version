@@ -16,11 +16,25 @@
 
 package com.palantir.gradle.gitversion;
 
-interface GitDescribe {
+interface NativeGit {
 
     /**
      * Mimics behaviour of 'git describe --tags --always --first-parent --match=${prefix}*'
      * Method can assume repo is not empty but should never throw.
      */
     String describe(String prefix);
+
+    /**
+     * Mimics behavior of 'git status --porcelain'.
+     * @return true if no differences exist between the working-tree, the index, and the current HEAD, false if differences do exist
+     */
+    Boolean isClean();
+
+    /**
+     * Mimics behavior of 'git branch --show-current'.
+     * @return the current branch.
+     */
+    String getCurrentBranch();
+
+    String getCurrentHeadFullHash();
 }
