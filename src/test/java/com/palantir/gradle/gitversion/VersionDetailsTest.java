@@ -95,6 +95,6 @@ public class VersionDetailsTest {
     }
 
     private VersionDetails versionDetails() {
-        return new VersionDetailsImpl(git, new GitVersionArgs());
+        return new VersionDetailsImpl(git.getRepository().getDirectory(), new GitVersionArgs());
     }
 }

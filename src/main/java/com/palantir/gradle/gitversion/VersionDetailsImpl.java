@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,9 +32,9 @@ final class VersionDetailsImpl implements VersionDetails {
 
     private NativeGitImpl nativeGitInvoker;
 
-    VersionDetailsImpl(GitVersionArgs args) {
+    VersionDetailsImpl(File gitDir, GitVersionArgs args) {
         this.args = args;
-        this.nativeGitInvoker = new NativeGitImpl();
+        this.nativeGitInvoker = new NativeGitImpl(gitDir);
     }
 
     @Override

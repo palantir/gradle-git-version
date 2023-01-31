@@ -26,13 +26,14 @@ interface NativeGit {
 
     /**
      * Mimics behavior of 'git status --porcelain'.
-     * @return true if no differences exist between the working-tree, the index, and the current HEAD, false if differences do exist
+     * @return true if no differences exist between the working-tree,
+     * the index, and the current HEAD, false if differences do exist.
      */
     Boolean isClean();
 
     /**
      * Mimics behavior of 'git branch --show-current'.
-     * @return the current branch.
+     * @return the current branch
      */
     String getCurrentBranch();
 

@@ -43,9 +43,8 @@ class NativeGitImpl implements NativeGit {
 
     private final File directory;
 
-    NativeGitImpl() {
-        String currentDir = System.getProperty("user.dir");
-        this.directory = new File(currentDir);
+    NativeGitImpl(File directory) {
+        this.directory = directory;
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {

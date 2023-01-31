@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import groovy.lang.Closure;
+import java.io.File;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -29,17 +30,21 @@ public final class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
 
+        final File git = gitRepo(project);
+
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
-                return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(GitVersionArgs.fromGroovyClosure(args)))
+                return TimingVersionDetails.wrap(
+                                timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
                         .getVersion();
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
-                return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(GitVersionArgs.fromGroovyClosure(args)));
+                return TimingVersionDetails.wrap(
+                        timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
             }
         });
 
@@ -57,5 +62,34 @@ public final class GitVersionPlugin implements Plugin<Project> {
 
     Timer timer() {
         return timer;
+    }
+
+    private File gitRepo(Project project) {
+        File gitDir = getRootGitDir(project.getProjectDir());
+        return gitDir;
+    }
+
+    private static File getRootGitDir(File currentRoot) {
+        File gitDir = scanForRootGitDir(currentRoot);
+        if (!gitDir.exists()) {
+            throw new IllegalArgumentException("Cannot find '.git' directory");
+        }
+        return gitDir;
+    }
+
+    private static File scanForRootGitDir(File currentRoot) {
+        File gitDir = new File(currentRoot, ".git");
+
+        if (gitDir.exists()) {
+            return gitDir;
+        }
+
+        // stop at the root directory, return non-existing File object;
+        if (currentRoot.getParentFile() == null) {
+            return gitDir;
+        }
+
+        // look in parent directory;
+        return scanForRootGitDir(currentRoot.getParentFile());
     }
 }
