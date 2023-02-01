@@ -87,9 +87,9 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        println "git version is"
-        println git.runGitCommand("version")
-        println git.runGitCommand("describe", "--tags", "--always",  "--first-parent")
+        // println "git version is"
+        // println git.runGitCommand("version")
+        // println git.runGitCommand("describe", "--tags", "--always",  "--first-parent")
         //git.add().addFilepattern('.').call()
         //git.commit().setMessage('initial commit').call()
         //git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
