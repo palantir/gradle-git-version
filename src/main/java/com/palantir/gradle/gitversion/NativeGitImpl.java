@@ -69,8 +69,8 @@ class NativeGitImpl implements NativeGit {
         process.waitFor();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            return "";
-            // return Integer.toString(exitCode);
+            // return "";
+            return Integer.toString(exitCode);
         }
 
         return builder.toString().trim();
