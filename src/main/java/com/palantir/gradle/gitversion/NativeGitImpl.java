@@ -66,12 +66,26 @@ class NativeGitImpl implements NativeGit {
             builder.append(System.getProperty("line.separator"));
         }
 
+        process.waitFor();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             return "";
+            // return Integer.toString(exitCode);
         }
 
         return builder.toString().trim();
+    }
+
+    public String runGitCommand(String... command) {
+        if (!gitCommandExists()) {
+            return null;
+        }
+        try {
+            return runGitCmd(command);
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git command {} failed.\n", command, e);
+            return null;
+        }
     }
 
     @Override
@@ -97,9 +111,22 @@ class NativeGitImpl implements NativeGit {
             if (branch == null) {
                 return null;
             }
-            return runGitCmd("--show-ref", branch, "--hash");
+            return runGitCmd("show-ref", branch, "--hash");
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git branch --show-current failed", e);
+            return null;
+        }
+    }
+
+    public String getStatusOutput() {
+        if (!gitCommandExists()) {
+            return null;
+        }
+        try {
+            String result = runGitCmd("-C", directory.getAbsolutePath(), "status", "--porcelain");
+            return result;
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git status --porcelain failed", e);
             return null;
         }
     }

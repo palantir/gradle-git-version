@@ -42,7 +42,8 @@ final class VersionDetailsImpl implements VersionDetails {
         if (description() == null) {
             return "unspecified";
         }
-
+        // String result = nativeGitInvoker.getStatusOutput();
+        // return result;
         return description() + (isClean() ? "" : ".dirty");
     }
 
@@ -51,9 +52,9 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private String description() {
-
         String rawDescription = expensiveComputeRawDescription();
-        String processedDescription = rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        String processedDescription =
+                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return processedDescription;
     }
 

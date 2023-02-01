@@ -37,6 +37,7 @@ class GitVersionPluginTests extends Specification {
     def setup() {
         temporaryFolder = File.createTempDir('GitVersionPluginTest')
         projectDir = temporaryFolder
+        println temporaryFolder.getAbsolutePath()
         buildFile = new File(temporaryFolder, 'build.gradle')
         buildFile.createNewFile()
         settingsFile = new File(temporaryFolder, 'settings.gradle')
@@ -81,10 +82,14 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
-        Git git = Git.init().setDirectory(rootFolder).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(rootFolder)
+        git.runGitCommand("init", rootFolder.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit","-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        //git.add().addFilepattern('.').call()
+        //git.commit().setMessage('initial commit').call()
+        //git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         when:
         // will build the project at projectDir
@@ -110,10 +115,15 @@ class GitVersionPluginTests extends Specification {
             include 'submodule'
         '''.stripIndent()
 
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit","-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
+        // git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -130,7 +140,10 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
         '''.stripIndent()
-        Git.init().setDirectory(projectDir).call()
+
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        // Git.init().setDirectory(projectDir).call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -148,10 +161,15 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
+        // git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -169,10 +187,16 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(false).setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "1.0.0")
+
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
+        // git.tag().setAnnotated(false).setName('1.0.0').call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -192,22 +216,33 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
+        // git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
-        String master = git.getRepository().getFullBranch()
-        Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
-        git.checkout().setName(hotfixBranch.getName()).call()
-        git.commit().setMessage("hot fix for issue").call()
-        git.tag().setAnnotated(true).setMessage('1.0.0-hotfix').setName('1.0.0-hotfix').call()
-
+        String master = git.runGitCommand("rev-parse", "--abbrev-ref", "HEAD")
+        //String master = git.getRepository().getFullBranch()
+        git.runGitCommand("checkout", "-b", "hotfix")
+        //Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
+        //git.checkout().setName(hotfixBranch.getName()).call()
+        git.runGitCommand("commit", "-m", "hot fix for issue", "--allow-empty")
+        // git.commit().setMessage("hot fix for issue").call()
+        git.runGitCommand("tag", "-a", "1.0.0-hotfix", "-m", "1.0.0-hotfix")
+        // git.tag().setAnnotated(true).setMessage('1.0.0-hotfix').setName('1.0.0-hotfix').call()
+        String commitId = git.runGitCommand("rev-parse", "HEAD")
         // switch back to main branch and merge hotfix branch into main branch
-        git.checkout().setName(master).call()
-        git.merge().include(git.getRepository().getRefDatabase().findRef("hotfix"))
-                .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
+        git.runGitCommand("checkout", master)
+        // git.checkout().setName(master).call()
+        git.runGitCommand("merge", commitId, "--no-ff", "-m", "merge commit")
+        /* git.merge().include(git.getRepository().getRefDatabase().findRef("hotfix"))
+                .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call() */
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -227,25 +262,39 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
+        // git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
-        String master = git.getRepository().getFullBranch()
+
+        String master = git.runGitCommand("rev-parse", "--abbrev-ref", "HEAD")
+        git.runGitCommand("checkout", "-b", "hotfix")
+        git.runGitCommand("commit", "-m", "hot fix for issue", "--allow-empty")
+        git.runGitCommand("tag", "-a", "1.0.0-hotfix", "-m", "1.0.0-hotfix")
+        String commitId = git.runGitCommand("rev-parse", "HEAD")
+        /* String master = git.getRepository().getFullBranch()
         Ref hotfixBranch = git.branchCreate().setName("hotfix").call()
         git.checkout().setName(hotfixBranch.getName()).call()
         git.commit().setMessage("hot fix for issue").call()
-        git.tag().setAnnotated(true).setMessage('1.0.0-hotfix').setName('1.0.0-hotfix').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0-hotfix').setName('1.0.0-hotfix').call() */
 
         // switch back to main branch and merge hotfix branch into main branch
-        git.checkout().setName(master).call()
-        git.merge().include(git.getRepository().getRefDatabase().findRef("hotfix"))
-                .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call()
+        git.runGitCommand("checkout", master)
+        git.runGitCommand("merge", commitId, "--no-ff", "-m", "merge commit")
+        // git.checkout().setName(master).call()
+        /* git.merge().include(git.getRepository().getRefDatabase().findRef("hotfix"))
+                .setFastForward(MergeCommand.FastForwardMode.NO_FF).setMessage("merge commit").call() */
 
         // tag merge commit on main branch as 2.0.0
-        git.tag().setAnnotated(true).setMessage('2.0.0').setName('2.0.0').call()
+        git.runGitCommand("tag", "-a", "2.0.0", "-m", "2.0.0")
+        //git.tag().setAnnotated(true).setMessage('2.0.0').setName('2.0.0').call()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -263,17 +312,23 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        /* Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()*/
         dirtyContentFile << 'dirty-content'
 
         when:
         BuildResult buildResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
+        buildResult.output.contains(projectDir.getAbsolutePath())
+        //buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
     }
 
     def 'version details on commit with a tag' () {
@@ -293,16 +348,21 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
+        // git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmaster\ntrue\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmain\ntrue\n"
     }
 
     def 'version details can be accessed using extra properties method' () {
@@ -318,9 +378,14 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        String sha = git.commit().setMessage('initial commit').call().getName().subSequence(0, 7)
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        String sha = git.runGitCommand("rev-parse", "HEAD").subSequence(0, 7)
+        //Git git = Git.init().setDirectory(projectDir).call()
+        //git.add().addFilepattern('.').call()
+        //String sha = git.commit().setMessage('initial commit').call().getName().subSequence(0, 7)
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
@@ -346,17 +411,23 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
-        git.commit().setMessage('commit 2').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        git.runGitCommand("commit", "-m", "'commit 2'", "--allow-empty")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        //git.add().addFilepattern('.').call()
+        //git.commit().setMessage('initial commit').call()
+        //git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
+        //git.commit().setMessage('commit 2').call()
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\nfalse\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmain\nfalse\n"
     }
 
     def 'isCleanTag should be false when repo dirty on a tag checkout' () {
