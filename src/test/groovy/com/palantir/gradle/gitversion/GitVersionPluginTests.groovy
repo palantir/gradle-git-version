@@ -87,6 +87,9 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        println "git version is"
+        println git.runGitCommand("version")
+        println git.runGitCommand("describe", "--tags", "--always",  "--first-parent")
         //git.add().addFilepattern('.').call()
         //git.commit().setMessage('initial commit').call()
         //git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
@@ -443,9 +446,13 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        // Git git = Git.init().setDirectory(projectDir).call()
+        // git.add().addFilepattern('.').call()
+        // git.commit().setMessage('initial commit').call()
         dirtyContentFile << 'dirty-content'
 
         when:
@@ -471,7 +478,13 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
+        NativeGitImpl git = new NativeGitImpl(projectDir)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        git.runGitCommand("commit", "-m", "'commit 2'", "--allow-empty")
+        //Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         def commit1 = git.commit().setMessage('initial commit').call()
         git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
