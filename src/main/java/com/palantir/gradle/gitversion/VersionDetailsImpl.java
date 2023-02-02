@@ -28,13 +28,17 @@ final class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
+
+    private static final String DOT_GIT_DIR_PATH = ".git/";
     private final GitVersionArgs args;
 
     private NativeGitImpl nativeGitInvoker;
 
     VersionDetailsImpl(File gitDir, GitVersionArgs args) {
         this.args = args;
-        this.nativeGitInvoker = new NativeGitImpl(gitDir);
+        String gitDirStr = gitDir.toString();
+        String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
+        this.nativeGitInvoker = new NativeGitImpl(new File(projectDir));
     }
 
     @Override
@@ -42,8 +46,6 @@ final class VersionDetailsImpl implements VersionDetails {
         if (description() == null) {
             return "unspecified";
         }
-        // String result = nativeGitInvoker.getStatusOutput();
-        // return result;
         return description() + (isClean() ? "" : ".dirty");
     }
 

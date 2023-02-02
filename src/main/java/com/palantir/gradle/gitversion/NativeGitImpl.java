@@ -25,8 +25,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,10 +50,16 @@ class NativeGitImpl implements NativeGit {
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
+        return runGitCmd(new HashMap<String, String>(), commands);
+    }
+
+    private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
         List<String> cmdInput = new ArrayList<>();
         cmdInput.add("git");
         cmdInput.addAll(Arrays.asList(commands));
         ProcessBuilder pb = new ProcessBuilder(cmdInput);
+        Map<String, String> environment = pb.environment();
+        environment.putAll(envvars);
         pb.directory(directory);
         pb.redirectErrorStream(true);
 
@@ -66,26 +74,29 @@ class NativeGitImpl implements NativeGit {
             builder.append(System.getProperty("line.separator"));
         }
 
-        process.waitFor();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            // return "";
-            return Integer.toString(exitCode);
+            return "";
+            // return Integer.toString(exitCode);
         }
 
         return builder.toString().trim();
     }
 
-    public String runGitCommand(String... command) {
+    public String runGitCommand(Map<String, String> envvar, String... command) {
         if (!gitCommandExists()) {
             return null;
         }
         try {
-            return runGitCmd(command);
+            return runGitCmd(envvar, command);
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git command {} failed.\n", command, e);
             return null;
         }
+    }
+
+    public String runGitCommand(String... command) {
+        return runGitCommand(new HashMap<>(), command);
     }
 
     @Override
@@ -94,7 +105,11 @@ class NativeGitImpl implements NativeGit {
             return null;
         }
         try {
-            return runGitCmd("branch", "--show-current");
+            String branch = runGitCmd("branch", "--show-current");
+            if (branch.isEmpty()) {
+                return null;
+            }
+            return branch;
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git branch --show-current failed", e);
             return null;
@@ -107,11 +122,7 @@ class NativeGitImpl implements NativeGit {
             return null;
         }
         try {
-            String branch = getCurrentBranch();
-            if (branch == null) {
-                return null;
-            }
-            return runGitCmd("show-ref", branch, "--hash");
+            return runGitCmd("rev-parse", "HEAD");
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git branch --show-current failed", e);
             return null;

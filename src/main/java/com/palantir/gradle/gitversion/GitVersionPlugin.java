@@ -78,6 +78,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
     }
 
     private static File scanForRootGitDir(File currentRoot) {
+        // System.out.println("current folder is " + currentRoot.toString());
         File gitDir = new File(currentRoot, ".git");
 
         if (gitDir.exists()) {
