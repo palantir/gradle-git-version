@@ -86,12 +86,12 @@ class NativeGitImpl implements NativeGit {
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             return "";
-            // return Integer.toString(exitCode);
         }
 
         return builder.toString().trim();
     }
 
+    @Override
     public String runGitCommand(Map<String, String> envvar, String... command) {
         if (!gitCommandExists()) {
             return null;
@@ -104,6 +104,7 @@ class NativeGitImpl implements NativeGit {
         }
     }
 
+    @Override
     public String runGitCommand(String... command) {
         return runGitCommand(new HashMap<>(), command);
     }
@@ -158,20 +159,7 @@ class NativeGitImpl implements NativeGit {
         try {
             return runGitCmd("rev-parse", "HEAD");
         } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git branch --show-current failed", e);
-            return null;
-        }
-    }
-
-    public String getStatusOutput() {
-        if (!gitCommandExists()) {
-            return null;
-        }
-        try {
-            String result = runGitCmd("-C", directory.getAbsolutePath(), "status", "--porcelain");
-            return result;
-        } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git status --porcelain failed", e);
+            log.debug("Native git rev-parse HEAD failed", e);
             return null;
         }
     }

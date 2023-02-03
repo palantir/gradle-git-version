@@ -32,7 +32,7 @@ public class VersionDetailsTest {
 
     @TempDir
     public File temporaryFolder;
-    // private Git git;
+
     private NativeGitImpl git;
 
     final String formattedTime = "'2005-04-07T22:13:13'";
@@ -53,9 +53,6 @@ public class VersionDetailsTest {
         write(new File(folderToLinkTo, "dummyFile"));
         Files.createSymbolicLink(temporaryFolder.toPath().resolve("folderLink"), folderToLinkTo.toPath());
 
-        /*git.add().addFilepattern(".").call();
-        git.commit().setMessage("initial commit").call();
-        git.tag().setAnnotated(true).setMessage("unused").setName("1.0.0").call();*/
         git.runGitCommand("add", ".");
         git.runGitCommand("commit", "-m", "'initial commit'");
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0");

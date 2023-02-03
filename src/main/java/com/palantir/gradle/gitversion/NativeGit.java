@@ -16,6 +16,8 @@
 
 package com.palantir.gradle.gitversion;
 
+import java.util.Map;
+
 interface NativeGit {
 
     /**
@@ -37,5 +39,21 @@ interface NativeGit {
      */
     String getCurrentBranch();
 
+    /**
+     * Mimics behavior of 'git rev-parse HEAD'.
+     * @return the full commit hash of the current HEAD
+     */
     String getCurrentHeadFullHash();
+
+    /**
+     * Runs the git command supplied in the argument.
+     * @return the stdout of the git command
+     */
+    String runGitCommand(String... command);
+
+    /**
+     * Runs the git command supplied in the argument given the environment variables in the envvar.
+     * @return the stdout of the git command
+     */
+    String runGitCommand(Map<String, String> envvar, String... command);
 }
