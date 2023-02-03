@@ -16,6 +16,7 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import java.io.BufferedReader;
@@ -47,6 +48,14 @@ class NativeGitImpl implements NativeGit {
 
     NativeGitImpl(File directory) {
         this.directory = directory;
+    }
+
+    @VisibleForTesting
+    NativeGitImpl(File directory, boolean testing) {
+        this.directory = directory;
+        if (testing && !checkIfUserIsSet()) {
+            setGitUser();
+        }
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
@@ -97,6 +106,31 @@ class NativeGitImpl implements NativeGit {
 
     public String runGitCommand(String... command) {
         return runGitCommand(new HashMap<>(), command);
+    }
+
+    private boolean checkIfUserIsSet() {
+        if (!gitCommandExists()) {
+            return false;
+        }
+        try {
+            String userEmail = runGitCmd("config", "user.email");
+            if (userEmail.isEmpty()) {
+                return false;
+            }
+            return true;
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git config user.email failed", e);
+            return false;
+        }
+    }
+
+    private void setGitUser() {
+        try {
+            runGitCommand("config", "user.email", "email@example.com");
+            runGitCommand("config", "user.name", "name");
+        } catch (RuntimeException e) {
+            log.debug("Native git set user failed", e);
+        }
     }
 
     @Override
