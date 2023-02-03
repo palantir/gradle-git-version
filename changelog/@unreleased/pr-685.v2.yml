@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: remove jgit with native git
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/685
