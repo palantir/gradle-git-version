@@ -126,8 +126,8 @@ class NativeGitImpl implements NativeGit {
 
     private void setGitUser() {
         try {
-            runGitCommand("config", "user.email", "email@example.com");
-            runGitCommand("config", "user.name", "name");
+            runGitCommand("config", "--global", "user.email", "email@example.com");
+            runGitCommand("config", "--global", "user.name", "name");
         } catch (RuntimeException e) {
             log.debug("Native git set user failed", e);
         }

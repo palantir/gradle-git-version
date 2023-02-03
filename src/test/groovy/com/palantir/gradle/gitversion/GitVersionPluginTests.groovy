@@ -83,6 +83,7 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
         NativeGitImpl git = new NativeGitImpl(rootFolder, true)
+        git.runGitCommand("")
         git.runGitCommand("init", rootFolder.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
