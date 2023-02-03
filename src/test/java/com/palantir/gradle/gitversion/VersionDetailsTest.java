@@ -55,7 +55,7 @@ public class VersionDetailsTest {
 
         git.runGitCommand("add", ".");
         git.runGitCommand("commit", "-m", "'initial commit'");
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0");
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "unused");
 
         assertThat(versionDetails().getVersion()).isEqualTo("1.0.0");
     }
