@@ -29,7 +29,7 @@ final class VersionDetailsImpl implements VersionDetails {
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
-    private static final String DOT_GIT_DIR_PATH = ".git/";
+    private static final String DOT_GIT_DIR_PATH = "/.git";
     private final GitVersionArgs args;
 
     private NativeGitImpl nativeGitInvoker;

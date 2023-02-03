@@ -22,11 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Date;
-import java.util.TimeZone;
-import org.eclipse.jgit.api.Git;
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.PersonIdent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,16 +33,15 @@ public class VersionDetailsTest {
 
     @TempDir
     public File temporaryFolder;
+    // private Git git;
+    private NativeGitImpl git;
 
-    private Git git;
-
-    @SuppressWarnings({"JdkObsolete", "JavaUtilDate"}) // Suppress usage of 'java.util.Date'
-    private static final PersonIdent IDENTITY =
-            new PersonIdent("name", "email@address", new Date(1234L), TimeZone.getTimeZone("UTC"));
+    final String formattedTime = "'2005-04-07T22:13:13'";
 
     @BeforeEach
     public void before() throws GitAPIException {
-        git = Git.init().setDirectory(temporaryFolder).call();
+        this.git = new NativeGitImpl(temporaryFolder, true);
+        git.runGitCommand("init", temporaryFolder.toString());
     }
 
     @Test
@@ -57,36 +54,59 @@ public class VersionDetailsTest {
         write(new File(folderToLinkTo, "dummyFile"));
         Files.createSymbolicLink(temporaryFolder.toPath().resolve("folderLink"), folderToLinkTo.toPath());
 
-        git.add().addFilepattern(".").call();
+        /*git.add().addFilepattern(".").call();
         git.commit().setMessage("initial commit").call();
-        git.tag().setAnnotated(true).setMessage("unused").setName("1.0.0").call();
+        git.tag().setAnnotated(true).setMessage("unused").setName("1.0.0").call();*/
+        git.runGitCommand("add", ".");
+        git.runGitCommand("commit", "-m", "'initial commit'");
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0");
 
         assertThat(versionDetails().getVersion()).isEqualTo("1.0.0");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
-        git.add().addFilepattern(".").call();
-        git.commit()
-                .setAuthor(IDENTITY)
-                .setCommitter(IDENTITY)
-                .setMessage("initial commit")
-                .call();
+        git.runGitCommand("add", ".");
+        Map<String, String> envvar = new HashMap<>();
+        envvar.put("GIT_COMMITTER_DATE", formattedTime);
+        envvar.put("TZ", "UTC");
+        git.runGitCommand(
+                envvar,
+                "-c",
+                "user.name='name'",
+                "-c",
+                "user.email=email@address",
+                "commit",
+                "--author='name <email@address>'",
+                "-m",
+                "'initial commit'",
+                "--date=" + formattedTime,
+                "--allow-empty");
 
-        assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed");
+        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
-        git.add().addFilepattern(".").call();
-        git.commit()
-                .setAuthor(IDENTITY)
-                .setCommitter(IDENTITY)
-                .setMessage("initial commit")
-                .call();
+        git.runGitCommand("add", ".");
+        Map<String, String> envvar = new HashMap<>();
+        envvar.put("GIT_COMMITTER_DATE", formattedTime);
+        git.runGitCommand(
+                envvar,
+                "-c",
+                "user.name='name'",
+                "-c",
+                "user.email=email@address",
+                "commit",
+                "--author='name <email@address>'",
+                "-m",
+                "'initial commit'",
+                "--date=" + formattedTime,
+                "--allow-empty");
+
         write(new File(temporaryFolder, "foo"));
 
-        assertThat(versionDetails().getVersion()).isEqualTo("6f0c7ed.dirty");
+        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555.dirty");
     }
 
     private File write(File file) throws IOException {
@@ -95,6 +115,7 @@ public class VersionDetailsTest {
     }
 
     private VersionDetails versionDetails() {
-        return new VersionDetailsImpl(git.getRepository().getDirectory(), new GitVersionArgs());
+        String gitDir = temporaryFolder.toString() + "/.git";
+        return new VersionDetailsImpl(new File(gitDir), new GitVersionArgs());
     }
 }
