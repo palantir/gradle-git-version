@@ -349,7 +349,7 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         NativeGitImpl git = new NativeGitImpl(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("init", projectDir.toString(), "--initial-branch=master")
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
@@ -362,7 +362,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmain\ntrue\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmaster\ntrue\n"
     }
 
     def 'version details can be accessed using extra properties method' () {
@@ -412,7 +412,7 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         NativeGitImpl git = new NativeGitImpl(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("init", projectDir.toString(), "--initial-branch=master")
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
@@ -427,7 +427,7 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmain\nfalse\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\nfalse\n"
     }
 
     def 'isCleanTag should be false when repo dirty on a tag checkout' () {
