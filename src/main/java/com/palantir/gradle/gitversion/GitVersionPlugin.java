@@ -16,35 +16,52 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.google.common.collect.ImmutableMap;
 import groovy.lang.Closure;
-import java.io.File;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.provider.Provider;
 
 public final class GitVersionPlugin implements Plugin<Project> {
-    private final Timer timer = new Timer();
 
     @Override
     public void apply(final Project project) {
-        project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
+        Provider<GitVersionCacheService> serviceProvider = project.getGradle()
+                .getSharedServices()
+                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, spec -> {
+                    // Provide some parameters
+                    spec.getMaxParallelUsages().set(1);
+                    spec.getParameters().getProject().set(project);
+                });
 
-        final File git = gitRepo(project);
+        if (project.getRootProject() == project) {
+            BuildScanPluginInterop.addBuildScanCustomValues(project, () -> {
+                Timer timer = serviceProvider.get().timer();
+
+                String timerJson = timer.toJson();
+
+                long totalTime = timer.totalMillis();
+
+                return ImmutableMap.of(
+                        "com.palantir.git-version.timings",
+                        timerJson,
+                        "com.palantir.git-version.timings.total",
+                        Long.toString(totalTime));
+            });
+        }
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
-            public String doCall(Object args) {
-                return TimingVersionDetails.wrap(
-                                timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
-                        .getVersion();
+            public String doCall(Object _args) {
+                return serviceProvider.get().getGitVersion();
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
-            public VersionDetails doCall(Object args) {
-                return TimingVersionDetails.wrap(
-                        timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
+            public VersionDetails doCall(Object _args) {
+                return serviceProvider.get().getVersionDetails();
             }
         });
 
@@ -58,38 +75,5 @@ public final class GitVersionPlugin implements Plugin<Project> {
         });
         printVersionTask.setGroup("Versioning");
         printVersionTask.setDescription("Prints the project's configured version to standard out");
-    }
-
-    Timer timer() {
-        return timer;
-    }
-
-    private File gitRepo(Project project) {
-        File gitDir = getRootGitDir(project.getProjectDir());
-        return gitDir;
-    }
-
-    private static File getRootGitDir(File currentRoot) {
-        File gitDir = scanForRootGitDir(currentRoot);
-        if (!gitDir.exists()) {
-            throw new IllegalArgumentException("Cannot find '.git' directory");
-        }
-        return gitDir;
-    }
-
-    private static File scanForRootGitDir(File currentRoot) {
-        File gitDir = new File(currentRoot, ".git");
-
-        if (gitDir.exists()) {
-            return gitDir;
-        }
-
-        // stop at the root directory, return non-existing File object;
-        if (currentRoot.getParentFile() == null) {
-            return gitDir;
-        }
-
-        // look in parent directory;
-        return scanForRootGitDir(currentRoot.getParentFile());
     }
 }
