@@ -5,11 +5,8 @@ com.google.guava:failureaccess:1.0.1 (1 constraints: 140ae1b4)
 com.google.guava:guava:31.1-jre (1 constraints: 47069c47)
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 com.google.j2objc:j2objc-annotations:1.3 (1 constraints: b809eda0)
-com.googlecode.javaewah:JavaEWAH:1.1.13 (1 constraints: 760eef5e)
 org.checkerframework:checker-qual:3.12.0 (1 constraints: 480a3bbf)
-org.eclipse.jgit:org.eclipse.jgit:6.1.0.202203080745-r (1 constraints: 37081099)
 org.immutables:value:2.9.3 (1 constraints: 10051336)
-org.slf4j:slf4j-api:1.7.30 (1 constraints: 7b0e085f)
 
 [Test dependencies]
 com.fasterxml.jackson.core:jackson-annotations:2.14.1 (1 constraints: 88123921)

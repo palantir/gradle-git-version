@@ -16,11 +16,6 @@
 package com.palantir.gradle.gitversion
 
 import java.nio.file.Files
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.MergeCommand
-import org.eclipse.jgit.lib.PersonIdent
-import org.eclipse.jgit.lib.Ref
-import org.eclipse.jgit.revwalk.RevCommit
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification

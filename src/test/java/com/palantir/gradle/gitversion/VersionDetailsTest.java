@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,7 +38,7 @@ public class VersionDetailsTest {
     final String formattedTime = "'2005-04-07T22:13:13'";
 
     @BeforeEach
-    public void before() throws GitAPIException {
+    public void before() {
         this.git = new NativeGitImpl(temporaryFolder, true);
         git.runGitCommand("init", temporaryFolder.toString());
     }
