@@ -35,10 +35,10 @@ final class VersionDetailsImpl implements VersionDetails {
     private NativeGitImpl nativeGitInvoker;
 
     VersionDetailsImpl(File gitDir, GitVersionArgs args) {
-        this.args = args;
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
         this.nativeGitInvoker = new NativeGitImpl(new File(projectDir));
+        this.args = args;
     }
 
     @Override

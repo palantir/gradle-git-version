@@ -47,11 +47,17 @@ class NativeGitImpl implements NativeGit {
     private final File directory;
 
     NativeGitImpl(File directory) {
+        if (!gitCommandExists()) {
+            throw new RuntimeException("Git not found in project");
+        }
         this.directory = directory;
     }
 
     @VisibleForTesting
     NativeGitImpl(File directory, boolean testing) {
+        if (!gitCommandExists()) {
+            throw new RuntimeException("Git not found in project");
+        }
         this.directory = directory;
         if (testing && !checkIfUserIsSet()) {
             setGitUser();
@@ -59,7 +65,7 @@ class NativeGitImpl implements NativeGit {
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
-        return runGitCmd(new HashMap<String, String>(), commands);
+        return runGitCmd(new HashMap<>(), commands);
     }
 
     private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
@@ -93,9 +99,6 @@ class NativeGitImpl implements NativeGit {
 
     @Override
     public String runGitCommand(Map<String, String> envvar, String... command) {
-        if (!gitCommandExists()) {
-            return null;
-        }
         try {
             return runGitCmd(envvar, command);
         } catch (IOException | InterruptedException | RuntimeException e) {
@@ -110,9 +113,6 @@ class NativeGitImpl implements NativeGit {
     }
 
     private boolean checkIfUserIsSet() {
-        if (!gitCommandExists()) {
-            return false;
-        }
         try {
             String userEmail = runGitCmd("config", "user.email");
             if (userEmail.isEmpty()) {
@@ -136,9 +136,6 @@ class NativeGitImpl implements NativeGit {
 
     @Override
     public String getCurrentBranch() {
-        if (!gitCommandExists()) {
-            return null;
-        }
         try {
             String branch = runGitCmd("branch", "--show-current");
             if (branch.isEmpty()) {
@@ -153,9 +150,6 @@ class NativeGitImpl implements NativeGit {
 
     @Override
     public String getCurrentHeadFullHash() {
-        if (!gitCommandExists()) {
-            return null;
-        }
         try {
             return runGitCmd("rev-parse", "HEAD");
         } catch (IOException | InterruptedException | RuntimeException e) {
@@ -166,9 +160,6 @@ class NativeGitImpl implements NativeGit {
 
     @Override
     public Boolean isClean() {
-        if (!gitCommandExists()) {
-            return null;
-        }
         try {
             String result = runGitCmd("status", "--porcelain");
             if (result.isEmpty()) {
@@ -183,10 +174,6 @@ class NativeGitImpl implements NativeGit {
 
     @Override
     public String describe(String prefix) {
-        if (!gitCommandExists()) {
-            return null;
-        }
-
         try {
             // Get SHAs of all tags, we only need to search for these later on
             Set<String> tagRefs = new HashSet<>();

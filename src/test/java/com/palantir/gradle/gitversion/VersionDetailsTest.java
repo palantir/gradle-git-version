@@ -61,7 +61,7 @@ public class VersionDetailsTest {
     }
 
     @Test
-    public void short_sha_when_no_annotated_tags_are_present() throws Exception {
+    public void short_sha_when_no_annotated_tags_are_present() {
         git.runGitCommand("add", ".");
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
