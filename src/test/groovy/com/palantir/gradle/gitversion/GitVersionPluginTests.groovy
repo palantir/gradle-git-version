@@ -417,6 +417,7 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("commit", "-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
         git.runGitCommand("commit", "-m", "'commit 2'", "--allow-empty")
+        println "projectDir is "+ projectDir.getAbsolutePath()
         // Git git = Git.init().setDirectory(projectDir).call()
         //git.add().addFilepattern('.').call()
         //git.commit().setMessage('initial commit').call()
