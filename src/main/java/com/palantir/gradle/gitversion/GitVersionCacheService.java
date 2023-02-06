@@ -24,9 +24,11 @@ import org.gradle.api.services.BuildServiceParameters;
 
 public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
 
-    private final Timer timer = new Timer();
+    private final Timer timer;
 
-    public GitVersionCacheService() {}
+    public GitVersionCacheService() {
+        timer = new Timer();
+    }
 
     public final String getGitVersion(String project, Object args) {
         Git git = gitRepo(new File(project));
