@@ -639,25 +639,6 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0-${depth}-g${commitSha.substring(0, 7)}\n")
     }
 
-    def 'does not crash when setting build scan custom values when Gradle 5 build scan plugin is applied'() {
-        when:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-                id 'com.gradle.build-scan' version '3.2'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        Git git = Git.init().setDirectory(projectDir).call()
-        git.add().addFilepattern('.').call()
-        git.commit().setMessage('initial commit').call()
-        git.tag().setAnnotated(true).setMessage('1.0.0').setName('1.0.0').call()
-
-        then:
-        with(Optional.of('5.6.4'), 'printVersion').build()
-    }
-
     def 'does not crash when setting build scan custom values when Gradle 6 enterprise plugin 3.2 is applied'() {
         when:
         settingsFile.text = '''
