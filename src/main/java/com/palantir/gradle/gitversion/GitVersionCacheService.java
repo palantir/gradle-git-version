@@ -19,31 +19,23 @@ import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.gradle.api.provider.Property;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 
-public abstract class GitVersionCacheService implements BuildService<GitVersionCacheService.Params> {
+public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
 
     private final Timer timer = new Timer();
-    private final Git git;
 
-    interface Params extends BuildServiceParameters {
+    public GitVersionCacheService() {}
 
-        Property<String> getProject();
-    }
-
-    public GitVersionCacheService() {
-        final String project = getParameters().getProject().get();
-        this.git = gitRepo(new File(project));
-    }
-
-    public final String getGitVersion(Object args) {
+    public final String getGitVersion(String project, Object args) {
+        Git git = gitRepo(new File(project));
         return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
                 .getVersion();
     }
 
-    public final VersionDetails getVersionDetails(Object args) {
+    public final VersionDetails getVersionDetails(String project, Object args) {
+        Git git = gitRepo(new File(project));
         return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
     }
 

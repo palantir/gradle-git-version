@@ -33,9 +33,6 @@ public final class GitVersionPlugin implements Plugin<Project> {
                 .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, spec -> {
                     // Provide some parameters
                     spec.getMaxParallelUsages().set(1);
-                    spec.getParameters()
-                            .getProject()
-                            .set(project.getProjectDir().toString());
                 });
 
         if (project.getRootProject() == project) {
@@ -57,13 +54,17 @@ public final class GitVersionPlugin implements Plugin<Project> {
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
-                return serviceProvider.get().getGitVersion(args);
+                return serviceProvider
+                        .get()
+                        .getGitVersion(project.getProjectDir().toString(), args);
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
-                return serviceProvider.get().getVersionDetails(args);
+                return serviceProvider
+                        .get()
+                        .getVersionDetails(project.getProjectDir().toString(), args);
             }
         });
 
