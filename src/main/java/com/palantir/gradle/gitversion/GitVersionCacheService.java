@@ -19,48 +19,41 @@ import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 
-public abstract class GitVersionCacheService implements BuildService<GitVersionCacheService.Params>, AutoCloseable {
+public abstract class GitVersionCacheService implements BuildService<GitVersionCacheService.Params> {
 
     private final Timer timer = new Timer();
+    private final Git git;
 
     interface Params extends BuildServiceParameters {
-        Property<Object> getArgs();
 
-        Property<Project> getProject();
+        Property<String> getProject();
     }
-
-    private final String gitVersion;
-    private final VersionDetails versionDetails;
 
     public GitVersionCacheService() {
-        Object args = getParameters().getArgs().get();
-        final Project project = getParameters().getProject().get();
-        final Git git = gitRepo(project);
-        versionDetails =
-                TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
-        gitVersion = versionDetails.getVersion();
+        final String project = getParameters().getProject().get();
+        this.git = gitRepo(new File(project));
     }
 
-    public final String getGitVersion() {
-        return gitVersion;
+    public final String getGitVersion(Object args) {
+        return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
+                .getVersion();
     }
 
-    public final VersionDetails getVersionDetails() {
-        return versionDetails;
+    public final VersionDetails getVersionDetails(Object args) {
+        return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
     }
 
     public final Timer timer() {
         return timer;
     }
 
-    private Git gitRepo(Project project) {
+    private Git gitRepo(File project) {
         try {
-            File gitDir = getRootGitDir(project.getProjectDir());
+            File gitDir = getRootGitDir(project);
             return Git.wrap(new FileRepository(gitDir));
         } catch (IOException e) {
             throw new RuntimeException(e);
