@@ -447,6 +447,10 @@ class GitVersionPluginTests extends Specification {
                 id 'com.palantir.git-version'
             }
             version gitVersion()
+            subprojects {
+                apply plugin: 'com.palantir.git-version'
+                version gitVersion()
+            }
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call()
@@ -562,9 +566,7 @@ class GitVersionPluginTests extends Specification {
             plugins {
                 id 'com.palantir.git-version'
             }
-            version gitVersion()
-            subprojects {
-                apply plugin: 'com.palantir.git-version'
+            allprojects {
                 version gitVersion()
             }
         '''.stripIndent()
@@ -609,6 +611,52 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(":printVersion\n1.0.0\n")
+    }
+
+    def 'test build service cache results' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            subprojects {
+                apply plugin: 'com.palantir.git-version'
+                version gitVersion()
+            }
+        '''.stripIndent()
+        File subModuleDir1 = Files.createDirectories(projectDir.toPath().resolve('submodule1')).toFile()
+        File subModuleBuildFile1 = new File(subModuleDir1, 'build.gradle')
+        subModuleBuildFile1.createNewFile()
+        File subModuleDir2 = Files.createDirectories(projectDir.toPath().resolve('submodule2')).toFile()
+        File subModuleBuildFile2 = new File(subModuleDir2, 'build.gradle')
+        subModuleBuildFile2.createNewFile()
+        subModuleBuildFile2 << '''
+            printVersion {
+                doFirst{
+                    exec {
+                        commandLine 'git', 'tag', '-a', '2.0.0', '-m', '2.0.0'
+                    }
+                }
+            }
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        settingsFile << '''
+            include 'submodule1'
+            include 'submodule2'
+        '''.stripIndent()
+        Git git = Git.init().setDirectory(projectDir).call()
+        git.add().addFilepattern('.').call()
+        git.commit().setMessage('initial commit').call()
+        git.tag().setAnnotated(true).setName('1.0.0').setMessage("1.0.0").call()
+        BuildResult buildResult1 = with(':submodule1:printVersion').build()
+
+        when:
+        BuildResult buildResult2 = with(':submodule2:printVersion').build()
+
+        then:
+        buildResult1.output.contains(":printVersion\n1.0.0\n")
+        buildResult2.output.contains(":printVersion\n1.0.0\n")
     }
 
     def 'test tag set on deep commit' () {

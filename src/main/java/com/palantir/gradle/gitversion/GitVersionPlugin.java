@@ -32,7 +32,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
                 .getSharedServices()
                 .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, spec -> {
                     // Provide some parameters
-                    spec.getMaxParallelUsages().set(1);
+                    spec.getMaxParallelUsages().set(3);
                 });
 
         if (project.getRootProject() == project) {
