@@ -566,7 +566,7 @@ class GitVersionPluginTests extends Specification {
             subprojects {
                 apply plugin: 'com.palantir.git-version'
                 version gitVersion()
-            }            
+            }
         '''.stripIndent()
         gitIgnoreFile << 'build'
         Git git = Git.init().setDirectory(projectDir).call()
@@ -643,7 +643,6 @@ class GitVersionPluginTests extends Specification {
             include 'submodule1'
             include 'submodule2'
         '''.stripIndent()
-        println(projectDir.toString())
         Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
@@ -682,7 +681,6 @@ class GitVersionPluginTests extends Specification {
             include 'submodule1'
             include 'submodule2'
         '''.stripIndent()
-        println(projectDir.toString())
         Git git = Git.init().setDirectory(projectDir).call()
         git.add().addFilepattern('.').call()
         git.commit().setMessage('initial commit').call()
@@ -697,8 +695,6 @@ class GitVersionPluginTests extends Specification {
         BuildResult buildResult2 = with(':submodule2:printVersion').build()
 
         then:
-        println(buildResult1.output)
-        println(buildResult2.output)
         buildResult1.output.contains(":printVersion\n1.0.0\n")
         buildResult2.output.contains(":printVersion\n2.0.0\n")
     }

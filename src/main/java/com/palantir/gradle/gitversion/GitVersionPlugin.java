@@ -28,11 +28,12 @@ public final class GitVersionPlugin implements Plugin<Project> {
 
     @Override
     public void apply(final Project project) {
+        int maxParallelUsage = 2;
         Provider<GitVersionCacheService> serviceProvider = project.getGradle()
                 .getSharedServices()
                 .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, spec -> {
                     // Provide some parameters
-                    spec.getMaxParallelUsages().set(3);
+                    spec.getMaxParallelUsages().set(maxParallelUsage);
                 });
 
         if (project.getRootProject() == project) {
