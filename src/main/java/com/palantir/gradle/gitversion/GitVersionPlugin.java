@@ -16,7 +16,6 @@
 
 package com.palantir.gradle.gitversion;
 
-import com.google.common.collect.ImmutableMap;
 import groovy.lang.Closure;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -28,29 +27,11 @@ public final class GitVersionPlugin implements Plugin<Project> {
 
     @Override
     public void apply(final Project project) {
-        int maxParallelUsage = 2;
+        project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
+
         Provider<GitVersionCacheService> serviceProvider = project.getGradle()
                 .getSharedServices()
-                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, spec -> {
-                    // Provide some parameters
-                    spec.getMaxParallelUsages().set(maxParallelUsage);
-                });
-
-        if (project.getRootProject() == project) {
-            BuildScanPluginInterop.addBuildScanCustomValues(project, () -> {
-                Timer timer = serviceProvider.get().timer();
-
-                String timerJson = timer.toJson();
-
-                long totalTime = timer.totalMillis();
-
-                return ImmutableMap.of(
-                        "com.palantir.git-version.timings",
-                        timerJson,
-                        "com.palantir.git-version.timings.total",
-                        Long.toString(totalTime));
-            });
-        }
+                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {});
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
