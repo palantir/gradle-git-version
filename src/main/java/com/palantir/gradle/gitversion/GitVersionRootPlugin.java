@@ -29,9 +29,8 @@ final class GitVersionRootPlugin implements Plugin<Project> {
                     "The %s plugin must be applied to the root project", GitVersionRootPlugin.class.getSimpleName()));
         }
 
-        Provider<GitVersionCacheService> serviceProvider = project.getGradle()
-                .getSharedServices()
-                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {});
+        Provider<GitVersionCacheService> serviceProvider =
+                GitVersionCacheService.getSharedGitVersionCacheService(project);
 
         BuildScanPluginInterop.addBuildScanCustomValues(project, () -> {
             Timer timer = serviceProvider.get().timer();

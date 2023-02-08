@@ -17,8 +17,10 @@ package com.palantir.gradle.gitversion;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import org.gradle.api.Project;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 import org.slf4j.Logger;
@@ -29,7 +31,7 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
     private static final Logger log = LoggerFactory.getLogger(GitVersionCacheService.class);
 
     private final Timer timer = new Timer();
-    private final Map<GitVersionArgs, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<GitVersionArgs, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
 
     public final String getGitVersion(File project, Object args) {
         File gitDir = getRootGitDir(project);
@@ -83,5 +85,11 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
 
         // look in parent directory;
         return scanForRootGitDir(currentRoot.getParentFile());
+    }
+
+    public static Provider<GitVersionCacheService> getSharedGitVersionCacheService(Project project) {
+        return project.getGradle()
+                .getSharedServices()
+                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {});
     }
 }

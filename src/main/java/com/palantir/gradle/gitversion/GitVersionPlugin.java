@@ -29,9 +29,8 @@ public final class GitVersionPlugin implements Plugin<Project> {
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
 
-        Provider<GitVersionCacheService> serviceProvider = project.getGradle()
-                .getSharedServices()
-                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {});
+        Provider<GitVersionCacheService> serviceProvider =
+                GitVersionCacheService.getSharedGitVersionCacheService(project);
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
