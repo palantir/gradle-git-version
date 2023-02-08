@@ -106,7 +106,8 @@ public class VersionDetailsTest {
         return file;
     }
 
-    private VersionDetails versionDetails() {
-        return new VersionDetailsImpl(git, new GitVersionArgs());
+    private VersionDetails versionDetails() throws IOException {
+        File gitDir = new File(temporaryFolder.toString() + "/.git");
+        return new VersionDetailsImpl(gitDir, new GitVersionArgs());
     }
 }

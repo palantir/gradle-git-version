@@ -17,62 +17,48 @@ package com.palantir.gradle.gitversion;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
+import java.util.concurrent.ConcurrentHashMap;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
 
-    private final Timer timer;
-    private Map<String, VersionDetails> versionDetailsMap;
+    private static final Logger log = LoggerFactory.getLogger(GitVersionCacheService.class);
 
-    public GitVersionCacheService() {
-        timer = new Timer();
-        versionDetailsMap = new HashMap<>();
-    }
+    private final Timer timer = new Timer();
+    private final Map<GitVersionArgs, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
 
-    public final String getGitVersion(String project, Object args) {
-        File gitDir = getRootGitDir(new File(project));
+    public final String getGitVersion(File project, Object args) {
+        File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
-        String key = gitDir.toString() + "|" + gitVersionArgs.getPrefix();
-        if (versionDetailsMap.containsKey(key)) {
-            return versionDetailsMap.get(key).getVersion();
-        }
-        Git git = gitRepo(gitDir);
-        VersionDetails versionDetails =
-                TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
-        versionDetailsMap.put(key, versionDetails);
-        String gitVersion = versionDetails.getVersion();
+        String gitVersion = versionDetailsMap
+                .computeIfAbsent(gitVersionArgs, k -> createVersionDetails(gitDir, k))
+                .getVersion();
         return gitVersion;
     }
 
-    public final VersionDetails getVersionDetails(String project, Object args) {
-        File gitDir = getRootGitDir(new File(project));
+    public final VersionDetails getVersionDetails(File project, Object args) {
+        File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
-        String key = gitDir.toString() + "|" + gitVersionArgs.getPrefix();
-        if (versionDetailsMap.containsKey(key)) {
-            return versionDetailsMap.get(key);
-        }
-        Git git = gitRepo(gitDir);
         VersionDetails versionDetails =
-                TimingVersionDetails.wrap(timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
-        versionDetailsMap.put(key, versionDetails);
+                versionDetailsMap.computeIfAbsent(gitVersionArgs, k -> createVersionDetails(gitDir, k));
         return versionDetails;
+    }
+
+    private VersionDetails createVersionDetails(File gitDir, GitVersionArgs args) {
+        try {
+            return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(gitDir, args));
+        } catch (IOException e) {
+            log.debug("Cannot compute version details", e);
+            return null;
+        }
     }
 
     public final Timer timer() {
         return timer;
-    }
-
-    private Git gitRepo(File gitDir) {
-        try {
-            return Git.wrap(new FileRepository(gitDir));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static File getRootGitDir(File currentRoot) {
