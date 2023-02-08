@@ -1,5 +1,8 @@
-type: improvement
-improvement:
-  description: add caching to git describe
+type: break
+break:
+  description: "\n1. Caching is added to `gitVersion()` or `versionDetails()` to avoid
+    long configuration time caused by repeatedly calling git describe on subprojects.
+    \n2. The implementation uses BuildService which is introduced in Gradle 6.1. Therefore,
+    any version before Gradle 6.1 won't be supported. \n3. "
   links:
   - https://github.com/palantir/gradle-git-version/pull/684
