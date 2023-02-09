@@ -145,4 +145,4 @@ workflows:
 
       - publish:
           requires: [ check, trial-publish ]
-          filters: { tags: { only: /.*/ }, branches: { only: develop } }
+          filters: { branches: { ignore: develop } }
