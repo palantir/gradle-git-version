@@ -17,11 +17,13 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -37,8 +39,8 @@ final class VersionDetailsImpl implements VersionDetails {
     private final GitVersionArgs args;
     private volatile String maybeCachedDescription = null;
 
-    VersionDetailsImpl(Git git, GitVersionArgs args) {
-        this.git = git;
+    VersionDetailsImpl(File gitDir, GitVersionArgs args) throws IOException {
+        this.git = Git.wrap(new FileRepository(gitDir));
         this.args = args;
     }
 
