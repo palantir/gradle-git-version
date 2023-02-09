@@ -31,13 +31,14 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
     private static final Logger log = LoggerFactory.getLogger(GitVersionCacheService.class);
 
     private final Timer timer = new Timer();
-    private final ConcurrentMap<GitVersionArgs, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
 
     public final String getGitVersion(File project, Object args) {
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
+        String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
         String gitVersion = versionDetailsMap
-                .computeIfAbsent(gitVersionArgs, k -> createVersionDetails(gitDir, k))
+                .computeIfAbsent(key, _k -> createVersionDetails(gitDir, gitVersionArgs))
                 .getVersion();
         return gitVersion;
     }
@@ -45,8 +46,9 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
     public final VersionDetails getVersionDetails(File project, Object args) {
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
+        String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
         VersionDetails versionDetails =
-                versionDetailsMap.computeIfAbsent(gitVersionArgs, k -> createVersionDetails(gitDir, k));
+                versionDetailsMap.computeIfAbsent(key, _k -> createVersionDetails(gitDir, gitVersionArgs));
         return versionDetails;
     }
 
