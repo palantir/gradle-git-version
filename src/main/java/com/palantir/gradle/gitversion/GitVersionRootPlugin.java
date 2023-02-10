@@ -17,11 +17,9 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.provider.Provider;
 
 final class GitVersionRootPlugin implements Plugin<Project> {
     @Override
@@ -31,25 +29,19 @@ final class GitVersionRootPlugin implements Plugin<Project> {
                     "The %s plugin must be applied to the root project", GitVersionRootPlugin.class.getSimpleName()));
         }
 
+        Provider<GitVersionCacheService> serviceProvider =
+                GitVersionCacheService.getSharedGitVersionCacheService(project);
+
         BuildScanPluginInterop.addBuildScanCustomValues(project, () -> {
-            Map<String, Timer> projectPathToTimers = project.getAllprojects().stream()
-                    .filter(someProject -> someProject.getPlugins().hasPlugin(GitVersionPlugin.class))
-                    .collect(Collectors.toMap(Project::getPath, someProject -> someProject
-                            .getPlugins()
-                            .getPlugin(GitVersionPlugin.class)
-                            .timer()));
+            Timer timer = serviceProvider.get().timer();
 
-            Map<String, String> projectPathToTimerJson = Maps.transformValues(projectPathToTimers, Timer::toJson);
+            String timerJson = timer.toJson();
 
-            long totalTime = projectPathToTimers.values().stream()
-                    .mapToLong(Timer::totalMillis)
-                    .sum();
-
-            String allProjectTimingData = JsonUtils.mapToJson(projectPathToTimerJson);
+            long totalTime = timer.totalMillis();
 
             return ImmutableMap.of(
                     "com.palantir.git-version.timings",
-                    allProjectTimingData,
+                    timerJson,
                     "com.palantir.git-version.timings.total",
                     Long.toString(totalTime));
         });
