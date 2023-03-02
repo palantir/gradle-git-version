@@ -26,7 +26,9 @@ import java.util.Date;
 import java.util.TimeZone;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.util.SystemReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,8 +45,10 @@ public class VersionDetailsTest {
             new PersonIdent("name", "email@address", new Date(1234L), TimeZone.getTimeZone("UTC"));
 
     @BeforeEach
-    public void before() throws GitAPIException {
+    public void before() throws GitAPIException, ConfigInvalidException, IOException {
         git = Git.init().setDirectory(temporaryFolder).call();
+        // This allows tests to work in environments where unsupported options are in the user's global .gitconfig
+        SystemReader.getInstance().getUserConfig().clear();
     }
 
     @Test

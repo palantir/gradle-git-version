@@ -15,6 +15,8 @@
  */
 package com.palantir.gradle.gitversion
 
+import org.eclipse.jgit.util.SystemReader
+
 import java.nio.file.Files
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeCommand
@@ -49,6 +51,8 @@ class GitVersionPluginTests extends Specification {
             rootProject.name = 'gradle-test'
         '''.stripIndent()
         gitIgnoreFile << '.gradle\n'
+        //This allows tests to work in environments where unsupported options are in the user's global .gitconfig
+        SystemReader.getInstance().getUserConfig().clear();
     }
 
     def 'exception when project root does not have a git repo' () {
