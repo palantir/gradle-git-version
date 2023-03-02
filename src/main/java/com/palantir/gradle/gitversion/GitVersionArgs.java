@@ -24,6 +24,8 @@ class GitVersionArgs {
 
     private String prefix = "";
 
+    private VersionFormatter formatter;
+
     public String getPrefix() {
         return prefix;
     }
@@ -40,12 +42,27 @@ class GitVersionArgs {
         this.prefix = prefix;
     }
 
+    public VersionFormatter getFormatter() {
+        return formatter;
+    }
+
+    public void setFormatter(VersionFormatter formatter) {
+        this.formatter = formatter;
+    }
+
     // groovy closure invocation allows any number of args
     @SuppressWarnings("rawtypes")
     static GitVersionArgs fromGroovyClosure(Object... objects) {
         if (objects != null && objects.length > 0 && objects[0] instanceof Map) {
             GitVersionArgs instance = new GitVersionArgs();
-            instance.setPrefix(((Map) objects[0]).get("prefix").toString());
+            Map argsMap = (Map) objects[0];
+            instance.setPrefix(argsMap.get("prefix").toString());
+            Object maybeFormatter = argsMap.get("formatter");
+            if (maybeFormatter != null) {
+                Preconditions.checkArgument(
+                        (maybeFormatter instanceof VersionFormatter), "formatter must be a VersionFormatter");
+                instance.setFormatter((VersionFormatter) maybeFormatter);
+            }
             return instance;
         }
 

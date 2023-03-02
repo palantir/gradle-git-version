@@ -39,21 +39,21 @@ final class VersionDetailsImpl implements VersionDetails {
     private final GitVersionArgs args;
     private volatile String maybeCachedDescription = null;
 
+    private VersionFormatter formatter;
+
     VersionDetailsImpl(File gitDir, GitVersionArgs args) throws IOException {
         this.git = Git.wrap(new FileRepository(gitDir));
         this.args = args;
+        this.formatter = (args.getFormatter() != null) ? args.getFormatter() : VersionFormatter.defaultFormatter();
     }
 
     @Override
     public String getVersion() {
-        if (description() == null) {
-            return "unspecified";
-        }
-
-        return description() + (isClean() ? "" : ".dirty");
+        return formatter.format(this);
     }
 
-    private boolean isClean() {
+    @Override
+    public boolean isClean() {
         try {
             return git.status().call().isClean();
         } catch (GitAPIException e) {
@@ -61,7 +61,8 @@ final class VersionDetailsImpl implements VersionDetails {
         }
     }
 
-    private String description() {
+    @Override
+    public String getDescription() {
         if (maybeCachedDescription != null) {
             return maybeCachedDescription;
         }
@@ -114,7 +115,7 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean descriptionIsPlainTag() {
-        return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", description());
+        return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", getDescription());
     }
 
     @Override
@@ -123,18 +124,18 @@ final class VersionDetailsImpl implements VersionDetails {
             return 0;
         }
 
-        Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
-        Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", description());
+        Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(getDescription());
+        Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", getDescription());
         return Integer.parseInt(match.group(2));
     }
 
     @Override
     public String getLastTag() {
         if (descriptionIsPlainTag()) {
-            return description();
+            return getDescription();
         }
 
-        Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
+        Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(getDescription());
         return match.matches() ? match.group(1) : null;
     }
 

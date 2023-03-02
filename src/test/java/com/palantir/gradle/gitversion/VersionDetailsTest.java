@@ -39,6 +39,7 @@ public class VersionDetailsTest {
     public File temporaryFolder;
 
     private Git git;
+    private GitVersionArgs args = new GitVersionArgs();
 
     @SuppressWarnings({"JdkObsolete", "JavaUtilDate"}) // Suppress usage of 'java.util.Date'
     private static final PersonIdent IDENTITY =
@@ -105,6 +106,34 @@ public class VersionDetailsTest {
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
 
+    @Test
+    public void custom_formatter() throws Exception {
+        git.add().addFilepattern(".").call();
+        git.commit().setMessage("initial commit").call();
+        git.tag().setAnnotated(true).setMessage("unused").setName("1.0.0").call();
+
+        args.setFormatter(new TestFormatter());
+        VersionFormatter defaultFormatter = VersionFormatter.defaultFormatter();
+
+        VersionDetails details = versionDetails();
+        assertThat(details.getVersion()).isEqualTo("1.0.0-0-g" + details.getGitHash());
+        assertThat(details.getVersion()).isNotEqualTo(defaultFormatter.format(details));
+
+        // for all other situations, should just return the default
+        details = versionDetails();
+        git.commit().setMessage("second commit").call();
+        assertThat(details.getVersion()).isEqualTo(defaultFormatter.format(details));
+
+        details = versionDetails();
+        git.tag().setAnnotated(true).setMessage("unused").setName("1.0.0-rc0").call();
+        assertThat(details.getVersion()).isEqualTo(defaultFormatter.format(details));
+
+        details = versionDetails();
+        git.commit().setMessage("third commit").call();
+        git.tag().setAnnotated(true).setMessage("unused").setName("1.0.10").call();
+        assertThat(details.getVersion()).isEqualTo(defaultFormatter.format(details));
+    }
+
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
         return file;
@@ -112,6 +141,31 @@ public class VersionDetailsTest {
 
     private VersionDetails versionDetails() throws IOException {
         File gitDir = new File(temporaryFolder.toString() + "/.git");
-        return new VersionDetailsImpl(gitDir, new GitVersionArgs());
+        return new VersionDetailsImpl(gitDir, args);
+    }
+
+    /**
+     * Example alternative formatter. Treats .0 tags as if they were snapshots.  Formatters can shape the version
+     * returned in any variety of ways.  This is just an example.
+     */
+    static class TestFormatter implements VersionFormatter {
+        @Override
+        public String format(VersionDetails details) {
+            if (details.getDescription() == null) {
+                return "unspecified";
+            }
+
+            if (!details.getDescription().endsWith(".0")) {
+                return VersionFormatter.super.format(details);
+            }
+
+            // treat .0 tag as if it were a snapshot.
+            try {
+                String dirty = !details.isClean() ? ".dirty" : "";
+                return String.format("%s-0-g%s%s", details.getDescription(), details.getGitHash(), dirty);
+            } catch (IOException e) {
+                return "unspecified";
+            }
+        }
     }
 }

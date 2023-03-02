@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 Palantir Technologies Inc. All rights reserved.
+ * (c) Copyright 2023 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,16 @@
 
 package com.palantir.gradle.gitversion;
 
-import java.io.IOException;
+public interface VersionFormatter {
+    default String format(VersionDetails details) {
+        if (details.getDescription() == null) {
+            return "unspecified";
+        }
 
-public interface VersionDetails {
-    String getBranchName() throws IOException;
+        return details.getDescription() + (details.isClean() ? "" : ".dirty");
+    }
 
-    String getGitHashFull() throws IOException;
-
-    String getGitHash() throws IOException;
-
-    String getLastTag();
-
-    int getCommitDistance();
-
-    boolean getIsCleanTag();
-
-    String getVersion();
-
-    String getDescription();
-
-    boolean isClean();
+    static VersionFormatter defaultFormatter() {
+        return new VersionFormatter() {};
+    }
 }
