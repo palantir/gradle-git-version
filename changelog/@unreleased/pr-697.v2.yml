@@ -1,0 +1,5 @@
+type: feature
+feature:
+  description: Allow customization of the version string.
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/697
