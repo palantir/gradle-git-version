@@ -108,12 +108,12 @@ public class VersionDetailsTest {
     @Test
     public void git_version_result_is_being_cached() throws Exception {
         write(new File(temporaryFolder, "foo"));
-        git.add().addFilepattern(".").call();
-        git.commit().setMessage("initial commit").call();
-        git.tag().setAnnotated(true).setMessage("cached").setName("1.0.0").call();
+        git.runGitCommand("add", ".");
+        git.runGitCommand("commit", "-m", "initial commit");
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "cached");
         VersionDetails versionDetails = versionDetails();
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
-        git.tag().setAnnotated(true).setMessage("unused").setName("2.0.0").call();
+        git.runGitCommand("tag", "-a", "2.0.0", "-m", "unused");
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
 

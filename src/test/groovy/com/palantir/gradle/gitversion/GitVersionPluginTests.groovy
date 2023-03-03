@@ -15,8 +15,6 @@
  */
 package com.palantir.gradle.gitversion
 
-import org.eclipse.jgit.util.SystemReader
-
 import java.nio.file.Files
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -46,8 +44,6 @@ class GitVersionPluginTests extends Specification {
             rootProject.name = 'gradle-test'
         '''.stripIndent()
         gitIgnoreFile << '.gradle\n'
-        //This allows tests to work in environments where unsupported options are in the user's global .gitconfig
-        SystemReader.getInstance().getUserConfig().clear();
     }
 
     def 'exception when project root does not have a git repo' () {
@@ -81,11 +77,11 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
         NativeGitImpl git = new NativeGitImpl(rootFolder, true)
-        git.runGitCommand("")
         git.runGitCommand("init", rootFolder.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        println(projectDir)
 
         when:
         // will build the project at projectDir
