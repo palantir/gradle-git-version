@@ -59,10 +59,6 @@ public final class GitVersionPlugin implements Plugin<Project> {
         printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 
-    Timer timer() {
-        return timer;
-    }
-
     private File gitRepo(Project project) {
         File gitDir = getRootGitDir(project.getProjectDir());
         return gitDir;
