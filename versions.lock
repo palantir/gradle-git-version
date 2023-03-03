@@ -9,9 +9,9 @@ org.checkerframework:checker-qual:3.12.0 (1 constraints: 480a3bbf)
 org.immutables:value:2.9.3 (1 constraints: 10051336)
 
 [Test dependencies]
-com.fasterxml.jackson.core:jackson-annotations:2.14.1 (1 constraints: 88123921)
-com.fasterxml.jackson.core:jackson-core:2.14.1 (1 constraints: 88123921)
-com.fasterxml.jackson.core:jackson-databind:2.14.1 (1 constraints: 3a053c3b)
+com.fasterxml.jackson.core:jackson-annotations:2.14.2 (1 constraints: 89123a21)
+com.fasterxml.jackson.core:jackson-core:2.14.2 (1 constraints: 89123a21)
+com.fasterxml.jackson.core:jackson-databind:2.14.2 (1 constraints: 3b053d3b)
 junit:junit:4.13.2 (2 constraints: eb154ef7)
 net.bytebuddy:byte-buddy:1.12.21 (1 constraints: 7d0bbfea)
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 896455cc)

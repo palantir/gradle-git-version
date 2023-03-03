@@ -22,29 +22,28 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.provider.Provider;
 
 public final class GitVersionPlugin implements Plugin<Project> {
-    private final Timer timer = new Timer();
 
     @Override
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
 
         final File git = gitRepo(project);
+        Provider<GitVersionCacheService> serviceProvider =
+                GitVersionCacheService.getSharedGitVersionCacheService(project);
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
             public String doCall(Object args) {
-                return TimingVersionDetails.wrap(
-                                timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)))
-                        .getVersion();
+                return serviceProvider.get().getGitVersion(project.getProjectDir(), args);
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
             public VersionDetails doCall(Object args) {
-                return TimingVersionDetails.wrap(
-                        timer, new VersionDetailsImpl(git, GitVersionArgs.fromGroovyClosure(args)));
+                return serviceProvider.get().getVersionDetails(project.getProjectDir(), args);
             }
         });
 

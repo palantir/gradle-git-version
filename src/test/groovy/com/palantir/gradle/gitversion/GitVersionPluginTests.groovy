@@ -15,6 +15,8 @@
  */
 package com.palantir.gradle.gitversion
 
+import org.eclipse.jgit.util.SystemReader
+
 import java.nio.file.Files
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -44,6 +46,8 @@ class GitVersionPluginTests extends Specification {
             rootProject.name = 'gradle-test'
         '''.stripIndent()
         gitIgnoreFile << '.gradle\n'
+        //This allows tests to work in environments where unsupported options are in the user's global .gitconfig
+        SystemReader.getInstance().getUserConfig().clear();
     }
 
     def 'exception when project root does not have a git repo' () {
@@ -666,26 +670,6 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(":printVersion\n1.0.0-${depth}-g${latestCommit.substring(0, 7)}\n")
-    }
-
-    def 'does not crash when setting build scan custom values when Gradle 5 build scan plugin is applied'() {
-        when:
-        buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-                id 'com.gradle.build-scan' version '3.2'
-            }
-            version gitVersion()
-        '''.stripIndent()
-        gitIgnoreFile << 'build'
-        NativeGitImpl git = new NativeGitImpl(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-
-        then:
-        with(Optional.of('5.6.4'), 'printVersion').build()
     }
 
     def 'does not crash when setting build scan custom values when Gradle 6 enterprise plugin 3.2 is applied'() {

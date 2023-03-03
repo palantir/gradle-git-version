@@ -105,6 +105,18 @@ public class VersionDetailsTest {
         assertThat(versionDetails().getVersion()).isEqualTo("f0f4555.dirty");
     }
 
+    @Test
+    public void git_version_result_is_being_cached() throws Exception {
+        write(new File(temporaryFolder, "foo"));
+        git.add().addFilepattern(".").call();
+        git.commit().setMessage("initial commit").call();
+        git.tag().setAnnotated(true).setMessage("cached").setName("1.0.0").call();
+        VersionDetails versionDetails = versionDetails();
+        assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
+        git.tag().setAnnotated(true).setMessage("unused").setName("2.0.0").call();
+        assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
+    }
+
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
         return file;
