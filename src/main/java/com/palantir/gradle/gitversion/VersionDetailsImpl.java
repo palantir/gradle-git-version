@@ -32,12 +32,12 @@ final class VersionDetailsImpl implements VersionDetails {
     private static final String DOT_GIT_DIR_PATH = "/.git";
     private final GitVersionArgs args;
 
-    private NativeGitImpl nativeGitInvoker;
+    private GitImpl nativeGitInvoker;
 
     VersionDetailsImpl(File gitDir, GitVersionArgs args) {
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
-        this.nativeGitInvoker = new NativeGitImpl(new File(projectDir));
+        this.nativeGitInvoker = new GitImpl(new File(projectDir));
         this.args = args;
     }
 

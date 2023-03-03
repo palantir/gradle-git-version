@@ -33,13 +33,13 @@ public class VersionDetailsTest {
     @TempDir
     public File temporaryFolder;
 
-    private NativeGitImpl git;
+    private GitImpl git;
 
     final String formattedTime = "'2005-04-07T22:13:13'";
 
     @BeforeEach
     public void before() {
-        this.git = new NativeGitImpl(temporaryFolder, true);
+        this.git = new GitImpl(temporaryFolder, true);
         git.runGitCommand("init", temporaryFolder.toString());
     }
 

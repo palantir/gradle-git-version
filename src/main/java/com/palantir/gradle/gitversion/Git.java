@@ -18,7 +18,7 @@ package com.palantir.gradle.gitversion;
 
 import java.util.Map;
 
-interface NativeGit {
+interface Git {
 
     /**
      * Mimics behaviour of 'git describe --tags --always --first-parent --match=${prefix}*'

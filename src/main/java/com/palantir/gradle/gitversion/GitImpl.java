@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Mimics git describe by using rev-list to support versions of git < 1.8.4.
  */
-class NativeGitImpl implements NativeGit {
-    private static final Logger log = LoggerFactory.getLogger(NativeGitImpl.class);
+class GitImpl implements Git {
+    private static final Logger log = LoggerFactory.getLogger(GitImpl.class);
 
     private static final Splitter LINE_SPLITTER =
             Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
@@ -46,7 +46,7 @@ class NativeGitImpl implements NativeGit {
 
     private final File directory;
 
-    NativeGitImpl(File directory) {
+    GitImpl(File directory) {
         if (!gitCommandExists()) {
             throw new RuntimeException("Git not found in project");
         }
@@ -54,7 +54,7 @@ class NativeGitImpl implements NativeGit {
     }
 
     @VisibleForTesting
-    NativeGitImpl(File directory, boolean testing) {
+    GitImpl(File directory, boolean testing) {
         if (!gitCommandExists()) {
             throw new RuntimeException("Git not found in project");
         }
