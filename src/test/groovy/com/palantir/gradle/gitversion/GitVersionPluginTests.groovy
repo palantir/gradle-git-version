@@ -94,8 +94,8 @@ class GitVersionPluginTests extends Specification {
         given:
         File rootFolder = temporaryFolder
         projectDir = Files.createDirectories(rootFolder.toPath().resolve('level1/hotfix')).toFile()
-        File initializationDir = Files.createDirectories(rootFolder.toPath().resolve('level1/level2')).toFile()
-        buildFile = new File(initializationDir, 'build.gradle')
+        File initialDir = Files.createDirectories(rootFolder.toPath().resolve('level1/level2')).toFile()
+        buildFile = new File(initialDir, 'build.gradle')
         buildFile.createNewFile()
         buildFile << '''
             plugins {
@@ -103,12 +103,12 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
         '''.stripIndent()
-        new File(initializationDir, 'settings.gradle').createNewFile()
-        File initialGitIgnoreFile = new File(initializationDir, ".gitIgnore")
+        new File(initialDir, 'settings.gradle').createNewFile()
+        File initialGitIgnoreFile = new File(initialDir, ".gitIgnore")
         initialGitIgnoreFile.createNewFile()
         initialGitIgnoreFile << '.gradle\n'
-        Git git = new Git(initializationDir, true)
-        git.runGitCommand("init", initializationDir.toString())
+        Git git = new Git(initialDir, true)
+        git.runGitCommand("init", initialDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
