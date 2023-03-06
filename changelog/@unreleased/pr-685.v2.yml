@@ -1,5 +1,7 @@
 type: break
 break:
-  description: remove jgit with native git
+  description: |-
+    The PR removes all usage of jgit and use native git. The native git binary is now required for this plugin to work.
+    There are two major benefits: 1. Only calls git describe once now so the gitVersion() task is much faster. 2. The plugin current supports git worktree.
   links:
   - https://github.com/palantir/gradle-git-version/pull/685
