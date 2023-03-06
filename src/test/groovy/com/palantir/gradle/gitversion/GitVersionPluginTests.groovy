@@ -106,6 +106,7 @@ class GitVersionPluginTests extends Specification {
         new File(initialDir, 'settings.gradle').createNewFile()
         File initialGitIgnoreFile = new File(initialDir, ".gitIgnore")
         initialGitIgnoreFile.createNewFile()
+        initialGitIgnoreFile << 'build\n'
         initialGitIgnoreFile << '.gradle\n'
         Git git = new Git(initialDir, true)
         git.runGitCommand("init", initialDir.toString())
