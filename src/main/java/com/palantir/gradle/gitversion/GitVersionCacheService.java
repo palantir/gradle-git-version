@@ -16,7 +16,6 @@
 package com.palantir.gradle.gitversion;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.gradle.api.Project;
@@ -53,12 +52,7 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
     }
 
     private VersionDetails createVersionDetails(File gitDir, GitVersionArgs args) {
-        try {
-            return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(gitDir, args));
-        } catch (IOException e) {
-            log.debug("Cannot compute version details", e);
-            return null;
-        }
+        return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(gitDir, args));
     }
 
     public final Timer timer() {

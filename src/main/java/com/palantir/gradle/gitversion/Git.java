@@ -16,6 +16,7 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import java.io.BufferedReader;
@@ -25,8 +26,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +37,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Mimics git describe by using rev-list to support versions of git < 1.8.4.
  */
-class NativeGitDescribe implements GitDescribe {
-    private static final Logger log = LoggerFactory.getLogger(NativeGitDescribe.class);
+class Git {
+    private static final Logger log = LoggerFactory.getLogger(Git.class);
 
     private static final Splitter LINE_SPLITTER =
             Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
@@ -43,15 +46,32 @@ class NativeGitDescribe implements GitDescribe {
 
     private final File directory;
 
-    NativeGitDescribe(File directory) {
+    Git(File directory) {
+        this(directory, false);
+    }
+
+    @VisibleForTesting
+    Git(File directory, boolean testing) {
+        if (!gitCommandExists()) {
+            throw new RuntimeException("Git not found in project");
+        }
         this.directory = directory;
+        if (testing && !checkIfUserIsSet()) {
+            setGitUser();
+        }
     }
 
     private String runGitCmd(String... commands) throws IOException, InterruptedException {
+        return runGitCmd(new HashMap<>(), commands);
+    }
+
+    private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
         List<String> cmdInput = new ArrayList<>();
         cmdInput.add("git");
         cmdInput.addAll(Arrays.asList(commands));
         ProcessBuilder pb = new ProcessBuilder(cmdInput);
+        Map<String, String> environment = pb.environment();
+        environment.putAll(envvars);
         pb.directory(directory);
         pb.redirectErrorStream(true);
 
@@ -74,12 +94,77 @@ class NativeGitDescribe implements GitDescribe {
         return builder.toString().trim();
     }
 
-    @Override
-    public String describe(String prefix) {
-        if (!gitCommandExists()) {
+    public String runGitCommand(Map<String, String> envvar, String... command) {
+        try {
+            return runGitCmd(envvar, command);
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git command {} failed.\n", command, e);
             return null;
         }
+    }
 
+    public String runGitCommand(String... command) {
+        return runGitCommand(new HashMap<>(), command);
+    }
+
+    private boolean checkIfUserIsSet() {
+        try {
+            String userEmail = runGitCmd("config", "user.email");
+            if (userEmail.isEmpty()) {
+                return false;
+            }
+            return true;
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git config user.email failed", e);
+            return false;
+        }
+    }
+
+    private void setGitUser() {
+        try {
+            runGitCommand("config", "--global", "user.email", "email@example.com");
+            runGitCommand("config", "--global", "user.name", "name");
+        } catch (RuntimeException e) {
+            log.debug("Native git set user failed", e);
+        }
+    }
+
+    public String getCurrentBranch() {
+        try {
+            String branch = runGitCmd("branch", "--show-current");
+            if (branch.isEmpty()) {
+                return null;
+            }
+            return branch;
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git branch --show-current failed", e);
+            return null;
+        }
+    }
+
+    public String getCurrentHeadFullHash() {
+        try {
+            return runGitCmd("rev-parse", "HEAD");
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git rev-parse HEAD failed", e);
+            return null;
+        }
+    }
+
+    public Boolean isClean() {
+        try {
+            String result = runGitCmd("status", "--porcelain");
+            if (result.isEmpty()) {
+                return true;
+            }
+            return false;
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git status --porcelain failed", e);
+            return null;
+        }
+    }
+
+    public String describe(String prefix) {
         try {
             // Get SHAs of all tags, we only need to search for these later on
             Set<String> tagRefs = new HashSet<>();

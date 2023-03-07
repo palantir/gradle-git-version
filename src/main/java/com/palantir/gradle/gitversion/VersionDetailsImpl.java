@@ -21,12 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +29,15 @@ final class VersionDetailsImpl implements VersionDetails {
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
-    private final Git git;
+    private static final String DOT_GIT_DIR_PATH = "/.git";
     private final GitVersionArgs args;
-    private volatile String maybeCachedDescription = null;
 
-    VersionDetailsImpl(File gitDir, GitVersionArgs args) throws IOException {
-        this.git = Git.wrap(new FileRepository(gitDir));
+    private Git nativeGitInvoker;
+
+    VersionDetailsImpl(File gitDir, GitVersionArgs args) {
+        String gitDirStr = gitDir.toString();
+        String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
+        this.nativeGitInvoker = new Git(new File(projectDir));
         this.args = args;
     }
 
@@ -49,63 +46,25 @@ final class VersionDetailsImpl implements VersionDetails {
         if (description() == null) {
             return "unspecified";
         }
-
         return description() + (isClean() ? "" : ".dirty");
     }
 
     private boolean isClean() {
-        try {
-            return git.status().call().isClean();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
+        return nativeGitInvoker.isClean();
     }
 
     private String description() {
-        if (maybeCachedDescription != null) {
-            return maybeCachedDescription;
-        }
-
         String rawDescription = expensiveComputeRawDescription();
-        maybeCachedDescription =
+        String processedDescription =
                 rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
-        return maybeCachedDescription;
+        return processedDescription;
     }
 
     private String expensiveComputeRawDescription() {
-        if (isRepoEmpty()) {
-            log.debug("Repository is empty");
-            return null;
-        }
 
-        String nativeGitDescribe = new NativeGitDescribe(git.getRepository().getDirectory()).describe(args.getPrefix());
-        String jgitDescribe = new JGitDescribe(git).describe(args.getPrefix());
+        String nativeGitDescribe = nativeGitInvoker.describe(args.getPrefix());
 
-        // If native failed, return JGit one
-        if (nativeGitDescribe == null) {
-            return jgitDescribe;
-        }
-
-        // If native succeeded, make sure it's same as JGit one
-        Preconditions.checkState(
-                nativeGitDescribe.equals(jgitDescribe),
-                "Inconsistent git describe: native was %s and jgit was %s. "
-                        + "Please report this on github.com/palantir/gradle-git-version",
-                nativeGitDescribe,
-                jgitDescribe);
-
-        return jgitDescribe;
-    }
-
-    private boolean isRepoEmpty() {
-        // back-compat: the JGit "describe" command throws an exception in repositories with no commits, so call it
-        // first to preserve this behavior in cases where this call would fail but native "git" call does not.
-        try {
-            git.describe().call();
-            return false;
-        } catch (GitAPIException | RuntimeException ignored) {
-            return true;
-        }
+        return nativeGitDescribe;
     }
 
     @Override
@@ -150,22 +109,12 @@ final class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHashFull() throws IOException {
-        ObjectId objectId = git.getRepository().findRef(Constants.HEAD).getObjectId();
-        if (objectId == null) {
-            return null;
-        }
-
-        return objectId.name();
+        return nativeGitInvoker.getCurrentHeadFullHash();
     }
 
     @Override
     public String getBranchName() throws IOException {
-        Ref ref = git.getRepository().findRef(git.getRepository().getBranch());
-        if (ref == null) {
-            return null;
-        }
-
-        return ref.getName().substring(Constants.R_HEADS.length());
+        return nativeGitInvoker.getCurrentBranch();
     }
 
     @Override

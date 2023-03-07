@@ -41,7 +41,6 @@ sourceSets {
 
 dependencies {
     implementation gradleApi()
-    implementation 'org.eclipse.jgit:org.eclipse.jgit'
     implementation 'com.google.guava:guava'
 
     groovyImplementation localGroovy()
