@@ -93,9 +93,9 @@ class GitVersionPluginTests extends Specification {
     def 'git describe works when using worktree' () {
         given:
         File rootFolder = temporaryFolder
-        projectDir = Files.createDirectories(rootFolder.toPath().resolve('level1/newbranch')).toFile()
-        File initialDir = Files.createDirectories(rootFolder.toPath().resolve('level1/level2')).toFile()
-        buildFile = new File(initialDir, 'build.gradle')
+        projectDir = Files.createDirectories(rootFolder.toPath().resolve('worktree')).toFile()
+        File originalDir = Files.createDirectories(rootFolder.toPath().resolve('original')).toFile()
+        buildFile = new File(originalDir, 'build.gradle')
         buildFile.createNewFile()
         buildFile << '''
             plugins {
@@ -103,17 +103,17 @@ class GitVersionPluginTests extends Specification {
             }
             version gitVersion()
         '''.stripIndent()
-        new File(initialDir, 'settings.gradle').createNewFile()
-        File initialGitIgnoreFile = new File(initialDir, ".gitignore")
-        initialGitIgnoreFile.createNewFile()
-        initialGitIgnoreFile << '.gradle\n'
-        Git git = new Git(initialDir, true)
-        git.runGitCommand("init", initialDir.toString())
+        new File(originalDir, 'settings.gradle').createNewFile()
+        File originalGitIgnoreFile = new File(originalDir, ".gitignore")
+        originalGitIgnoreFile.createNewFile()
+        originalGitIgnoreFile << '.gradle\n'
+        Git git = new Git(originalDir, true)
+        git.runGitCommand("init", originalDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
         git.runGitCommand("branch", "newbranch")
-        git.runGitCommand("worktree", "add", "../newbranch", "newbranch")
+        git.runGitCommand("worktree", "add", "../worktree", "newbranch")
 
         when:
         // will build the project at projectDir
