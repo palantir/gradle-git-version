@@ -93,7 +93,7 @@ class GitVersionPluginTests extends Specification {
     def 'git describe works when using worktree' () {
         given:
         File rootFolder = temporaryFolder
-        projectDir = Files.createDirectories(rootFolder.toPath().resolve('level1/hotfix')).toFile()
+        projectDir = Files.createDirectories(rootFolder.toPath().resolve('level1/newbranch')).toFile()
         File initialDir = Files.createDirectories(rootFolder.toPath().resolve('level1/level2')).toFile()
         buildFile = new File(initialDir, 'build.gradle')
         buildFile.createNewFile()
@@ -112,8 +112,8 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        git.runGitCommand("branch", "hotfix")
-        git.runGitCommand("worktree", "add", "../hotfix", "hotfix")
+        git.runGitCommand("branch", "newbranch")
+        git.runGitCommand("worktree", "add", "../newbranch", "newbranch")
 
         when:
         // will build the project at projectDir
