@@ -81,7 +81,39 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        println(projectDir)
+
+        when:
+        // will build the project at projectDir
+        BuildResult buildResult = with('printVersion').build()
+
+        then:
+        buildResult.output.contains(":printVersion\n1.0.0\n")
+    }
+
+    def 'git describe works when using worktree' () {
+        given:
+        File rootFolder = temporaryFolder
+        projectDir = Files.createDirectories(rootFolder.toPath().resolve('worktree')).toFile()
+        File originalDir = Files.createDirectories(rootFolder.toPath().resolve('original')).toFile()
+        buildFile = new File(originalDir, 'build.gradle')
+        buildFile.createNewFile()
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        new File(originalDir, 'settings.gradle').createNewFile()
+        File originalGitIgnoreFile = new File(originalDir, ".gitignore")
+        originalGitIgnoreFile.createNewFile()
+        originalGitIgnoreFile << '.gradle\n'
+        Git git = new Git(originalDir, true)
+        git.runGitCommand("init", originalDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit","-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        git.runGitCommand("branch", "newbranch")
+        git.runGitCommand("worktree", "add", "../worktree", "newbranch")
 
         when:
         // will build the project at projectDir
