@@ -106,7 +106,6 @@ class GitVersionPluginTests extends Specification {
         new File(initialDir, 'settings.gradle').createNewFile()
         File initialGitIgnoreFile = new File(initialDir, ".gitIgnore")
         initialGitIgnoreFile.createNewFile()
-        initialGitIgnoreFile << 'build\n'
         initialGitIgnoreFile << '.gradle\n'
         Git git = new Git(initialDir, true)
         git.runGitCommand("init", initialDir.toString())
@@ -115,6 +114,7 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
         git.runGitCommand("branch", "hotfix")
         git.runGitCommand("worktree", "add", "../hotfix", "hotfix")
+        println(projectDir)
 
         when:
         // will build the project at projectDir
