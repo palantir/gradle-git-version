@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Use built in git-describe
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/705
