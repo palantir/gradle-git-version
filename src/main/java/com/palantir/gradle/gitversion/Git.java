@@ -16,8 +16,6 @@
 
 package com.palantir.gradle.gitversion;
 
-import static com.palantir.gradle.gitversion.GitUtils.SHA_ABBR_LENGTH;
-
 import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedReader;
 import java.io.File;
@@ -165,7 +163,7 @@ class Git {
                     "--tags",
                     "--always",
                     "--first-parent",
-                    "--abbrev=" + SHA_ABBR_LENGTH,
+                    "--abbrev=" + GitUtils.SHA_ABBR_LENGTH,
                     "--match=" + prefix + "*",
                     "HEAD");
         } catch (IOException | InterruptedException | RuntimeException e) {
