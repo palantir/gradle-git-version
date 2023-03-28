@@ -16,9 +16,9 @@
 
 package com.palantir.gradle.gitversion;
 
+import static com.palantir.gradle.gitversion.GitUtils.SHA_ABBR_LENGTH;
+
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +37,6 @@ import org.slf4j.LoggerFactory;
  */
 class Git {
     private static final Logger log = LoggerFactory.getLogger(Git.class);
-
-    private static final Splitter LINE_SPLITTER =
-            Splitter.on(System.getProperty("line.separator")).omitEmptyStrings();
-    private static final Splitter WORD_SPLITTER = Splitter.on(" ").omitEmptyStrings();
 
     private final File directory;
 
@@ -166,29 +160,14 @@ class Git {
 
     public String describe(String prefix) {
         try {
-            // Get SHAs of all tags, we only need to search for these later on
-            Set<String> tagRefs = new HashSet<>();
-            for (String tag : LINE_SPLITTER.splitToList(runGitCmd("show-ref", "--tags", "-d"))) {
-                List<String> parts = WORD_SPLITTER.splitToList(tag);
-                Preconditions.checkArgument(parts.size() == 2, "Could not parse output of `git show-ref`: %s", parts);
-                tagRefs.add(parts.get(0));
-            }
-
-            List<String> revs = LINE_SPLITTER.splitToList(runGitCmd("rev-list", "--first-parent", "HEAD"));
-            for (int depth = 0; depth < revs.size(); depth++) {
-                String rev = revs.get(depth);
-                if (tagRefs.contains(rev)) {
-                    String exactTag = runGitCmd("describe", "--tags", "--exact-match", "--match=" + prefix + "*", rev);
-                    if (!exactTag.isEmpty()) {
-                        return depth == 0
-                                ? exactTag
-                                : String.format("%s-%s-g%s", exactTag, depth, GitUtils.abbrevHash(revs.get(0)));
-                    }
-                }
-            }
-
-            // No tags found, so return commit hash of HEAD
-            return GitUtils.abbrevHash(runGitCmd("rev-parse", "HEAD"));
+            return runGitCmd(
+                    "describe",
+                    "--tags",
+                    "--always",
+                    "--first-parent",
+                    "--abbrev=" + SHA_ABBR_LENGTH,
+                    "--match=" + prefix + "*",
+                    "HEAD");
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git describe failed", e);
             return null;
