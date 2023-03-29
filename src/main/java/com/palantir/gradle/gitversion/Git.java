@@ -160,7 +160,7 @@ class Git {
 
     public String describe(String prefix) {
         try {
-            return runGitCmd(
+            return runGitCommand(
                     "describe",
                     "--tags",
                     "--always",
@@ -168,7 +168,7 @@ class Git {
                     "--abbrev=" + SHA_ABBR_LENGTH,
                     "--match=" + prefix + "*",
                     "HEAD");
-        } catch (IOException | InterruptedException | RuntimeException e) {
+        } catch (RuntimeException e) {
             log.debug("Native git describe failed", e);
             return null;
         }

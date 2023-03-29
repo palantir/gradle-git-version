@@ -55,17 +55,10 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private String description() {
-        String rawDescription = expensiveComputeRawDescription();
+        String rawDescription = nativeGitInvoker.describe(args.getPrefix());
         String processedDescription =
                 Strings.isNullOrEmpty(rawDescription) ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return processedDescription;
-    }
-
-    private String expensiveComputeRawDescription() {
-
-        String nativeGitDescribe = nativeGitInvoker.describe(args.getPrefix());
-
-        return nativeGitDescribe;
     }
 
     @Override
