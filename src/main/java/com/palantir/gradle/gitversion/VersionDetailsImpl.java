@@ -17,7 +17,6 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -57,7 +56,7 @@ final class VersionDetailsImpl implements VersionDetails {
     private String description() {
         String rawDescription = nativeGitInvoker.describe(args.getPrefix());
         String processedDescription =
-                Strings.isNullOrEmpty(rawDescription) ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
+                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
         return processedDescription;
     }
 

@@ -30,13 +30,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Wraps git describe.
- */
 class Git {
     private static final Logger log = LoggerFactory.getLogger(Git.class);
-
-    static final int SHA_ABBR_LENGTH = 7;
 
     private final File directory;
 
@@ -160,15 +155,19 @@ class Git {
 
     public String describe(String prefix) {
         try {
-            return runGitCommand(
+            String result = runGitCmd(
                     "describe",
                     "--tags",
                     "--always",
                     "--first-parent",
-                    "--abbrev=" + SHA_ABBR_LENGTH,
+                    "--abbrev=7",
                     "--match=" + prefix + "*",
                     "HEAD");
-        } catch (RuntimeException e) {
+            if (result.isEmpty()) {
+                return null;
+            }
+            return result;
+        } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git describe failed", e);
             return null;
         }
