@@ -1,0 +1,7 @@
+type: break
+break:
+  description: Use built in git-describe rather than an expensive recreation of it
+    to support older versions of git. This version requires git version >=1.8.4 (released
+    23rd August 2013).
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/705
