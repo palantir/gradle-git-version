@@ -31,10 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Mimics git describe by using rev-list to support versions of git < 1.8.4.
+ * Wraps git describe.
  */
 class Git {
     private static final Logger log = LoggerFactory.getLogger(Git.class);
+
+    static final int SHA_ABBR_LENGTH = 7;
 
     private final File directory;
 
@@ -163,7 +165,7 @@ class Git {
                     "--tags",
                     "--always",
                     "--first-parent",
-                    "--abbrev=" + GitUtils.SHA_ABBR_LENGTH,
+                    "--abbrev=" + SHA_ABBR_LENGTH,
                     "--match=" + prefix + "*",
                     "HEAD");
         } catch (IOException | InterruptedException | RuntimeException e) {
