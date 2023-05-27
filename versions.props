@@ -1,4 +1,4 @@
-com.google.guava:guava = 31.1-jre
+com.google.guava:guava = 32.0.0-jre
 org.immutables:* = 2.9.3
 
 # test dependencies
