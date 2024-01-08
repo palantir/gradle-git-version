@@ -7,4 +7,4 @@ org.assertj:assertj-core = 3.25.1
 org.spockframework:spock-core = 2.1-groovy-3.0
 org.junit.jupiter:* = 5.10.1
 org.junit.vintage:* = 5.10.1
-com.fasterxml.jackson.core:jackson-databind = 2.16.1
+com.fasterxml.jackson.core:jackson-databind = 2.15.3
