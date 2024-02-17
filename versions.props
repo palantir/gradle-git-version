@@ -1,5 +1,5 @@
 com.google.guava:guava = 33.0.0-jre
-org.immutables:* = 2.10.0
+org.immutables:* = 2.10.1
 
 # test dependencies
 junit:junit = 4.13.2
