@@ -44,7 +44,7 @@ final class Timer {
         Map<String, Long> withTotal = ImmutableMap.<String, Long>builder()
                 .putAll(totalTimesTakenMillis)
                 .put("total", totalMillis())
-                .build();
+                .buildOrThrow();
 
         return JsonUtils.mapToJson(withTotal);
     }
