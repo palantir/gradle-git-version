@@ -21,52 +21,38 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class VersionDetailsImpl implements VersionDetails {
 
-    private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
+    private static final Pattern NOT_PLAIN_TAG_PATTERN = Pattern.compile(".*g.?[0-9a-fA-F]{3,}");
+
     private static final int VERSION_ABBR_LENGTH = 10;
 
     private static final String DOT_GIT_DIR_PATH = "/.git";
-    private final GitVersionArgs args;
 
-    private Git nativeGitInvoker;
+    private final Git git;
+    private final GitVersionArgs args;
 
     VersionDetailsImpl(File gitDir, GitVersionArgs args) {
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
-        this.nativeGitInvoker = new Git(new File(projectDir));
+        this.git = new CachingGit(new GitImpl(new File(projectDir), args));
         this.args = args;
     }
 
     @Override
     public String getVersion() {
-        if (description() == null) {
+        String description = description();
+        if (description == null) {
             return "unspecified";
         }
-        return description() + (isClean() ? "" : ".dirty");
-    }
 
-    private boolean isClean() {
-        return nativeGitInvoker.isClean();
-    }
-
-    private String description() {
-        String rawDescription = nativeGitInvoker.describe(args.getPrefix());
-        String processedDescription =
-                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
-        return processedDescription;
+        return description + (git.isClean() ? "" : ".dirty");
     }
 
     @Override
     public boolean getIsCleanTag() {
-        return isClean() && descriptionIsPlainTag();
-    }
-
-    private boolean descriptionIsPlainTag() {
-        return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", description());
+        return git.isClean() && descriptionIsPlainTag();
     }
 
     @Override
@@ -92,7 +78,7 @@ final class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHash() throws IOException {
-        String gitHashFull = getGitHashFull();
+        String gitHashFull = git.getCurrentHeadFullHash();
         if (gitHashFull == null) {
             return null;
         }
@@ -102,12 +88,12 @@ final class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHashFull() throws IOException {
-        return nativeGitInvoker.getCurrentHeadFullHash();
+        return git.getCurrentHeadFullHash();
     }
 
     @Override
     public String getBranchName() throws IOException {
-        return nativeGitInvoker.getCurrentBranch();
+        return git.getCurrentBranch();
     }
 
     @Override
@@ -119,5 +105,22 @@ final class VersionDetailsImpl implements VersionDetails {
         } catch (IOException e) {
             return "";
         }
+    }
+
+    private String description() {
+        String describe = git.describe();
+        if (describe == null) {
+            return null;
+        }
+
+        if (describe.startsWith(args.getPrefix())) {
+            return describe.substring(args.getPrefix().length());
+        }
+
+        return describe;
+    }
+
+    private boolean descriptionIsPlainTag() {
+        return !NOT_PLAIN_TAG_PATTERN.matcher(description()).matches();
     }
 }

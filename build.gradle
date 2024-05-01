@@ -14,23 +14,22 @@ buildscript {
 
 plugins {
     id 'com.gradle.plugin-publish' version '0.21.0'
-id 'com.palantir.git-version' version '3.0.0'
+    id 'com.palantir.git-version' version '3.0.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
- id 'com.palantir.baseline' version '4.147.0'
-id 'com.palantir.consistent-versions' version '2.22.0'
+    id 'com.palantir.baseline' version '4.147.0'
+    id 'com.palantir.consistent-versions' version '2.22.0'
     id 'java-gradle-plugin'
     id 'groovy'
 }
-allprojects {
-    apply plugin: 'com.palantir.jakarta-package-alignment'
-}
 
+apply plugin: 'com.palantir.baseline-java-versions'
 apply plugin: 'com.palantir.external-publish-jar'
+apply plugin: 'com.palantir.jakarta-package-alignment'
 apply plugin: 'com.palantir.java-format'
 apply plugin: 'com.palantir.failure-reports'
 
 group 'com.palantir.gradle.gitversion'
-version System.env.CIRCLE_TAG ?: gitVersion()
+version gitVersion()
 
 repositories {
     mavenCentral() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
@@ -42,9 +41,6 @@ sourceSets {
 }
 
 dependencies {
-    implementation gradleApi()
-    implementation 'com.google.guava:guava'
-
     groovyImplementation localGroovy()
     groovyImplementation gradleApi()
 
@@ -54,23 +50,28 @@ dependencies {
     implementation sourceSets.groovy.output
 
     annotationProcessor 'org.immutables:value'
+
     compileOnly 'org.immutables:value::annotations'
 
+    implementation gradleApi()
+    implementation 'com.google.guava:guava'
+
     testImplementation gradleTestKit()
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     testImplementation 'junit:junit'
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine") {
-        because 'allows JUnit 3 and JUnit 4 tests to run'
-    }
     testImplementation 'org.assertj:assertj-core'
-    testImplementation('org.spockframework:spock-core') {
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.spockframework:spock-core', {
         exclude module: 'groovy-all'
     }
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine', {
+        because 'allows JUnit 3 and JUnit 4 tests to run'
+    }
 }
 
-java {
-    sourceCompatibility JavaVersion.VERSION_1_8
+javaVersions {
+    libraryTarget = 11
 }
 
 tasks.withType(JavaCompile) {

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.palantir.gradle.gitversion.Timer.Context;
 import org.junit.jupiter.api.Test;
 
 class TimerTest {
@@ -29,8 +30,12 @@ class TimerTest {
     @Test
     void generate_correct_json_with_total() throws JsonProcessingException {
         Timer timer = new Timer();
-        assertThat(timer.record("something", () -> 4)).isEqualTo(4);
-        assertThat(timer.record("another", () -> "foo")).isEqualTo("foo");
+        try (Context context = timer.start("something")) {
+            // Empty
+        }
+        try (Context context = timer.start("another")) {
+            // Empty
+        }
 
         ObjectNode objectNode = OBJECT_MAPPER.readValue(timer.toJson(), ObjectNode.class);
         long something = objectNode.get("something").asLong();

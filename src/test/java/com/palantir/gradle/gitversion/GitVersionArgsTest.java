@@ -16,29 +16,27 @@
 
 package com.palantir.gradle.gitversion;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
 public class GitVersionArgsTest {
     @Test
-    public void allowed_prefixes() throws Exception {
-        new GitVersionArgs().setPrefix("@Product@");
-        new GitVersionArgs().setPrefix("abc@");
-        new GitVersionArgs().setPrefix("abc@test@");
-        new GitVersionArgs().setPrefix("Abc-aBc-abC@");
-        new GitVersionArgs().setPrefix("foo-bar@");
-        new GitVersionArgs().setPrefix("foo-bar/");
-        new GitVersionArgs().setPrefix("foo-bar-");
-        new GitVersionArgs().setPrefix("foo/bar@");
-        new GitVersionArgs().setPrefix("Foo/Bar@");
+    public void allowed_prefixes() {
+        assertThatCode(() -> new GitVersionArgs("@Product@")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("abc@")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("abc@test@")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("Abc-aBc-abC@")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("foo-bar@")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("foo-bar/")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("foo-bar-")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("foo/bar@")).doesNotThrowAnyException();
+        assertThatCode(() -> new GitVersionArgs("Foo/Bar@")).doesNotThrowAnyException();
     }
 
     @Test
-    public void require_dash_or_at_symbol_at_prefix_end() throws Exception {
-        assertThatThrownBy(() -> {
-                    new GitVersionArgs().setPrefix("v");
-                })
-                .isInstanceOf(IllegalStateException.class);
+    public void require_dash_or_at_symbol_at_prefix_end() {
+        assertThatThrownBy(() -> new GitVersionArgs("v")).isInstanceOf(IllegalStateException.class);
     }
 }
