@@ -76,7 +76,7 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
-        Git git = new Git(rootFolder, true)
+        GitImpl git = new GitImpl(rootFolder, new GitVersionArgs(""), true)
         git.runGitCommand("init", rootFolder.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
@@ -107,7 +107,7 @@ class GitVersionPluginTests extends Specification {
         File originalGitIgnoreFile = new File(originalDir, ".gitignore")
         originalGitIgnoreFile.createNewFile()
         originalGitIgnoreFile << '.gradle\n'
-        Git git = new Git(originalDir, true)
+        GitImpl git = new GitImpl(originalDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", originalDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
@@ -139,7 +139,7 @@ class GitVersionPluginTests extends Specification {
             include 'submodule'
         '''.stripIndent()
 
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit","-m", "'initial commit'")
@@ -161,7 +161,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
 
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
 
         when:
@@ -180,7 +180,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -202,7 +202,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -226,7 +226,7 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -260,7 +260,7 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -297,7 +297,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -329,7 +329,7 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -355,7 +355,7 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -385,7 +385,7 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -412,7 +412,7 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -441,7 +441,7 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -469,7 +469,7 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -493,7 +493,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -519,7 +519,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -554,14 +554,14 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build\n'
         gitIgnoreFile << 'sub\n'
 
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
 
         File subDir = Files.createDirectory(temporaryFolder.toPath().resolve('sub')).toFile()
-        Git subGit = new Git(subDir, true)
+        GitImpl subGit = new GitImpl(subDir, new GitVersionArgs(""), true)
         subGit.runGitCommand("init", subDir.toString())
         File subDirty = new File(subDir, 'subDirty')
         subDirty.createNewFile()
@@ -590,7 +590,7 @@ class GitVersionPluginTests extends Specification {
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -618,7 +618,7 @@ class GitVersionPluginTests extends Specification {
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -655,7 +655,7 @@ class GitVersionPluginTests extends Specification {
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -679,7 +679,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -715,7 +715,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -741,7 +741,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")
@@ -766,7 +766,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
+        GitImpl git = new GitImpl(projectDir, new GitVersionArgs(""), true)
         git.runGitCommand("init", projectDir.toString())
         git.runGitCommand("add", ".")
         git.runGitCommand("commit", "-m", "'initial commit'")

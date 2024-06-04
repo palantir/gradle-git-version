@@ -18,31 +18,30 @@ package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import com.google.errorprone.annotations.MustBeClosed;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 final class Timer {
-    private final ConcurrentMap<String, Long> totalTimesTakenMillis = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> totalElapsedMillis = new ConcurrentHashMap<>();
 
-    public <T> T record(String name, Supplier<T> codeToTime) {
+    @MustBeClosed
+    public Context start(String name) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        try {
-            return codeToTime.get();
-        } finally {
-            stopwatch.stop();
-            long timeTakenMillis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
-            totalTimesTakenMillis.compute(
-                    name, (_ignored, previousValue) -> timeTakenMillis + (previousValue == null ? 0 : previousValue));
-        }
+        return () -> {
+            long elapsedMillis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+
+            totalElapsedMillis.compute(
+                    name, (_ignored, previousValue) -> elapsedMillis + (previousValue == null ? 0 : previousValue));
+        };
     }
 
     public String toJson() {
         Map<String, Long> withTotal = ImmutableMap.<String, Long>builder()
-                .putAll(totalTimesTakenMillis)
+                .putAll(totalElapsedMillis)
                 .put("total", totalMillis())
                 .build();
 
@@ -50,6 +49,11 @@ final class Timer {
     }
 
     public long totalMillis() {
-        return totalTimesTakenMillis.values().stream().mapToLong(time -> time).sum();
+        return totalElapsedMillis.values().stream().mapToLong(time -> time).sum();
+    }
+
+    interface Context extends AutoCloseable {
+        @Override
+        void close();
     }
 }

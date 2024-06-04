@@ -22,37 +22,25 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
-
-    private static final Logger log = LoggerFactory.getLogger(GitVersionCacheService.class);
 
     private final Timer timer = new Timer();
     private final ConcurrentMap<String, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
 
     public final String getGitVersion(File project, Object args) {
-        File gitDir = getRootGitDir(project);
-        GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
-        String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        String gitVersion = versionDetailsMap
-                .computeIfAbsent(key, _k -> createVersionDetails(gitDir, gitVersionArgs))
-                .getVersion();
-        return gitVersion;
+        return getVersionDetails(project, args).getVersion();
     }
 
     public final VersionDetails getVersionDetails(File project, Object args) {
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
         String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        VersionDetails versionDetails =
-                versionDetailsMap.computeIfAbsent(key, _k -> createVersionDetails(gitDir, gitVersionArgs));
-        return versionDetails;
+        return versionDetailsMap.computeIfAbsent(key, _k -> createVersionDetails(gitDir, gitVersionArgs));
     }
 
     private VersionDetails createVersionDetails(File gitDir, GitVersionArgs args) {
-        return TimingVersionDetails.wrap(timer, new VersionDetailsImpl(gitDir, args));
+        return new TimedVersionDetails(new VersionDetailsImpl(gitDir, args), timer);
     }
 
     public final Timer timer() {

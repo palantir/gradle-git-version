@@ -33,13 +33,13 @@ public class VersionDetailsTest {
     @TempDir
     public File temporaryFolder;
 
-    private Git git;
+    private GitImpl git;
 
     final String formattedTime = "'2005-04-07T22:13:13'";
 
     @BeforeEach
-    public void before() {
-        this.git = new Git(temporaryFolder, true);
+    public void before() throws Exception {
+        this.git = new GitImpl(temporaryFolder, new GitVersionArgs(""), true);
         git.runGitCommand("init", temporaryFolder.toString());
     }
 
@@ -61,7 +61,7 @@ public class VersionDetailsTest {
     }
 
     @Test
-    public void short_sha_when_no_annotated_tags_are_present() {
+    public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.runGitCommand("add", ".");
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
@@ -124,6 +124,6 @@ public class VersionDetailsTest {
 
     private VersionDetails versionDetails() {
         String gitDir = temporaryFolder.toString() + "/.git";
-        return new VersionDetailsImpl(new File(gitDir), new GitVersionArgs());
+        return new VersionDetailsImpl(new File(gitDir), new GitVersionArgs(""));
     }
 }
