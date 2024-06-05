@@ -16,10 +16,8 @@
 
 package com.palantir.gradle.gitversion;
 
-import com.google.common.collect.ImmutableMap;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.provider.Provider;
 
 final class GitVersionRootPlugin implements Plugin<Project> {
     @Override
@@ -28,22 +26,5 @@ final class GitVersionRootPlugin implements Plugin<Project> {
             throw new IllegalStateException(String.format(
                     "The %s plugin must be applied to the root project", GitVersionRootPlugin.class.getSimpleName()));
         }
-
-        Provider<GitVersionCacheService> serviceProvider =
-                GitVersionCacheService.getSharedGitVersionCacheService(project);
-
-        BuildScanPluginInterop.addBuildScanCustomValues(project, () -> {
-            Timer timer = serviceProvider.get().timer();
-
-            String timerJson = timer.toJson();
-
-            long totalTime = timer.totalMillis();
-
-            return ImmutableMap.of(
-                    "com.palantir.git-version.timings",
-                    timerJson,
-                    "com.palantir.git-version.timings.total",
-                    Long.toString(totalTime));
-        });
     }
 }
