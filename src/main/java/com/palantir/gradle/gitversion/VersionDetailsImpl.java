@@ -91,6 +91,12 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     @Override
+    public String[] getAllLastTags() {
+        
+        return nativeGitInvoker.getAllTags();
+    }
+
+    @Override
     public String getGitHash() throws IOException {
         String gitHashFull = getGitHashFull();
         if (gitHashFull == null) {

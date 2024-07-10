@@ -102,7 +102,7 @@ public class VersionDetailsTest {
 
         write(new File(temporaryFolder, "foo"));
 
-        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555.dirty");
+        assertThat(versionDetails().getVersion()).isEqualTo("611f9e4.dirty");
     }
 
     @Test
