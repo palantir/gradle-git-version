@@ -53,6 +53,7 @@ You can get an object containing more detailed information by calling:
 ```groovy
 def details = versionDetails()
 details.lastTag
+details.lastTags
 details.commitDistance
 details.gitHash
 details.gitHashFull // full 40-character Git commit hash
@@ -65,6 +66,7 @@ details.isCleanTag
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 val details = versionDetails()
 details.lastTag
+details.lastTags
 details.commitDistance
 details.gitHash
 details.gitHashFull // full 40-character Git commit hash
