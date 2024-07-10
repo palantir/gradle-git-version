@@ -27,7 +27,7 @@ public interface VersionDetails {
 
     String getLastTag();
 
-    String[] getAllLastTags();
+    String[] getLastTags();
 
     int getCommitDistance();
 
