@@ -4,7 +4,7 @@ buildscript {
         gradlePluginPortal() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
     }
     dependencies {
-        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.11.0'
+        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.12.0'
         classpath 'com.palantir.jakartapackagealignment:jakarta-package-alignment:0.6.0'
         classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.11.0'
         classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.50.0'
