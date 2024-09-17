@@ -5,6 +5,8 @@ buildscript {
     }
     dependencies {
         classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.13.0'
+        classpath 'com.palantir.gradle.jdks:gradle-jdks:0.47.0'
+        classpath 'com.palantir.gradle.jdkslatest:gradle-jdks-latest:0.15.0'
         classpath 'com.palantir.jakartapackagealignment:jakarta-package-alignment:0.6.0'
         classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.11.0'
         classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.50.0'
@@ -27,6 +29,8 @@ allprojects {
 
 apply plugin: 'com.palantir.external-publish-jar'
 apply plugin: 'com.palantir.java-format'
+apply plugin: 'com.palantir.jdks'
+apply plugin: 'com.palantir.jdks.latest'
 apply plugin: 'com.palantir.failure-reports'
 
 group 'com.palantir.gradle.gitversion'
@@ -91,3 +95,7 @@ publishPlugins.onlyIf { System.env.CIRCLE_TAG }
 tasks.publish.dependsOn publishPlugins
 project.ext.'gradle.publish.key' = System.env["GRADLE_KEY"]
 project.ext.'gradle.publish.secret' = System.env["GRADLE_SECRET"]
+
+jdks {
+    daemonTarget = 17
+}
