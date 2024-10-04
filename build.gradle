@@ -76,7 +76,7 @@ tasks.withType(JavaCompile) {
     options.compilerArgs += ['-Werror', '-Xlint:deprecation']
 }
 
-gradleBundle {
+gradlePlugin {
     website = 'https://github.com/palantir/gradle-git-version'
     vcsUrl = 'https://github.com/palantir/gradle-git-version'
 
