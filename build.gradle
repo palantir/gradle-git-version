@@ -84,6 +84,7 @@ gradlePlugin {
         gitVersionPlugin {
             id = 'com.palantir.git-version'
             displayName = 'Palantir Gradle Git-Version'
+            implementationClass = 'com.palantir.gradle.gitversion.GitVersionPlugin'
             description = 'Gradle Git-Version is a plugin that generates a version for use with Gradle by calling git-describe.'
             tags.set(['git', 'version'])
         }
