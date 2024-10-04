@@ -8,14 +8,14 @@ buildscript {
         classpath 'com.palantir.gradle.jdks:gradle-jdks:0.48.0'
         classpath 'com.palantir.gradle.jdkslatest:gradle-jdks-latest:0.15.0'
         classpath 'com.palantir.jakartapackagealignment:jakarta-package-alignment:0.6.0'
-        classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.11.0'
+        classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.19.0'
         classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.50.0'
         classpath 'gradle.plugin.org.inferred:gradle-processors:3.7.0'
     }
 }
 
 plugins {
-    id 'com.gradle.plugin-publish' version '0.21.0'
+    id 'com.gradle.plugin-publish' version '1.3.0'
 id 'com.palantir.git-version' version '3.1.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
  id 'com.palantir.baseline' version '5.69.0'
