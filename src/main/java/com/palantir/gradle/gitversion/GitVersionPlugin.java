@@ -22,8 +22,12 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.provider.Provider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class GitVersionPlugin implements Plugin<Project> {
+
+    private static final Logger log = LoggerFactory.getLogger(GitVersionPlugin.class);
 
     @Override
     public void apply(final Project project) {
@@ -50,7 +54,9 @@ public final class GitVersionPlugin implements Plugin<Project> {
             @Override
             @SuppressWarnings("BanSystemOut")
             public void execute(Task _task) {
-                System.out.println(project.getVersion());
+                Object version = project.getVersion();
+                log.debug("Determined version for project {} is {}", project.getName(), version);
+                System.out.println(version);
             }
         });
         printVersionTask.setGroup("Versioning");
