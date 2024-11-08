@@ -13,3 +13,6 @@ bin
 *.ipr
 *.iws
 .idea
+
+# Gradle JDKs setup
+!gradle/*

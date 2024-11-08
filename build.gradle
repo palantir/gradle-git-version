@@ -4,20 +4,22 @@ buildscript {
         gradlePluginPortal() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
     }
     dependencies {
-        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.10.0'
+        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.13.0'
+        classpath 'com.palantir.gradle.jdks:gradle-jdks:0.55.0'
+        classpath 'com.palantir.gradle.jdkslatest:gradle-jdks-latest:0.16.0'
         classpath 'com.palantir.jakartapackagealignment:jakarta-package-alignment:0.6.0'
-        classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.11.0'
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.47.0'
+        classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.19.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.50.0'
         classpath 'gradle.plugin.org.inferred:gradle-processors:3.7.0'
     }
 }
 
 plugins {
-    id 'com.gradle.plugin-publish' version '0.21.0'
+    id 'com.gradle.plugin-publish' version '1.3.0'
 id 'com.palantir.git-version' version '3.1.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
- id 'com.palantir.baseline' version '5.61.0'
-id 'com.palantir.consistent-versions' version '2.23.0'
+ id 'com.palantir.baseline' version '6.0.0'
+id 'com.palantir.consistent-versions' version '2.29.0'
     id 'java-gradle-plugin'
     id 'groovy'
 }
@@ -27,6 +29,8 @@ allprojects {
 
 apply plugin: 'com.palantir.external-publish-jar'
 apply plugin: 'com.palantir.java-format'
+apply plugin: 'com.palantir.jdks'
+apply plugin: 'com.palantir.jdks.latest'
 apply plugin: 'com.palantir.failure-reports'
 
 group 'com.palantir.gradle.gitversion'
@@ -72,16 +76,17 @@ tasks.withType(JavaCompile) {
     options.compilerArgs += ['-Werror', '-Xlint:deprecation']
 }
 
-pluginBundle {
+gradlePlugin {
     website = 'https://github.com/palantir/gradle-git-version'
     vcsUrl = 'https://github.com/palantir/gradle-git-version'
-    description = 'Gradle Git-Version is a plugin that generates a version for use with Gradle by calling git-describe.'
-    tags = ['git', 'version']
 
     plugins {
         gitVersionPlugin {
             id = 'com.palantir.git-version'
             displayName = 'Palantir Gradle Git-Version'
+            implementationClass = 'com.palantir.gradle.gitversion.GitVersionPlugin'
+            description = 'Gradle Git-Version is a plugin that generates a version for use with Gradle by calling git-describe.'
+            tags.set(['git', 'version'])
         }
     }
 }
@@ -91,3 +96,7 @@ publishPlugins.onlyIf { System.env.CIRCLE_TAG }
 tasks.publish.dependsOn publishPlugins
 project.ext.'gradle.publish.key' = System.env["GRADLE_KEY"]
 project.ext.'gradle.publish.secret' = System.env["GRADLE_SECRET"]
+
+jdks {
+    daemonTarget = 17
+}
