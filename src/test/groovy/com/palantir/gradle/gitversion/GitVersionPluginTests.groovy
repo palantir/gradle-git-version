@@ -605,6 +605,7 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n2.0.0\n")
     }
 
+
     def 'test multiple tags on same commit - most recent annotated tag' () {
         given:
         buildFile << '''
@@ -668,6 +669,33 @@ class GitVersionPluginTests extends Specification {
 
         then:
         buildResult.output.contains(":printVersion\n1.0.0\n")
+    }
+
+    def 'test multiple tags on same commit - all tags are listed' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            
+            task printVersionDetails { doLast {
+                println versionDetails().getLastTags()
+            }}
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = new Git(projectDir, true)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "1.0.0")
+        git.runGitCommand("tag", "2.0.0")
+        git.runGitCommand("tag", "3.0.0")
+
+        when:
+        BuildResult buildResult = with('printVersionDetails').build()
+
+        then:
+        buildResult.output.contains("[1.0.0, 2.0.0, 3.0.0]")
     }
 
     def 'test tag set on deep commit' () {

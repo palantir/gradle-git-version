@@ -27,6 +27,8 @@ public interface VersionDetails {
 
     String getLastTag();
 
+    String[] getLastTags();
+
     int getCommitDistance();
 
     boolean getIsCleanTag();
