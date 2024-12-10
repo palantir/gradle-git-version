@@ -9,7 +9,7 @@ org.checkerframework:checker-qual:3.43.0 (1 constraints: 4c0a4abf)
 org.immutables:value:2.10.1 (1 constraints: 3605303b)
 
 [Test dependencies]
-com.palantir.gradle.plugintesting:plugin-testing-core:0.4.0 (1 constraints: 0605f735)
+com.palantir.gradle.plugintesting:plugin-testing-core:0.5.0 (1 constraints: 0705fa35)
 net.bytebuddy:byte-buddy:1.14.18 (1 constraints: 850bccea)
 org.apiguardian:apiguardian-api:1.1.2 (5 constraints: 105480ac)
 org.assertj:assertj-core:3.26.3 (1 constraints: 40054e3b)
