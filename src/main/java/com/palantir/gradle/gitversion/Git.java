@@ -173,6 +173,19 @@ class Git {
         }
     }
 
+    public String[] getAllTags() {
+        try {
+            String result = runGitCmd("tag", "--points-at", "HEAD");
+            if (result.isEmpty()) {
+                return new String[0];
+            }
+            return result.split("\n");
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            log.debug("Native git describe failed", e);
+            return null;
+        }
+    }
+
     private boolean gitCommandExists() {
         try {
             // verify that "git" command exists (throws exception if it does not)
