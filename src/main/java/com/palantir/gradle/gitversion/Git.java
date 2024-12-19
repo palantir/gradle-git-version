@@ -58,6 +58,7 @@ class Git {
         List<String> cmdInput = new ArrayList<>();
         cmdInput.add("git");
         cmdInput.addAll(Arrays.asList(commands));
+        log.debug("Running command: {}", cmdInput);
         ProcessBuilder pb = new ProcessBuilder(cmdInput);
         Map<String, String> environment = pb.environment();
         environment.putAll(envvars);
@@ -80,7 +81,9 @@ class Git {
             return "";
         }
 
-        return builder.toString().trim();
+        String ret = builder.toString().trim();
+        log.debug("Command returned value: {}", ret);
+        return ret;
     }
 
     public String runGitCommand(Map<String, String> envvar, String... command) {
