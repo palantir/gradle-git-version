@@ -1,6 +1,6 @@
 com.fasterxml.jackson.core:jackson-databind = 2.16.1
 com.google.guava:guava = 33.4.0-jre
-org.assertj:assertj-core = 3.27.1
+org.assertj:assertj-core = 3.27.2
 org.immutables:* = 2.10.1
 org.junit.jupiter:* = 5.11.4
 org.spockframework:spock-core = 2.1-groovy-3.0
