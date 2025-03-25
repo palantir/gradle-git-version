@@ -193,6 +193,31 @@ class GitVersionPluginTests extends Specification {
         buildResult.output.contains(":printVersion\n1.0.0\n")
     }
 
+    def 'gitVersion() uses GIT_VERSION environment variable if it is set' () {
+        given:
+        buildFile << '''
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
+        gitIgnoreFile << 'build'
+        Git git = new Git(projectDir, true)
+        git.runGitCommand("init", projectDir.toString())
+        git.runGitCommand("add", ".")
+        git.runGitCommand("commit", "-m", "'initial commit'")
+        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        Map<String, String> env = new HashMap<>()
+        env.put("GIT_VERSION", "999")
+
+        when:
+        BuildResult buildResult = with(Optional.empty(), Optional.of(env),'printVersion').build()
+
+        then:
+        buildResult.output.contains(":printVersion\n999\n")
+    }
+
     def 'git describe when lightweight tag is present' () {
         given:
         buildFile << '''
@@ -701,10 +726,10 @@ class GitVersionPluginTests extends Specification {
     }
 
     private GradleRunner with(String... tasks) {
-        return with(Optional.empty(), tasks)
+        return with(Optional.empty(), Optional.empty(), tasks)
     }
 
-    private GradleRunner with(Optional<String> gradleVersion, String... tasks) {
+    private GradleRunner with(Optional<String> gradleVersion, Optional<Map<String, String>> envVars, String... tasks) {
         List<String> arguments = new ArrayList<>(['--stacktrace'])
         arguments.addAll(tasks)
 
@@ -714,6 +739,7 @@ class GitVersionPluginTests extends Specification {
                 .withArguments(arguments)
 
         gradleVersion.ifPresent({ version -> gradleRunner.withGradleVersion(version) })
+        envVars.ifPresent {env -> gradleRunner.withEnvironment(env)}
 
         return gradleRunner
     }
