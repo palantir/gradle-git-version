@@ -208,11 +208,8 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("commit", "-m", "'initial commit'")
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
 
-        Map<String, String> env = new HashMap<>()
-        env.put("GIT_VERSION", "999")
-
         when:
-        BuildResult buildResult = with(Optional.empty(), Optional.of(env),'printVersion').build()
+        BuildResult buildResult = with(Optional.empty(), Optional.of(Map.of("GIT_VERSION", "999")),'printVersion').build()
 
         then:
         buildResult.output.contains(":printVersion\n999\n")
