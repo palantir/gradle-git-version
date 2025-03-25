@@ -37,7 +37,7 @@ apply plugin: 'com.palantir.failure-reports'
 apply plugin: 'com.palantir.gradle-plugin-testing'
 
 group 'com.palantir.gradle.gitversion'
-version gitVersion()
+version System.env.CIRCLE_TAG ?: gitVersion()
 
 repositories {
     mavenCentral() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
