@@ -739,7 +739,8 @@ class GitVersionPluginTests extends Specification {
                 .withArguments(arguments)
 
         gradleVersion.ifPresent({ version -> gradleRunner.withGradleVersion(version) })
-        envVars.ifPresent {env -> gradleRunner.withEnvironment(env)}
+        envVars.ifPresent {env -> gradleRunner.withEnvironment(new HashMap<>(System.getenv()).putAll(env))
+        }
 
         return gradleRunner
     }
