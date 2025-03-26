@@ -209,10 +209,16 @@ class GitVersionPluginTests extends Specification {
         git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
-        BuildResult buildResult = with(Optional.empty(), Optional.of(Map.of("GIT_VERSION", "999")),'printVersion').build()
+        BuildResult normalResult = with('printVersion').build()
 
         then:
-        buildResult.output.contains(":printVersion\n999\n")
+        normalResult.output.contains(":printVersion\n1.0.0\n")
+
+        when:
+        BuildResult overriddenResult = with(Optional.empty(), Optional.of(Map.of("GIT_VERSION", "999")),'printVersion').build()
+
+        then:
+        overriddenResult.output.contains(":printVersion\n999\n")
     }
 
     def 'git describe when lightweight tag is present' () {
