@@ -43,6 +43,11 @@ final class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getVersion() {
+        String envVersion = System.getenv("GIT_VERSION");
+        if (envVersion != null && !envVersion.isEmpty()) {
+            return envVersion;
+        }
+
         if (description() == null) {
             return "unspecified";
         }
