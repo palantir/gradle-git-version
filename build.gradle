@@ -90,3 +90,7 @@ project.ext.'gradle.publish.secret' = System.env["GRADLE_SECRET"]
 jdks {
     daemonTarget = 17
 }
+
+gradleTestUtils {
+    gradleVersions = ['7.6.4', '8.8', '8.12.1']
+}
