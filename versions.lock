@@ -1,7 +1,7 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file
 com.google.errorprone:error_prone_annotations:2.36.0 (1 constraints: 4d0a49bf)
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
-com.google.guava:guava:33.4.7-jre (2 constraints: da1e737f)
+com.google.guava:guava:33.4.8-jre (2 constraints: db1ebb7f)
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 com.google.j2objc:j2objc-annotations:3.0.0 (1 constraints: 150aeab4)
 org.immutables:value:2.10.1 (1 constraints: 3605303b)
