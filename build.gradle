@@ -5,7 +5,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.13.0'
-        classpath 'com.palantir.gradle.gradleideaconfiguration:gradle-idea-configuration:0.1.0'
         classpath 'com.palantir.gradle.jdks:gradle-jdks:0.64.0'
         classpath 'com.palantir.gradle.jdkslatest:gradle-jdks-latest:0.18.0'
         classpath 'com.palantir.gradle.plugintesting:gradle-plugin-testing:0.6.0'
@@ -36,7 +35,6 @@ apply plugin: 'com.palantir.jdks'
 apply plugin: 'com.palantir.jdks.latest'
 apply plugin: 'com.palantir.failure-reports'
 apply plugin: 'com.palantir.gradle-plugin-testing'
-apply plugin: 'com.palantir.idea-configuration'
 
 group 'com.palantir.gradle.gitversion'
 version System.env.CIRCLE_TAG ?: gitVersion()
