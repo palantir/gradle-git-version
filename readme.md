@@ -85,12 +85,12 @@ val gitVersion: groovy.lang.Closure<String> by extra
 gitVersion(mapOf("prefix" to "my-product@")) // -> 2.15.0
 ```
 
-Valid prefixes are defined by the regex `[/@]?([A-Za-z]+[/@-])+`.
+Valid prefixes are defined by the regex `[/@]?([A-Za-z0-9]+[/@-])+`.
 ```
 /Abc/
 Abc@
 foo-bar@
-foo/bar@
+foo/bar-v2@
 ```
 
 Tasks
