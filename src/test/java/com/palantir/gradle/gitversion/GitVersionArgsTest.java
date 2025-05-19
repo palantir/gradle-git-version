@@ -32,6 +32,7 @@ public class GitVersionArgsTest {
         new GitVersionArgs().setPrefix("foo-bar-");
         new GitVersionArgs().setPrefix("foo/bar@");
         new GitVersionArgs().setPrefix("Foo/Bar@");
+        new GitVersionArgs().setPrefix("@foo-v3@");
     }
 
     @Test
