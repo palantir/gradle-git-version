@@ -17,16 +17,11 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import org.gradle.api.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +29,15 @@ class Git {
     private static final Logger log = LoggerFactory.getLogger(Git.class);
 
     private final File directory;
+    private final ProviderFactory providerFactory;
 
-    Git(File directory) {
-        this(directory, false);
+    Git(File directory, ProviderFactory providerFactory) {
+        this(directory, false, providerFactory);
     }
 
     @VisibleForTesting
-    Git(File directory, boolean testing) {
+    Git(File directory, boolean testing, ProviderFactory providerFactory) {
+        this.providerFactory = providerFactory;
         if (!gitCommandExists()) {
             throw new RuntimeException("Git not found in project");
         }
@@ -55,32 +52,16 @@ class Git {
     }
 
     private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
-        List<String> cmdInput = new ArrayList<>();
-        cmdInput.add("git");
-        cmdInput.addAll(Arrays.asList(commands));
-        ProcessBuilder pb = new ProcessBuilder(cmdInput);
-        Map<String, String> environment = pb.environment();
-        environment.putAll(envvars);
-        pb.directory(directory);
-        pb.redirectErrorStream(true);
-
-        Process process = pb.start();
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-
-        StringBuilder builder = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-            builder.append(System.getProperty("line.separator"));
-        }
-
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            return "";
-        }
-
-        return builder.toString().trim();
+        return providerFactory
+                .exec(execSpec -> {
+                    execSpec.executable("git");
+                    execSpec.args((Object[]) commands);
+                    execSpec.environment(envvars);
+                    execSpec.workingDir(directory);
+                })
+                .getStandardOutput()
+                .getAsText()
+                .get();
     }
 
     public String runGitCommand(Map<String, String> envvar, String... command) {
