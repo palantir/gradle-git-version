@@ -155,16 +155,15 @@ class Git {
     }
 
     private boolean gitCommandExists() {
-        try {
-            // verify that "git" command exists (throws exception if it does not)
-            Process gitVersionProcess = new ProcessBuilder("git", "version").start();
-            if (gitVersionProcess.waitFor() != 0) {
-                throw new IllegalStateException("error invoking git command");
-            }
-            return true;
-        } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git command not found", e);
-            return false;
-        }
+        return providerFactory
+                        .exec(execSpec -> {
+                            execSpec.executable("git");
+                            execSpec.args("version");
+                            execSpec.workingDir(directory);
+                        })
+                        .getResult()
+                        .get()
+                        .getExitValue()
+                == 0;
     }
 }
