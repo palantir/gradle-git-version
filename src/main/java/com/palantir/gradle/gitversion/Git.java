@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.process.ExecOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,16 +53,19 @@ class Git {
     }
 
     private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
-        return providerFactory
-                .exec(execSpec -> {
-                    execSpec.executable("git");
-                    execSpec.args((Object[]) commands);
-                    execSpec.environment(envvars);
-                    execSpec.workingDir(directory);
-                })
-                .getStandardOutput()
-                .getAsText()
-                .get();
+        ExecOutput output = providerFactory.exec(execSpec -> {
+            execSpec.executable("git");
+            execSpec.args((Object[]) commands);
+            execSpec.environment(envvars);
+            execSpec.workingDir(directory);
+        });
+
+        int exitValue = output.getResult().get().getExitValue();
+        if (exitValue != 0) {
+            return "";
+        }
+
+        return output.getStandardOutput().getAsText().get();
     }
 
     public String runGitCommand(Map<String, String> envvar, String... command) {

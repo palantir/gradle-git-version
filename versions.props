@@ -5,3 +5,4 @@ org.immutables:* = 2.10.1
 org.junit.jupiter:* = 5.12.2
 org.junit.platform:* = 1.12.2
 org.spockframework:spock-core = 2.1-groovy-3.0
+com.netflix.nebula:nebula-test = 10.6.2
