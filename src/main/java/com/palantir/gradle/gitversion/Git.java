@@ -62,7 +62,7 @@ class Git {
 
         int exitValue = output.getResult().get().getExitValue();
         if (exitValue != 0) {
-            return "";
+            throw new RuntimeException(output.getStandardError().getAsText().get());
         }
 
         return output.getStandardOutput().getAsText().get().trim();
