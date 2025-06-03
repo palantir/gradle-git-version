@@ -39,10 +39,10 @@ class Git {
     @VisibleForTesting
     Git(File directory, boolean testing, ProviderFactory providerFactory) {
         this.providerFactory = providerFactory;
+        this.directory = directory;
         if (!gitCommandExists()) {
             throw new RuntimeException("Git not found in project");
         }
-        this.directory = directory;
         if (testing && !checkIfUserIsSet()) {
             setGitUser();
         }
@@ -65,7 +65,7 @@ class Git {
             return "";
         }
 
-        return output.getStandardOutput().getAsText().get();
+        return output.getStandardOutput().getAsText().get().trim();
     }
 
     public String runGitCommand(Map<String, String> envvar, String... command) {
