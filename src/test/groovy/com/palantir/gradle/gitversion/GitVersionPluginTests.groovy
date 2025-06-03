@@ -242,11 +242,11 @@ class GitVersionPluginTests extends Specification {
     def 'git describe when annotated tag is present with merge commit' () {
         given:
         buildFile << '''
-        plugins {
-            id 'com.palantir.git-version'
-        }
-        version gitVersion()
-    '''.stripIndent()
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
@@ -370,15 +370,15 @@ class GitVersionPluginTests extends Specification {
     def 'version details can be accessed using extra properties method' () {
         given:
         buildFile << '''
-        plugins {
-            id 'com.palantir.git-version'
-        }
-        version gitVersion()
-        task printVersionDetails { doLast {
-            println project.getExtensions().getExtraProperties().get('versionDetails')().lastTag
-            println project.getExtensions().getExtraProperties().get('gitVersion')()
-        }}
-    '''.stripIndent()
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+            task printVersionDetails { doLast {
+                println project.getExtensions().getExtraProperties().get('versionDetails')().lastTag
+                println project.getExtensions().getExtraProperties().get('gitVersion')()
+            }}
+        '''.stripIndent()
         gitIgnoreFile << 'build'
 
         gitInit(projectDir)
@@ -512,11 +512,11 @@ class GitVersionPluginTests extends Specification {
     def 'git describe with commit after annotated tag' () {
         given:
         buildFile << '''
-        plugins {
-            id 'com.palantir.git-version'
-        }
-        version gitVersion()
-    '''.stripIndent()
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
         gitIgnoreFile << 'build'
 
         gitInit(projectDir)
@@ -538,11 +538,11 @@ class GitVersionPluginTests extends Specification {
     def 'git describe with commit after lightweight tag' () {
         given:
         buildFile << '''
-        plugins {
-            id 'com.palantir.git-version'
-        }
-        version gitVersion()
-    '''.stripIndent()
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
         gitIgnoreFile << 'build'
 
         gitInit(projectDir)
@@ -784,6 +784,8 @@ class GitVersionPluginTests extends Specification {
     
     private static void gitInit(File projectDir) {
         runGitCmd(projectDir, [:], "init", projectDir.toString())
+
+        // So git doesn't ask you to gpgsign when running tests locally
         runGitCmd(projectDir, [:], "config", "commit.gpgsign", "false")
         runGitCmd(projectDir, [:], "config", "tag.gpgsign", "false")
         runGitCmd(projectDir, [:], "config", "tag.forcesignannotated", "false")
