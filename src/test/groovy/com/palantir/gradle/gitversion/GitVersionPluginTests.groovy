@@ -699,11 +699,11 @@ class GitVersionPluginTests extends Specification {
     def 'test tag set on deep commit' () {
         given:
         buildFile << '''
-        plugins {
-            id 'com.palantir.git-version'
-        }
-        version gitVersion()
-    '''.stripIndent()
+            plugins {
+                id 'com.palantir.git-version'
+            }
+            version gitVersion()
+        '''.stripIndent()
         gitIgnoreFile << 'build'
 
         gitInit(projectDir)
@@ -783,6 +783,7 @@ class GitVersionPluginTests extends Specification {
 
     private static void gitInit(File projectDir) {
         if (runGitCmd(projectDir, [:], "config", "user.email").isEmpty()) {
+            // For some reason, the tests need --global to pass on CI, but not local
             runGitCmd(projectDir, [:], "config", "--global", "user.email", "email@example.com")
             runGitCmd(projectDir, [:], "config", "--global", "user.name", "name")
         }
