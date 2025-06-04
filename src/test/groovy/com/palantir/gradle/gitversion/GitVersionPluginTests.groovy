@@ -781,16 +781,17 @@ class GitVersionPluginTests extends Specification {
         return builder.toString().trim();
     };
 
-    
     private static void gitInit(File projectDir) {
-        runGitCmd(projectDir, [:], "config", "--global", "user.email", "email@example.com")
-        runGitCmd(projectDir, [:], "config", "--global", "user.name", "Name")
-
+        if (runGitCmd(projectDir, [:], "config", "user.email").isEmpty()) {
+            runGitCmd(projectDir, [:], "config", "--global", "user.email", "email@example.com")
+            runGitCmd(projectDir, [:], "config", "--global", "user.name", "name")
+        }
         runGitCmd(projectDir, [:], "init", projectDir.toString())
 
         // So git doesn't ask you to gpgsign when running tests locally
         runGitCmd(projectDir, [:], "config", "commit.gpgsign", "false")
         runGitCmd(projectDir, [:], "config", "tag.gpgsign", "false")
         runGitCmd(projectDir, [:], "config", "tag.forcesignannotated", "false")
+
     }
 }
