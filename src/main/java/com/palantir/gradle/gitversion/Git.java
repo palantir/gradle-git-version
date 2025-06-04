@@ -58,9 +58,6 @@ class Git {
     Git(File directory, boolean testing) {
         this.providerFactory = null;
         this.directory = directory;
-        if (!gitCommandExists()) {
-            throw new RuntimeException("Git not found in project");
-        }
         if (testing && !checkIfUserIsSet()) {
             setGitUser();
         }
