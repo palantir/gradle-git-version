@@ -63,7 +63,7 @@ class Git {
 
         int exitValue = output.getResult().get().getExitValue();
         if (exitValue != 0) {
-            throw new RuntimeException(output.getStandardError().getAsText().get());
+            return "";
         }
 
         return output.getStandardOutput().getAsText().get().trim();
@@ -155,7 +155,7 @@ class Git {
             return result;
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git describe failed", e);
-            throw new RuntimeException(e);
+            return null;
         }
     }
 
