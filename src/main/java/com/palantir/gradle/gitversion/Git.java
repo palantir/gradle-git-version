@@ -33,7 +33,7 @@ class Git {
     private final ProviderFactory providerFactory;
 
     Git(File directory, ProviderFactory providerFactory) {
-        this(directory, false, providerFactory);
+        this(directory, true, providerFactory);
     }
 
     @VisibleForTesting
