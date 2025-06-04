@@ -154,7 +154,7 @@ class Git {
             return result;
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git describe failed", e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
