@@ -58,6 +58,7 @@ class Git {
             execSpec.args((Object[]) commands);
             execSpec.environment(envvars);
             execSpec.workingDir(directory);
+            execSpec.setIgnoreExitValue(true); // So gradle doesn't throw before we get the error
         });
 
         int exitValue = output.getResult().get().getExitValue();
