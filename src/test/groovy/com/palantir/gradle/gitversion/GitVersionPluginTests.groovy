@@ -67,12 +67,13 @@ class GitVersionPluginTests extends Specification {
         originalGitIgnoreFile << '.gradle\n'
         println "FINLAY GOT HERE 1"
 
-        gitInit(originalDir)
-        runGitCmd(originalDir, [:], "add", ".")
-        runGitCmd(originalDir, [:], "commit","-m", "'initial commit'")
-        runGitCmd(originalDir, [:], "tag", "-a", "1.0.0", "-m", "1.0.0")
-        runGitCmd(originalDir, [:], "branch", "newbranch")
-        runGitCmd(originalDir, [:], "worktree", "add", "../worktree", "newbranch")
+        Git git = new Git(originalDir, true)
+        git.runGitCmd2("init", originalDir.toString())
+        git.runGitCmd2("add", ".")
+        git.runGitCmd2("commit","-m", "'initial commit'")
+        git.runGitCmd2("tag", "-a", "1.0.0", "-m", "1.0.0")
+        git.runGitCmd2("branch", "newbranch")
+        git.runGitCmd2("worktree", "add", "../worktree", "newbranch")
 
         println "FINLAY GOT HERE 2"
 
@@ -108,53 +109,4 @@ class GitVersionPluginTests extends Specification {
 
         return gradleRunner
     }
-
-
-    private static String runGitCmd(File directory, Map<String, String> envvars, String... commands)
-            throws IOException, InterruptedException {
-        List<String> cmdInput = new ArrayList<>();
-        cmdInput.add("git");
-        cmdInput.addAll(Arrays.asList(commands));
-        ProcessBuilder pb = new ProcessBuilder(cmdInput);
-        Map<String, String> environment = pb.environment();
-        environment.putAll(envvars);
-        pb.directory(directory);
-        pb.redirectErrorStream(true);
-
-        Process process = pb.start();
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-
-        StringBuilder builder = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-            builder.append(System.getProperty("line.separator"));
-        }
-
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            return "";
-        }
-
-        return builder.toString().trim();
-    };
-
-
-    private static void gitInit(File projectDir) {
-        runGitCmd(projectDir, [:], "config", "user.email", "email@example.com")
-        runGitCmd(projectDir, [:], "config", "user.name", "Name")
-        runGitCmd(projectDir, [:], "init") // <-- FIXED HERE
-        runGitCmd(projectDir, [:], "config", "commit.gpgsign", "false")
-        runGitCmd(projectDir, [:], "config", "tag.gpgsign", "false")
-        runGitCmd(projectDir, [:], "config", "tag.forcesignannotated", "false")
-
-        // Ensure at least one commit exists
-        File dummy = new File(projectDir, ".dummy")
-        dummy.createNewFile()
-        runGitCmd(projectDir, [:], "add", ".dummy")
-        runGitCmd(projectDir, [:], "commit", "-m", "initial commit")
-    }
-
-
 }
