@@ -82,7 +82,7 @@ class GitVersionPluginTests extends Specification {
         runGitCmd(rootFolder, [:], "add", ".")
         runGitCmd(rootFolder, [:], "commit","-m", "'initial commit'")
         runGitCmd(rootFolder, [:], "tag", "-a", "1.0.0", "-m", "1.0.0")
-        System.out.println("Running git describe: ", runGitCmd(rootFolder, [:], "describe", "--tags", "--always", "--first-parent", "--abbrev=7", "HEAD"))
+        System.out.println("Running git describe: " + runGitCmd(rootFolder, [:], "describe", "--tags", "--always", "--first-parent", "--abbrev=7", "HEAD"))
 
         when:
         // will build the project at projectDir
