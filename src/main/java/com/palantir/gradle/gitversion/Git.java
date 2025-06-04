@@ -92,7 +92,6 @@ class Git {
         cmdInput.add("git");
         cmdInput.addAll(Arrays.asList(commands));
         ProcessBuilder pb = new ProcessBuilder(cmdInput);
-        Map<String, String> environment = pb.environment();
         pb.directory(directory);
         pb.redirectErrorStream(true);
 
