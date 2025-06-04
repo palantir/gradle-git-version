@@ -786,7 +786,7 @@ class GitVersionPluginTests extends Specification {
     private static void gitInit(File projectDir) {
         runGitCmd(projectDir, [:], "config", "user.email", "email@example.com")
         runGitCmd(projectDir, [:], "config", "user.name", "Name")
-        runGitCmd(projectDir, [:], "init", projectDir.toString())
+        runGitCmd(projectDir, [:], "init") // <-- FIXED HERE
         runGitCmd(projectDir, [:], "config", "commit.gpgsign", "false")
         runGitCmd(projectDir, [:], "config", "tag.gpgsign", "false")
         runGitCmd(projectDir, [:], "config", "tag.forcesignannotated", "false")
@@ -797,5 +797,6 @@ class GitVersionPluginTests extends Specification {
         runGitCmd(projectDir, [:], "add", ".dummy")
         runGitCmd(projectDir, [:], "commit", "-m", "initial commit")
     }
+
 
 }
