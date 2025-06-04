@@ -30,16 +30,17 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
                 mavenCentral()
                 mavenLocal()
             }
+
+            version gitVersion()
         """.stripIndent(true)
 
         definePluginOutsideOfPluginBlock = true
         keepFiles = true
     }
 
-    def "help task runs with configuration cache"() {
-
+    def "build task runs with configuration cache"() {
         expect:
-        createRunner('classes', '--dry-run', '--configuration-cache')
+        createRunner('build', '--dry-run', '--configuration-cache')
                 .build()
     }
 }

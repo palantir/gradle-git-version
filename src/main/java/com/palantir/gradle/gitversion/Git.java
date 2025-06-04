@@ -16,7 +16,6 @@
 
 package com.palantir.gradle.gitversion;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,18 +32,10 @@ class Git {
     private final ProviderFactory providerFactory;
 
     Git(File directory, ProviderFactory providerFactory) {
-        this(directory, false, providerFactory);
-    }
-
-    @VisibleForTesting
-    Git(File directory, boolean testing, ProviderFactory providerFactory) {
         this.providerFactory = providerFactory;
         this.directory = directory;
         if (!gitCommandExists()) {
             throw new RuntimeException("Git not found in project");
-        }
-        if (testing && !checkIfUserIsSet()) {
-            setGitUser();
         }
     }
 
@@ -80,28 +71,6 @@ class Git {
 
     public String runGitCommand(String... command) {
         return runGitCommand(new HashMap<>(), command);
-    }
-
-    private boolean checkIfUserIsSet() {
-        try {
-            String userEmail = runGitCmd("config", "user.email");
-            if (userEmail.isEmpty()) {
-                return false;
-            }
-            return true;
-        } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git config user.email failed", e);
-            return false;
-        }
-    }
-
-    private void setGitUser() {
-        try {
-            runGitCommand("config", "--global", "user.email", "email@example.com");
-            runGitCommand("config", "--global", "user.name", "name");
-        } catch (RuntimeException e) {
-            log.debug("Native git set user failed", e);
-        }
     }
 
     public String getCurrentBranch() {
