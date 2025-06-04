@@ -82,7 +82,6 @@ class GitVersionPluginTests extends Specification {
         runGitCmd(rootFolder, [:], "add", ".")
         runGitCmd(rootFolder, [:], "commit","-m", "'initial commit'")
         runGitCmd(rootFolder, [:], "tag", "-a", "1.0.0", "-m", "1.0.0")
-        System.out.println("Running git describe: " + runGitCmd(rootFolder, [:], "describe", "--tags", "--always", "--first-parent", "--abbrev=7", "HEAD"))
 
         when:
         // will build the project at projectDir
@@ -784,8 +783,8 @@ class GitVersionPluginTests extends Specification {
 
     
     private static void gitInit(File projectDir) {
-        runGitCmd(projectDir, [:], "config", "user.email", "email@example.com")
-        runGitCmd(projectDir, [:], "config", "user.name", "Name")
+        runGitCmd(projectDir, [:], "config", "--global", "user.email", "email@example.com")
+        runGitCmd(projectDir, [:], "config", "--global", "user.name", "Name")
 
         runGitCmd(projectDir, [:], "init", projectDir.toString())
 
