@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-
 public class VersionDetailsTest {
 
     @TempDir
@@ -57,27 +56,25 @@ public class VersionDetailsTest {
     private void createGitIgnore(File dir) {
         File gitignoreFile = new File(dir, ".gitignore");
 
-        String gitignoreContent =
-                "# Gradle project files\n" +
-                        ".gradle/\n" +
-                        "build/\n" +
-                        "out/\n" +
-                        "classes/\n" +
-                        "\n" +
-                        "# Gradle wrapper\n" +
-                        "gradle/\n" +
-                        "gradlew\n" +
-                        "gradlew.bat\n" +
-                        "\n" +
-                        "# Gradle cache\n" +
-                        ".gradle/\n" +
-                        "caches/\n" +
-                        "\n" +
-                        "# Local configuration\n" +
-                        "local.properties\n" +
-                        "\n" +
-                        "# Logs\n" +
-                        "*.log\n";
+        String gitignoreContent = "# Gradle project files\n" + ".gradle/\n"
+                + "build/\n"
+                + "out/\n"
+                + "classes/\n"
+                + "\n"
+                + "# Gradle wrapper\n"
+                + "gradle/\n"
+                + "gradlew\n"
+                + "gradlew.bat\n"
+                + "\n"
+                + "# Gradle cache\n"
+                + ".gradle/\n"
+                + "caches/\n"
+                + "\n"
+                + "# Local configuration\n"
+                + "local.properties\n"
+                + "\n"
+                + "# Logs\n"
+                + "*.log\n";
 
         try {
             Files.write(gitignoreFile.toPath(), gitignoreContent.getBytes(StandardCharsets.UTF_8));
@@ -86,8 +83,7 @@ public class VersionDetailsTest {
         }
     }
 
-
-        @Test
+    @Test
     public void symlinks_should_result_in_clean_git_tree() throws Exception {
         File fileToLinkTo = write(new File(temporaryFolder, "fileToLinkTo"));
         Files.createSymbolicLink(temporaryFolder.toPath().resolve("fileLink"), fileToLinkTo.toPath());
