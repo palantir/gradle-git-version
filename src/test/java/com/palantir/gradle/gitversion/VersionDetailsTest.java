@@ -46,6 +46,11 @@ public class VersionDetailsTest {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         this.git = new Git(temporaryFolder, project.getProviders());
         git.runGitCommand("init", temporaryFolder.toString());
+        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "commit.gpgsign", "false");
+        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "tag.gpgsign", "false");
+        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "tag.forcesignannotated", "false");
+        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "user.email", "email@example.com");
+        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "user.name", "name");
     }
 
     @Test
