@@ -782,12 +782,13 @@ class GitVersionPluginTests extends Specification {
     };
 
     private static void gitInit(File projectDir) {
+        runGitCmd(projectDir, [:], "init", projectDir.toString())
+
         if (runGitCmd(projectDir, [:], "config", "user.email").isEmpty()) {
             // For some reason, the tests need --global to pass on CI, but not local
-            runGitCmd(projectDir, [:], "config", "--global", "user.email", "email@example.com")
-            runGitCmd(projectDir, [:], "config", "--global", "user.name", "name")
+            runGitCmd(projectDir, [:], "config", "user.email", "email@example.com")
+            runGitCmd(projectDir, [:], "config", "user.name", "name")
         }
-        runGitCmd(projectDir, [:], "init", projectDir.toString())
 
         // So git doesn't ask you to gpgsign when running tests locally
         runGitCmd(projectDir, [:], "config", "commit.gpgsign", "false")
