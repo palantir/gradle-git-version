@@ -24,27 +24,27 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
-import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public abstract class VersionDetailsTest {
+
+public class VersionDetailsTest {
 
     @TempDir
     public File temporaryFolder;
 
+    private Project project;
     private Git git;
 
     final String formattedTime = "'2005-04-07T22:13:13'";
 
-    @Inject
-    protected abstract ProviderFactory getProviderFactory();
-
     @BeforeEach
     public void before() {
-        this.git = new Git(temporaryFolder, getProviderFactory());
+        this.project = ProjectBuilder.builder().build();
+        this.git = new Git(temporaryFolder, project.getProviders());
         git.runGitCommand("init", temporaryFolder.toString());
     }
 
@@ -129,6 +129,6 @@ public abstract class VersionDetailsTest {
 
     private VersionDetails versionDetails() {
         String gitDir = temporaryFolder.toString() + "/.git";
-        return new VersionDetailsImpl(getProviderFactory(), new File(gitDir), new GitVersionArgs());
+        return new VersionDetailsImpl(this.project.getProviders(), new File(gitDir), new GitVersionArgs());
     }
 }
