@@ -1,5 +1,5 @@
 type: improvement
 improvement:
-  description: Configuration cache
+  description: Make `gradle-git-version` configuration cache compatible.
   links:
   - https://github.com/palantir/gradle-git-version/pull/967
