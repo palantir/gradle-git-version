@@ -120,13 +120,13 @@ class Git {
                     "--match=" + prefix + "*",
                     "HEAD");
             if (result.isEmpty()) {
-                System.out.println("Result is empty");
+                log.error("runGitCmd describe failed");
                 return null;
             }
             return result;
         } catch (IOException | InterruptedException | RuntimeException e) {
-            log.debug("Native git describe failed", e);
-            throw new RuntimeException(e);
+            log.error("Native git describe failed", e);
+            return null;
         }
     }
 
