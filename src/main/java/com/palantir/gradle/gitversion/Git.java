@@ -54,6 +54,7 @@ class Git {
 
         int exitValue = output.getResult().get().getExitValue();
         if (exitValue != 0) {
+            log.error("runGitCmd err: {}", output.getStandardError().getAsText().get());
             return "";
         }
 
@@ -119,12 +120,13 @@ class Git {
                     "--match=" + prefix + "*",
                     "HEAD");
             if (result.isEmpty()) {
+                System.out.println("Result is empty");
                 return null;
             }
             return result;
         } catch (IOException | InterruptedException | RuntimeException e) {
             log.debug("Native git describe failed", e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
