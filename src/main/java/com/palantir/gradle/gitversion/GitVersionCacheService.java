@@ -33,22 +33,15 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
     protected abstract ProviderFactory getProviderFactory();
 
     public final String getGitVersion(File project, Object args) {
-        File gitDir = getRootGitDir(project);
-        GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
-        String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        String gitVersion = versionDetailsMap
-                .computeIfAbsent(key, _k -> new VersionDetailsImpl(getProviderFactory(), gitDir, gitVersionArgs))
-                .getVersion();
-        return gitVersion;
+        return getVersionDetails(project, args).getVersion();
     }
 
     public final VersionDetails getVersionDetails(File project, Object args) {
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
         String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        VersionDetails versionDetails = versionDetailsMap.computeIfAbsent(
+        return versionDetailsMap.computeIfAbsent(
                 key, _k -> new VersionDetailsImpl(getProviderFactory(), gitDir, gitVersionArgs));
-        return versionDetails;
     }
 
     private static File getRootGitDir(File currentRoot) {
