@@ -750,7 +750,7 @@ class GitVersionPluginTests extends Specification {
     }
     
     private static String runGitCmd(File directory, String ...commands) {
-        return runGitCmd(directory, commands);
+        return runGitCmd(directory, [:], commands);
     }
 
 
