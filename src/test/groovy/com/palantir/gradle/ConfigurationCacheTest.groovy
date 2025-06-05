@@ -32,15 +32,25 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
             }
 
             version gitVersion()
+            versionDetails versionDetails()
+            
         """.stripIndent(true)
 
         definePluginOutsideOfPluginBlock = true
         keepFiles = true
     }
 
-    def "build task runs with configuration cache"() {
-        expect:
-        createRunner('build', '--dry-run', '--configuration-cache')
-                .build()
+    def "classes task runs with configuration cache"() {
+        when: 'we run the fist time'
+        String result = createRunner('classes', '--configuration-cache').build().output
+
+        then: 'we check an entry was stored'
+        result.contains('Configuration cache entry stored.')
+
+        when: 'we re-run the same task'
+        String rerun = createRunner('classes', '--configuration-cache').build().output
+
+        then: 'the cache is used'
+        rerun.contains("Configuration cache entry reused.")
     }
 }
