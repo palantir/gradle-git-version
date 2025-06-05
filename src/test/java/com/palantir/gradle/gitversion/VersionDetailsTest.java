@@ -43,7 +43,7 @@ public class VersionDetailsTest {
 
     @BeforeEach
     public void before() {
-        this.project = ProjectBuilder.builder().build();
+        this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         this.git = new Git(temporaryFolder, project.getProviders());
         git.runGitCommand("init", temporaryFolder.toString());
     }
