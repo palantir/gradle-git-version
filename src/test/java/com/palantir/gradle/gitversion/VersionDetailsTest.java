@@ -44,16 +44,50 @@ public class VersionDetailsTest {
     @BeforeEach
     public void before() {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
+        createGitIgnore(temporaryFolder);
         this.git = new Git(temporaryFolder, project.getProviders());
         git.runGitCommand("init", temporaryFolder.toString());
-        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "commit.gpgsign", "false");
-        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "tag.gpgsign", "false");
-        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "tag.forcesignannotated", "false");
-        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "user.email", "email@example.com");
-        git.runGitCommand("config", "--file", temporaryFolder.toString() + "/.git/config", "user.name", "name");
+        git.runGitCommand("config", "commit.gpgsign", "false");
+        git.runGitCommand("config", "tag.gpgsign", "false");
+        git.runGitCommand("config", "tag.forcesignannotated", "false");
+        git.runGitCommand("config", "user.email", "email@example.com");
+        git.runGitCommand("config", "user.name", "name");
     }
 
-    @Test
+    private void createGitIgnore(File dir) {
+        File gitignoreFile = new File(dir, ".gitignore");
+
+        String gitignoreContent =
+                "# Gradle project files\n" +
+                        ".gradle/\n" +
+                        "build/\n" +
+                        "out/\n" +
+                        "classes/\n" +
+                        "\n" +
+                        "# Gradle wrapper\n" +
+                        "gradle/\n" +
+                        "gradlew\n" +
+                        "gradlew.bat\n" +
+                        "\n" +
+                        "# Gradle cache\n" +
+                        ".gradle/\n" +
+                        "caches/\n" +
+                        "\n" +
+                        "# Local configuration\n" +
+                        "local.properties\n" +
+                        "\n" +
+                        "# Logs\n" +
+                        "*.log\n";
+
+        try {
+            Files.write(gitignoreFile.toPath(), gitignoreContent.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+        @Test
     public void symlinks_should_result_in_clean_git_tree() throws Exception {
         File fileToLinkTo = write(new File(temporaryFolder, "fileToLinkTo"));
         Files.createSymbolicLink(temporaryFolder.toPath().resolve("fileLink"), fileToLinkTo.toPath());
@@ -71,8 +105,9 @@ public class VersionDetailsTest {
     }
 
     @Test
-    public void short_sha_when_no_annotated_tags_are_present() {
+    public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.runGitCommand("add", ".");
+
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
         envvar.put("TZ", "UTC");
@@ -89,14 +124,16 @@ public class VersionDetailsTest {
                 "--date=" + formattedTime,
                 "--allow-empty");
 
-        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555");
+        assertThat(versionDetails().getVersion()).isEqualTo("f2bc772");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.runGitCommand("add", ".");
+
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
+        envvar.put("TZ", "UTC");
         git.runGitCommand(
                 envvar,
                 "-c",
@@ -112,7 +149,7 @@ public class VersionDetailsTest {
 
         write(new File(temporaryFolder, "foo"));
 
-        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555.dirty");
+        assertThat(versionDetails().getVersion()).isEqualTo("f2bc772.dirty");
     }
 
     @Test
