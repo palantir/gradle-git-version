@@ -54,7 +54,10 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
                 mavenLocal()
             }
 
-            versionDetails versionDetails()
+            def details = versionDetails()
+            def hash = details.getGitHash()
+            def isClean = details.getIsCleanTag()
+            def branchName = details.getBranchName()
         """)
 
         expect:
