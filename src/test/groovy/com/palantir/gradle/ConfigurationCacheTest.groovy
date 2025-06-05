@@ -21,8 +21,13 @@ import nebula.test.IntegrationTestKitSpec
 class ConfigurationCacheTest extends IntegrationTestKitSpec {
 
     def setup() {
-        // language=Gradle
-        buildFile << """
+        definePluginOutsideOfPluginBlock = true
+        keepFiles = true
+    }
+
+    def "classes task runs with configuration cache when using gitVersion()"() {
+        given:
+        setupBuildWithGitVersion("""
             apply plugin: 'com.palantir.git-version'
             apply plugin: 'java-library'
 
@@ -32,25 +37,51 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
             }
 
             version gitVersion()
-            versionDetails versionDetails()
-            
-        """.stripIndent(true)
+        """)
 
-        definePluginOutsideOfPluginBlock = true
-        keepFiles = true
+        expect:
+        runTasksWithConfigurationCache('classes')
     }
 
-    def "classes task runs with configuration cache"() {
-        when: 'we run the fist time'
-        String result = createRunner('classes', '--configuration-cache').build().output
+    def "classes task runs with configuration cache when using versionDetails()"() {
+        given:
+        setupBuildWithGitVersion("""
+            apply plugin: 'com.palantir.git-version'
+            apply plugin: 'java-library'
 
-        then: 'we check an entry was stored'
-        result.contains('Configuration cache entry stored.')
+            repositories {
+                mavenCentral()
+                mavenLocal()
+            }
 
-        when: 'we re-run the same task'
-        String rerun = createRunner('classes', '--configuration-cache').build().output
+            versionDetails versionDetails()
+        """)
 
-        then: 'the cache is used'
-        rerun.contains("Configuration cache entry reused.")
+        expect:
+        runTasksWithConfigurationCache('classes')
+    }
+
+    /**
+     * Sets up the build.gradle file with the given content.
+     */
+    private void setupBuildWithGitVersion(String buildFileContent) {
+        // language=Gradle
+        buildFile << buildFileContent.stripIndent(true)
+    }
+
+    /**
+     * Runs the specified tasks twice with configuration cache and verifies cache behavior.
+     * Returns true if the configuration cache was properly used on the second run.
+     */
+    private boolean runTasksWithConfigurationCache(String... tasks) {
+        def firstRun = createRunner(tasks + ['--configuration-cache'] as String[]).build()
+        assert firstRun.output.contains('Configuration cache entry stored.'),
+                "Expected first run to store configuration cache, but output was: ${firstRun.output}"
+
+        def secondRun = createRunner(tasks + ['--configuration-cache'] as String[]).build()
+        assert secondRun.output.contains('Configuration cache entry reused.'),
+                "Expected second run to reuse configuration cache, but output was: ${secondRun.output}"
+
+        return true
     }
 }
