@@ -16,6 +16,7 @@
 package com.palantir.gradle.gitversion
 
 import java.nio.file.Files
+import java.nio.charset.StandardCharsets;
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
@@ -76,11 +77,11 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
-        Git git = new Git(rootFolder, true)
-        git.runGitCommand("init", rootFolder.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit","-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        
+        gitInit(rootFolder)
+        runGitCmd(rootFolder, "add", ".")
+        runGitCmd(rootFolder, "commit","-m", "'initial commit'")
+        runGitCmd(rootFolder, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
         // will build the project at projectDir
@@ -107,13 +108,13 @@ class GitVersionPluginTests extends Specification {
         File originalGitIgnoreFile = new File(originalDir, ".gitignore")
         originalGitIgnoreFile.createNewFile()
         originalGitIgnoreFile << '.gradle\n'
-        Git git = new Git(originalDir, true)
-        git.runGitCommand("init", originalDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit","-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        git.runGitCommand("branch", "newbranch")
-        git.runGitCommand("worktree", "add", "../worktree", "newbranch")
+
+        gitInit(originalDir)
+        runGitCmd(originalDir, "add", ".")
+        runGitCmd(originalDir, "commit","-m", "'initial commit'")
+        runGitCmd(originalDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
+        runGitCmd(originalDir, "branch", "newbranch")
+        runGitCmd(originalDir, "worktree", "add", "../worktree", "newbranch")
 
         when:
         // will build the project at projectDir
@@ -139,11 +140,10 @@ class GitVersionPluginTests extends Specification {
             include 'submodule'
         '''.stripIndent()
 
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit","-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit","-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -161,8 +161,7 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
 
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
+        gitInit(projectDir)
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -180,11 +179,10 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -202,11 +200,10 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
         BuildResult normalResult = with('printVersion').build()
@@ -230,11 +227,10 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "1.0.0")
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "1.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -254,21 +250,20 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
-        String master = git.getCurrentHeadFullHash().subSequence(0, 7)
-        git.runGitCommand("checkout", "-b", "hotfix")
-        git.runGitCommand("commit", "-m", "hot fix for issue", "--allow-empty")
-        git.runGitCommand("tag", "-a", "1.0.0-hotfix", "-m", "1.0.0-hotfix")
-        String commitId = git.getCurrentHeadFullHash()
+        String master = runGitCmd(projectDir, "rev-parse", "--short", "HEAD").trim()
+        runGitCmd(projectDir, "checkout", "-b", "hotfix")
+        runGitCmd(projectDir, "commit", "-m", "hot fix for issue", "--allow-empty")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0-hotfix", "-m", "1.0.0-hotfix")
+        String commitId = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
         // switch back to main branch and merge hotfix branch into main branch
-        git.runGitCommand("checkout", master)
-        git.runGitCommand("merge", commitId, "--no-ff", "-m", "merge commit")
+        runGitCmd(projectDir, "checkout", master)
+        runGitCmd(projectDir, "merge", commitId, "--no-ff", "-m", "merge commit")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -280,34 +275,34 @@ class GitVersionPluginTests extends Specification {
     def 'git describe when annotated tag is present after merge commit' () {
         given:
         buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-        '''.stripIndent()
+        plugins {
+            id 'com.palantir.git-version'
+        }
+        version gitVersion()
+    '''.stripIndent()
         gitIgnoreFile << 'build'
 
         // create repository with a single commit tagged as 1.0.0
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         // create a new branch called "hotfix" that has a single commit and is tagged with "1.0.0-hotfix"
 
-        String master = git.getCurrentHeadFullHash().subSequence(0, 7)
-        git.runGitCommand("checkout", "-b", "hotfix")
-        git.runGitCommand("commit", "-m", "hot fix for issue", "--allow-empty")
-        git.runGitCommand("tag", "-a", "1.0.0-hotfix", "-m", "1.0.0-hotfix")
-        String commitId = git.getCurrentHeadFullHash()
+        String master = runGitCmd(projectDir, "rev-parse", "--short", "HEAD").trim()
+        runGitCmd(projectDir, "checkout", "-b", "hotfix")
+        runGitCmd(projectDir, "commit", "-m", "hot fix for issue", "--allow-empty")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0-hotfix", "-m", "1.0.0-hotfix")
+        String commitId = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
 
         // switch back to main branch and merge hotfix branch into main branch
-        git.runGitCommand("checkout", master)
-        git.runGitCommand("merge", commitId, "--no-ff", "-m", "merge commit")
+        runGitCmd(projectDir, "checkout", master)
+        runGitCmd(projectDir, "merge", commitId, "--no-ff", "-m", "merge commit")
 
         // tag merge commit on main branch as 2.0.0
-        git.runGitCommand("tag", "-a", "2.0.0", "-m", "2.0.0")
+        runGitCmd(projectDir, "tag", "-a", "2.0.0", "-m", "2.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -315,6 +310,7 @@ class GitVersionPluginTests extends Specification {
         then:
         buildResult.output =~ ":printVersion\n2.0.0\n"
     }
+
 
     def 'git describe and dirty when annotated tag is present and dirty content' () {
         given:
@@ -325,11 +321,11 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
         dirtyContentFile << 'dirty-content'
 
         when:
@@ -337,6 +333,7 @@ class GitVersionPluginTests extends Specification {
 
         then:
         //buildResult.output.contains(projectDir.getAbsolutePath())
+        // clue: .dirty is tacked on
         buildResult.output.contains(':printVersion\n1.0.0.dirty\n')
     }
 
@@ -357,17 +354,17 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\nmaster\ntrue\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\n[a-z0-9]{40}\n(master|main)\ntrue\n"
     }
 
     def 'version details can be accessed using extra properties method' () {
@@ -383,11 +380,11 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        String sha = git.getCurrentHeadFullHash().subSequence(0, 7)
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        String sha = runGitCmd(projectDir, "rev-parse", "--short", "HEAD").trim()
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
@@ -413,18 +410,18 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        git.runGitCommand("commit", "-m", "'commit 2'", "--allow-empty")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
+        runGitCmd(projectDir, "commit", "-m", "'commit 2'", "--allow-empty")
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
 
         then:
-        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\nmaster\nfalse\n"
+        buildResult.output =~ ":printVersionDetails\n1.0.0\n1\n[a-z0-9]{10}\n(master|main)\nfalse\n"
     }
 
     def 'isCleanTag should be false when repo dirty on a tag checkout' () {
@@ -440,10 +437,10 @@ class GitVersionPluginTests extends Specification {
 
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
         dirtyContentFile << 'dirty-content'
 
         when:
@@ -456,27 +453,26 @@ class GitVersionPluginTests extends Specification {
     def 'version details when detached HEAD mode' () {
         given:
         buildFile << '''
-            plugins {
-                id 'com.palantir.git-version'
-            }
-            version gitVersion()
-            task printVersionDetails { doLast {
-                println versionDetails().lastTag
-                println versionDetails().commitDistance
-                println versionDetails().gitHash
-                println versionDetails().branchName
-            }}
-
-        '''.stripIndent()
+        plugins {
+            id 'com.palantir.git-version'
+        }
+        version gitVersion()
+        task printVersionDetails { doLast {
+            println versionDetails().lastTag
+            println versionDetails().commitDistance
+            println versionDetails().gitHash
+            println versionDetails().branchName
+        }}
+    '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        String commitId = git.getCurrentHeadFullHash()
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        git.runGitCommand("commit", "-m", "'commit 2'", "--allow-empty")
-        git.runGitCommand("checkout", commitId)
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        String commitId = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
+        runGitCmd(projectDir, "commit", "-m", "commit 2", "--allow-empty")
+        runGitCmd(projectDir, "checkout", commitId)
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
@@ -484,6 +480,7 @@ class GitVersionPluginTests extends Specification {
         then:
         buildResult.output =~ ":printVersionDetails\n1.0.0\n0\n[a-z0-9]{10}\nnull\n"
     }
+
 
     def 'version filters out tags not matching prefix and strips prefix' () {
         given:
@@ -497,13 +494,13 @@ class GitVersionPluginTests extends Specification {
             }}
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "my-product@1.0.0", "-m", "my-product@1.0.0")
-        git.runGitCommand("commit", "-m", "'commit 2'", "--allow-empty")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "my-product@1.0.0", "-m", "my-product@1.0.0")
+        runGitCmd(projectDir, "commit", "-m", "'commit 2'", "--allow-empty")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         when:
         BuildResult buildResult = with('printVersionDetails').build()
@@ -521,15 +518,15 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
         dirtyContentFile << 'dirty-content'
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'add some stuff'")
-        String commitSha = git.getCurrentHeadFullHash()
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "add some stuff")
+        String commitSha = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -547,15 +544,15 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        runGitCmd(projectDir, "tag", "1.0.0")
         dirtyContentFile << 'dirty-content'
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'add some stuff'")
-        String commitSha = git.getCurrentHeadFullHash()
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "add some stuff")
+        String commitSha = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -563,6 +560,7 @@ class GitVersionPluginTests extends Specification {
         then:
         buildResult.output.contains(":printVersion\n1.0.0-1-g${commitSha.substring(0, 7)}\n")
     }
+
 
     def 'test subproject version' () {
         given:
@@ -582,21 +580,20 @@ class GitVersionPluginTests extends Specification {
         gitIgnoreFile << 'build\n'
         gitIgnoreFile << 'sub\n'
 
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
 
         File subDir = Files.createDirectory(temporaryFolder.toPath().resolve('sub')).toFile()
-        Git subGit = new Git(subDir, true)
-        subGit.runGitCommand("init", subDir.toString())
+
+        gitInit(subDir)
         File subDirty = new File(subDir, 'subDirty')
         subDirty.createNewFile()
-        subGit.runGitCommand("add", ".")
-        subGit.runGitCommand("commit", "-m", "'initial commit sub'")
-        subGit.runGitCommand("tag", "-a", "8.8.8", "-m", "8.8.8")
-
+        runGitCmd(subDir, "add", ".")
+        runGitCmd(subDir, "commit", "-m", "'initial commit sub'")
+        runGitCmd(subDir, "tag", "-a", "8.8.8", "-m", "8.8")
         when:
         BuildResult buildResult = with('printVersion', ':sub:printVersion').build()
 
@@ -618,13 +615,13 @@ class GitVersionPluginTests extends Specification {
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "1.0.0")
-        git.runGitCommand("tag", "-a", "2.0.0", "-m", "2.0.0")
-        git.runGitCommand("tag", "3.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "1.0.0")
+        runGitCmd(projectDir, "tag", "-a", "2.0.0", "-m", "2.0.0")
+        runGitCmd(projectDir, "tag", "3.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -646,22 +643,22 @@ class GitVersionPluginTests extends Specification {
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
         Date d1 = new Date() - 2;
         HashMap<String, String> envvar1 = new HashMap<>();
         envvar1.put("GIT_COMMITTER_DATE", d1.toString())
-        git.runGitCommand(envvar1, "-c", "user.name='name'", "-c", "user.email=email@example.com", "tag", "-a", "1.0.0", "-m", "1.0.0")
+        runGitCmd(projectDir, envvar1, "-c", "user.name='name'", "-c", "user.email=email@example.com", "tag", "-a", "1.0.0", "-m", "1.0.0")
         Date d2 = new Date();
         HashMap<String, String> envvar2 = new HashMap<>();
         envvar2.put("GIT_COMMITTER_DATE", d2.toString())
-        git.runGitCommand(envvar2, "-c", "user.name='name'", "-c", "user.email=email@example.com", "tag", "-a", "2.0.0", "-m", "2.0.0")
+        runGitCmd(projectDir, envvar2, "-c", "user.name='name'", "-c", "user.email=email@example.com", "tag", "-a", "2.0.0", "-m", "2.0.0")
         Date d3 = new Date() - 1;
         HashMap<String, String> envvar3 = new HashMap<>();
         envvar3.put("GIT_COMMITTER_DATE", d3.toString())
-        git.runGitCommand(envvar3, "-c", "user.name='name'", "-c", "user.email=email@example.com", "tag", "-a", "3.0.0", "-m", "3.0.0")
+        runGitCmd(projectDir, envvar3, "-c", "user.name='name'", "-c", "user.email=email@example.com", "tag", "-a", "3.0.0", "-m", "3.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -683,13 +680,13 @@ class GitVersionPluginTests extends Specification {
             }
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "2.0.0")
-        git.runGitCommand("tag", "1.0.0")
-        git.runGitCommand("tag", "3.0.0")
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "'initial commit'")
+        runGitCmd(projectDir, "tag", "2.0.0")
+        runGitCmd(projectDir, "tag", "1.0.0")
+        runGitCmd(projectDir, "tag", "3.0.0")
 
         when:
         BuildResult buildResult = with('printVersion').build()
@@ -707,18 +704,18 @@ class GitVersionPluginTests extends Specification {
             version gitVersion()
         '''.stripIndent()
         gitIgnoreFile << 'build'
-        Git git = new Git(projectDir, true)
-        git.runGitCommand("init", projectDir.toString())
-        git.runGitCommand("add", ".")
-        git.runGitCommand("commit", "-m", "'initial commit'")
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "1.0.0")
-        String latestCommit = git.getCurrentHeadFullHash()
+
+        gitInit(projectDir)
+        runGitCmd(projectDir, "add", ".")
+        runGitCmd(projectDir, "commit", "-m", "initial commit")
+        runGitCmd(projectDir, "tag", "-a", "1.0.0", "-m", "1.0.0")
+        String latestCommit = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
 
         int depth = 100
         for (int i = 0; i < depth; i++) {
-            git.runGitCommand("add", ".")
-            git.runGitCommand("commit", "-m", "commit-"+Integer.toString(i), "--allow-empty")
-            latestCommit = git.getCurrentHeadFullHash()
+            runGitCmd(projectDir, "add", ".")
+            runGitCmd(projectDir, "commit", "-m", "commit-${i}", "--allow-empty")
+            latestCommit = runGitCmd(projectDir, "rev-parse", "HEAD").trim()
         }
 
         when:
@@ -727,6 +724,7 @@ class GitVersionPluginTests extends Specification {
         then:
         buildResult.output.contains(":printVersion\n1.0.0-${depth}-g${latestCommit.substring(0, 7)}\n")
     }
+
 
     private GradleRunner with(String... tasks) {
         return with(Optional.empty(), Optional.empty(), tasks)
@@ -749,5 +747,52 @@ class GitVersionPluginTests extends Specification {
         }
 
         return gradleRunner
+    }
+    
+    private static String runGitCmd(File directory, String ...commands) {
+        return runGitCmd(directory, [:], commands);
+    }
+
+
+    private static String runGitCmd(File directory, Map<String, String> envvars, String... commands)
+            throws IOException, InterruptedException {
+        List<String> cmdInput = new ArrayList<>();
+        cmdInput.add("git");
+        cmdInput.addAll(Arrays.asList(commands));
+        ProcessBuilder pb = new ProcessBuilder(cmdInput);
+        Map<String, String> environment = pb.environment();
+        environment.putAll(envvars);
+        pb.directory(directory);
+        pb.redirectErrorStream(true);
+
+        Process process = pb.start();
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+
+        StringBuilder builder = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            builder.append(line);
+            builder.append(System.getProperty("line.separator"));
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            return "";
+        }
+
+        return builder.toString().trim();
+    };
+
+    private static void gitInit(File projectDir) {
+        runGitCmd(projectDir, "init", projectDir.toString())
+
+        // So git doesn't ask you to gpgsign when running tests locally
+        runGitCmd(projectDir, "config", "commit.gpgsign", "false")
+        runGitCmd(projectDir, "config", "tag.gpgsign", "false")
+        runGitCmd(projectDir, "config", "tag.forcesignannotated", "false")
+
+        runGitCmd(projectDir, "config", "user.email", "email@example.com")
+        runGitCmd(projectDir, "config", "user.name", "name")
     }
 }

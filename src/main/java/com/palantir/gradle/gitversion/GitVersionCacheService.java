@@ -18,8 +18,10 @@ package com.palantir.gradle.gitversion;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Inject;
 import org.gradle.api.Project;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 
@@ -27,23 +29,19 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
 
     private final ConcurrentMap<String, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
 
+    @Inject
+    protected abstract ProviderFactory getProviderFactory();
+
     public final String getGitVersion(File project, Object args) {
-        File gitDir = getRootGitDir(project);
-        GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
-        String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        String gitVersion = versionDetailsMap
-                .computeIfAbsent(key, _k -> new VersionDetailsImpl(gitDir, gitVersionArgs))
-                .getVersion();
-        return gitVersion;
+        return getVersionDetails(project, args).getVersion();
     }
 
     public final VersionDetails getVersionDetails(File project, Object args) {
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
         String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        VersionDetails versionDetails =
-                versionDetailsMap.computeIfAbsent(key, _k -> new VersionDetailsImpl(gitDir, gitVersionArgs));
-        return versionDetails;
+        return versionDetailsMap.computeIfAbsent(
+                key, _k -> new VersionDetailsImpl(getProviderFactory(), gitDir, gitVersionArgs));
     }
 
     private static File getRootGitDir(File currentRoot) {

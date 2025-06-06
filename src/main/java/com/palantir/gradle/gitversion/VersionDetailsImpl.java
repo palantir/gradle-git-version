@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.gradle.api.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +35,10 @@ final class VersionDetailsImpl implements VersionDetails {
 
     private Git nativeGitInvoker;
 
-    VersionDetailsImpl(File gitDir, GitVersionArgs args) {
+    VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs args) {
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
-        this.nativeGitInvoker = new Git(new File(projectDir));
+        this.nativeGitInvoker = new Git(new File(projectDir), providerFactory);
         this.args = args;
     }
 

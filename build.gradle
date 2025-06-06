@@ -52,6 +52,7 @@ dependencies {
     compileOnly 'org.immutables:value::annotations'
 
     testImplementation gradleTestKit()
+    testImplementation 'com.netflix.nebula:nebula-test'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
     testImplementation('org.spockframework:spock-core') {
