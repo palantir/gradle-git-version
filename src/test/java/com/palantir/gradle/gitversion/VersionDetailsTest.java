@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,14 +35,52 @@ public class VersionDetailsTest {
     @TempDir
     public File temporaryFolder;
 
+    private Project project;
     private Git git;
 
     final String formattedTime = "'2005-04-07T22:13:13'";
 
     @BeforeEach
     public void before() {
-        this.git = new Git(temporaryFolder, true);
+        this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
+        createGitIgnore(temporaryFolder);
+        this.git = new Git(temporaryFolder, project.getProviders());
         git.runGitCommand("init", temporaryFolder.toString());
+        git.runGitCommand("config", "commit.gpgsign", "false");
+        git.runGitCommand("config", "tag.gpgsign", "false");
+        git.runGitCommand("config", "tag.forcesignannotated", "false");
+        git.runGitCommand("config", "user.email", "email@example.com");
+        git.runGitCommand("config", "user.name", "name");
+    }
+
+    private void createGitIgnore(File dir) {
+        File gitignoreFile = new File(dir, ".gitignore");
+
+        String gitignoreContent = "# Gradle project files\n" + ".gradle/\n"
+                + "build/\n"
+                + "out/\n"
+                + "classes/\n"
+                + "\n"
+                + "# Gradle wrapper\n"
+                + "gradle/\n"
+                + "gradlew\n"
+                + "gradlew.bat\n"
+                + "\n"
+                + "# Gradle cache\n"
+                + ".gradle/\n"
+                + "caches/\n"
+                + "\n"
+                + "# Local configuration\n"
+                + "local.properties\n"
+                + "\n"
+                + "# Logs\n"
+                + "*.log\n";
+
+        try {
+            Files.write(gitignoreFile.toPath(), gitignoreContent.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -61,8 +101,9 @@ public class VersionDetailsTest {
     }
 
     @Test
-    public void short_sha_when_no_annotated_tags_are_present() {
+    public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.runGitCommand("add", ".");
+
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
         envvar.put("TZ", "UTC");
@@ -79,14 +120,16 @@ public class VersionDetailsTest {
                 "--date=" + formattedTime,
                 "--allow-empty");
 
-        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555");
+        assertThat(versionDetails().getVersion()).isEqualTo("f2bc772");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.runGitCommand("add", ".");
+
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
+        envvar.put("TZ", "UTC");
         git.runGitCommand(
                 envvar,
                 "-c",
@@ -102,7 +145,7 @@ public class VersionDetailsTest {
 
         write(new File(temporaryFolder, "foo"));
 
-        assertThat(versionDetails().getVersion()).isEqualTo("f0f4555.dirty");
+        assertThat(versionDetails().getVersion()).isEqualTo("f2bc772.dirty");
     }
 
     @Test
@@ -124,6 +167,6 @@ public class VersionDetailsTest {
 
     private VersionDetails versionDetails() {
         String gitDir = temporaryFolder.toString() + "/.git";
-        return new VersionDetailsImpl(new File(gitDir), new GitVersionArgs());
+        return new VersionDetailsImpl(this.project.getProviders(), new File(gitDir), new GitVersionArgs());
     }
 }
