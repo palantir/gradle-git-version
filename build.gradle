@@ -59,6 +59,7 @@ dependencies {
     testImplementation('org.spockframework:spock-core') {
         exclude module: 'groovy-all'
     }
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.withType(JavaCompile) {
