@@ -29,6 +29,7 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
 
     private final ConcurrentMap<String, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
 
+    @SuppressWarnings("for-rollout:UnnecessarilyVisible")
     @Inject
     protected abstract ProviderFactory getProviderFactory();
 

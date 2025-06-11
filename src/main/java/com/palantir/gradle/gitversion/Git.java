@@ -31,6 +31,7 @@ class Git {
     private final File directory;
     private final ProviderFactory providerFactory;
 
+    @SuppressWarnings("for-rollout:ThrowSpecificExceptions")
     Git(File directory, ProviderFactory providerFactory) {
         this.providerFactory = providerFactory;
         this.directory = directory;
@@ -43,6 +44,7 @@ class Git {
         return runGitCmd(new HashMap<>(), commands);
     }
 
+    @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
     private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
         ExecOutput output = providerFactory.exec(execSpec -> {
             execSpec.executable("git");
