@@ -26,7 +26,7 @@ import org.gradle.api.provider.Provider;
 public final class GitVersionPlugin implements Plugin<Project> {
 
     @Override
-    public void apply(@SuppressWarnings("for-rollout:UnnecessaryFinal") final Project project) {
+    public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
 
         Provider<GitVersionCacheService> serviceProvider =

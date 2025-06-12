@@ -31,7 +31,6 @@ class Git {
     private final File directory;
     private final ProviderFactory providerFactory;
 
-    @SuppressWarnings("for-rollout:ThrowSpecificExceptions")
     Git(File directory, ProviderFactory providerFactory) {
         this.providerFactory = providerFactory;
         this.directory = directory;
