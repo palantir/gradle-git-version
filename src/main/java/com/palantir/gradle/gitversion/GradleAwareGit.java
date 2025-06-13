@@ -29,10 +29,13 @@ import org.slf4j.LoggerFactory;
  */
 class GradleAwareGit {
     public static class GitCommandFailed extends Exception {
+        @SuppressWarnings("checkstyle:visibilitymodifier")
         public int exitCode;
+
+        @SuppressWarnings("checkstyle:visibilitymodifier")
         public String errorOutput;
 
-        public GitCommandFailed(String message, int exitCode, String errorOutput) {
+        GitCommandFailed(String message, int exitCode, String errorOutput) {
             super(message);
             this.exitCode = exitCode;
             this.errorOutput = errorOutput;

@@ -35,16 +35,16 @@ class VersionDetailsImpl implements VersionDetails {
     private static final int VERSION_ABBR_LENGTH = 10;
 
     private static final String DOT_GIT_DIR_PATH = "/.git";
-    private final GitVersionArgs args;
+    private final GitVersionArgs gitVersionArgs;
 
     private GradleAwareGit gradleAwareGit;
     private final Map<String, String> gitCache = new ConcurrentHashMap<>();
 
-    VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs args) {
+    VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
         this.gradleAwareGit = new GradleAwareGit(new File(projectDir), providerFactory);
-        this.args = args;
+        this.gitVersionArgs = gitVersionArgs;
     }
 
     private String runGitWithCacheing(String... args) throws GitCommandFailed {
@@ -85,10 +85,9 @@ class VersionDetailsImpl implements VersionDetails {
                     "--always",
                     "--first-parent",
                     "--abbrev=7",
-                    "--match=" + args.getPrefix() + "*",
+                    "--match=" + gitVersionArgs.getPrefix() + "*",
                     "HEAD");
-            System.out.println("Running git describe: " + rawDescription);
-            return rawDescription.replaceFirst("^" + args.getPrefix(), "");
+            return rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), "");
         } catch (GitCommandFailed e) {
             log.error("VersionDetailsImpl::description failed", e);
             return null;
