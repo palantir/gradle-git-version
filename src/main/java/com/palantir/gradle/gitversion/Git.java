@@ -43,7 +43,6 @@ class Git {
         return runGitCmd(new HashMap<>(), commands);
     }
 
-    @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
     private String runGitCmd(Map<String, String> envvars, String... commands) throws IOException, InterruptedException {
         ExecOutput output = providerFactory.exec(execSpec -> {
             execSpec.executable("git");
