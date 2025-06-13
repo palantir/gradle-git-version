@@ -161,7 +161,12 @@ public class VersionDetailsTest {
         gradleAwareGit.run("tag", "-a", "1.0.0", "-m", "cached");
         VersionDetails versionDetails = versionDetails();
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
+
+        write(new File(temporaryFolder, "bar"));
+        gradleAwareGit.run("add", ".");
+        gradleAwareGit.run("commit", "-m", "second commit");
         gradleAwareGit.run("tag", "-a", "2.0.0", "-m", "unused");
+
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
 

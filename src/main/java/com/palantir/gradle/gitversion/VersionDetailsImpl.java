@@ -20,6 +20,9 @@ import com.google.common.base.Preconditions;
 import com.palantir.gradle.gitversion.GradleAwareGit.GitCommandFailed;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.gradle.api.provider.ProviderFactory;
@@ -35,12 +38,22 @@ class VersionDetailsImpl implements VersionDetails {
     private final GitVersionArgs args;
 
     private GradleAwareGit gradleAwareGit;
+    private final Map<String, String> gitCache = new ConcurrentHashMap<>();
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs args) {
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
         this.gradleAwareGit = new GradleAwareGit(new File(projectDir), providerFactory);
         this.args = args;
+    }
+
+    private String runGitWithCacheing(String... args) throws GitCommandFailed {
+        String key = Arrays.toString(args);
+
+        if (!gitCache.containsKey(key)) {
+            gitCache.put(key, gradleAwareGit.run(args));
+        }
+        return gitCache.get(key);
     }
 
     @Override
@@ -58,7 +71,7 @@ class VersionDetailsImpl implements VersionDetails {
 
     private boolean isClean() {
         try {
-            return gradleAwareGit.run("status", "--porcelain").isEmpty();
+            return runGitWithCacheing("status", "--porcelain").isEmpty();
         } catch (GitCommandFailed e) {
             throw new RuntimeException(e);
         }
@@ -66,7 +79,7 @@ class VersionDetailsImpl implements VersionDetails {
 
     private String description() {
         try {
-            String rawDescription = gradleAwareGit.run(
+            String rawDescription = runGitWithCacheing(
                     "describe",
                     "--tags",
                     "--always",
@@ -74,8 +87,10 @@ class VersionDetailsImpl implements VersionDetails {
                     "--abbrev=7",
                     "--match=" + args.getPrefix() + "*",
                     "HEAD");
+            System.out.println("Running git describe: " + rawDescription);
             return rawDescription.replaceFirst("^" + args.getPrefix(), "");
         } catch (GitCommandFailed e) {
+            log.error("VersionDetailsImpl::description failed", e);
             return null;
         }
     }
@@ -125,8 +140,9 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getGitHashFull() throws IOException {
         try {
-            return gradleAwareGit.run("rev-parse", "HEAD");
+            return runGitWithCacheing("rev-parse", "HEAD");
         } catch (GitCommandFailed e) {
+            log.error("VersionDetailsImpl::getGitHashFull failed", e);
             return null;
         }
     }
@@ -135,12 +151,13 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getBranchName() {
         try {
-            String branch = gradleAwareGit.run("branch", "--show-current");
+            String branch = runGitWithCacheing("branch", "--show-current");
             if (branch.isEmpty()) {
                 return null;
             }
             return branch;
         } catch (GitCommandFailed e) {
+            log.error("VersionDetailsImpl::getBranchName failed", e);
             return null;
         }
     }

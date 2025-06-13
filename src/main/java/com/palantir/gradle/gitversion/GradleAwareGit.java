@@ -77,7 +77,7 @@ class GradleAwareGit {
         int exitValue = output.getResult().get().getExitValue();
         if (exitValue != 0) {
             String stdErr = output.getStandardError().getAsText().get();
-            String errorMsg = String.format("runGitCommand error: %s", stdErr);
+            String errorMsg = String.format("git command failed: %s", stdErr);
             log.error(errorMsg);
             throw new GitCommandFailed(errorMsg, exitValue, stdErr);
         }
