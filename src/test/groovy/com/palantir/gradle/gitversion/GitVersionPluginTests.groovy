@@ -21,7 +21,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
-class GradleAwareGitVersionPluginTests extends Specification {
+class GitVersionPluginTests extends Specification {
 
     File temporaryFolder
     File projectDir
