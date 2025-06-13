@@ -17,12 +17,8 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
-import com.palantir.gradle.gitversion.GradleAwareGit.GitCommandFailed;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.gradle.api.provider.ProviderFactory;
@@ -34,26 +30,14 @@ class VersionDetailsImpl implements VersionDetails {
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
-    private static final String DOT_GIT_DIR_PATH = "/.git";
     private final GitVersionArgs gitVersionArgs;
 
-    private GradleAwareGit gradleAwareGit;
-    private final Map<String, String> gitCache = new ConcurrentHashMap<>();
+    private Git git;
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
-        String gitDirStr = gitDir.toString();
-        String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
-        this.gradleAwareGit = new GradleAwareGit(new File(projectDir), providerFactory);
+        String projectDir = gitDir.getParent();
+        this.git = new Git(new File(projectDir), providerFactory);
         this.gitVersionArgs = gitVersionArgs;
-    }
-
-    private String runGitWithCacheing(String... args) throws GitCommandFailed {
-        String key = Arrays.toString(args);
-
-        if (!gitCache.containsKey(key)) {
-            gitCache.put(key, gradleAwareGit.run(args));
-        }
-        return gitCache.get(key);
     }
 
     @Override
@@ -70,25 +54,22 @@ class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean isClean() {
-        try {
-            return runGitWithCacheing("status", "--porcelain").isEmpty();
-        } catch (GitCommandFailed e) {
-            throw new RuntimeException(e);
-        }
+        return git.run("status", "--porcelain").map(String::isEmpty).get();
     }
 
     private String description() {
         try {
-            String rawDescription = runGitWithCacheing(
-                    "describe",
-                    "--tags",
-                    "--always",
-                    "--first-parent",
-                    "--abbrev=7",
-                    "--match=" + gitVersionArgs.getPrefix() + "*",
-                    "HEAD");
+            String rawDescription = git.run(
+                            "describe",
+                            "--tags",
+                            "--always",
+                            "--first-parent",
+                            "--abbrev=7",
+                            "--match=" + gitVersionArgs.getPrefix() + "*",
+                            "HEAD")
+                    .get();
             return rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), "");
-        } catch (GitCommandFailed e) {
+        } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::description failed", e);
             return null;
         }
@@ -139,8 +120,8 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getGitHashFull() throws IOException {
         try {
-            return runGitWithCacheing("rev-parse", "HEAD");
-        } catch (GitCommandFailed e) {
+            return git.run("rev-parse", "HEAD").get();
+        } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getGitHashFull failed", e);
             return null;
         }
@@ -150,12 +131,12 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getBranchName() {
         try {
-            String branch = runGitWithCacheing("branch", "--show-current");
+            String branch = git.run("branch", "--show-current").get();
             if (branch.isEmpty()) {
                 return null;
             }
             return branch;
-        } catch (GitCommandFailed e) {
+        } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getBranchName failed", e);
             return null;
         }

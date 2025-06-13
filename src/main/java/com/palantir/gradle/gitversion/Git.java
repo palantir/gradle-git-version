@@ -19,6 +19,7 @@ package com.palantir.gradle.gitversion;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.process.ExecOutput;
 import org.slf4j.Logger;
@@ -27,27 +28,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Runs git commands in a gradle-aware manner, so gradle can do up-to-date checking for the configuration cache.
  */
-class GradleAwareGit {
-    public static class GitCommandFailed extends Exception {
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public int exitCode;
-
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public String errorOutput;
-
-        GitCommandFailed(String message, int exitCode, String errorOutput) {
-            super(message);
-            this.exitCode = exitCode;
-            this.errorOutput = errorOutput;
-        }
-    }
-
-    private static final Logger log = LoggerFactory.getLogger(GradleAwareGit.class);
+class Git {
+    private static final Logger log = LoggerFactory.getLogger(Git.class);
 
     private final File repositoryDir;
     private final ProviderFactory providerFactory;
 
-    GradleAwareGit(File repositoryDir, ProviderFactory providerFactory) {
+    Git(File repositoryDir, ProviderFactory providerFactory) {
         this.providerFactory = providerFactory;
         this.repositoryDir = repositoryDir;
         if (!gitCommandExists()) {
@@ -68,7 +55,7 @@ class GradleAwareGit {
                 == 0;
     }
 
-    public String run(Map<String, String> envvars, String... commands) throws GitCommandFailed {
+    public Provider<String> run(Map<String, String> envvars, String... commands) {
         ExecOutput output = providerFactory.exec(execSpec -> {
             execSpec.executable("git");
             execSpec.args((Object[]) commands);
@@ -77,18 +64,18 @@ class GradleAwareGit {
             execSpec.setIgnoreExitValue(true); // So gradle doesn't throw before we get the error
         });
 
-        int exitValue = output.getResult().get().getExitValue();
-        if (exitValue != 0) {
-            String stdErr = output.getStandardError().getAsText().get();
-            String errorMsg = String.format("git command failed: %s", stdErr);
-            log.error(errorMsg);
-            throw new GitCommandFailed(errorMsg, exitValue, stdErr);
-        }
-
-        return output.getStandardOutput().getAsText().get().trim();
+        return output.getResult().flatMap(execResult -> {
+            if (execResult.getExitValue() != 0) {
+                String stdErr = output.getStandardError().getAsText().get();
+                String errorMsg = String.format("git command failed: %s", stdErr);
+                log.error(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
+            return output.getStandardOutput().getAsText().map(String::trim);
+        });
     }
 
-    public String run(String... command) throws GitCommandFailed {
+    public Provider<String> run(String... command) {
         return run(new HashMap<>(), command);
     }
 }

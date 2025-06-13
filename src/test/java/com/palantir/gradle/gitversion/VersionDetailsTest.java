@@ -18,7 +18,6 @@ package com.palantir.gradle.gitversion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.palantir.gradle.gitversion.GradleAwareGit.GitCommandFailed;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +36,7 @@ public class VersionDetailsTest {
     public File temporaryFolder;
 
     private Project project;
-    private GradleAwareGit gradleAwareGit;
+    private Git git;
 
     final String formattedTime = "'2005-04-07T22:13:13'";
 
@@ -45,17 +44,14 @@ public class VersionDetailsTest {
     public void before() {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         createGitIgnore(temporaryFolder);
-        this.gradleAwareGit = new GradleAwareGit(temporaryFolder, project.getProviders());
-        try {
-            gradleAwareGit.run("init", temporaryFolder.toString());
-            gradleAwareGit.run("config", "commit.gpgsign", "false");
-            gradleAwareGit.run("config", "tag.gpgsign", "false");
-            gradleAwareGit.run("config", "tag.forcesignannotated", "false");
-            gradleAwareGit.run("config", "user.email", "email@example.com");
-            gradleAwareGit.run("config", "user.name", "name");
-        } catch (GitCommandFailed e) {
-            throw new RuntimeException(e);
-        }
+        this.git = new Git(temporaryFolder, project.getProviders());
+        git.run("init", temporaryFolder.toString()).get();
+
+        git.run("config", "commit.gpgsign", "false").get();
+        git.run("config", "tag.gpgsign", "false").get();
+        git.run("config", "tag.forcesignannotated", "false").get();
+        git.run("config", "user.email", "email@example.com").get();
+        git.run("config", "user.name", "name").get();
     }
 
     private void createGitIgnore(File dir) {
@@ -98,55 +94,57 @@ public class VersionDetailsTest {
         write(new File(folderToLinkTo, "dummyFile"));
         Files.createSymbolicLink(temporaryFolder.toPath().resolve("folderLink"), folderToLinkTo.toPath());
 
-        gradleAwareGit.run("add", ".");
-        gradleAwareGit.run("commit", "-m", "'initial commit'");
-        gradleAwareGit.run("tag", "-a", "1.0.0", "-m", "unused");
+        git.run("add", ".").get();
+        git.run("commit", "-m", "'initial commit'").get();
+        git.run("tag", "-a", "1.0.0", "-m", "unused").get();
 
         assertThat(versionDetails().getVersion()).isEqualTo("1.0.0");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
-        gradleAwareGit.run("add", ".");
+        git.run("add", ".").get();
 
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
         envvar.put("TZ", "UTC");
-        gradleAwareGit.run(
-                envvar,
-                "-c",
-                "user.name='name'",
-                "-c",
-                "user.email=email@address",
-                "commit",
-                "--author='name <email@address>'",
-                "-m",
-                "'initial commit'",
-                "--date=" + formattedTime,
-                "--allow-empty");
+        git.run(
+                        envvar,
+                        "-c",
+                        "user.name='name'",
+                        "-c",
+                        "user.email=email@address",
+                        "commit",
+                        "--author='name <email@address>'",
+                        "-m",
+                        "'initial commit'",
+                        "--date=" + formattedTime,
+                        "--allow-empty")
+                .get();
 
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
-        gradleAwareGit.run("add", ".");
+        git.run("add", ".").get();
 
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
         envvar.put("TZ", "UTC");
-        gradleAwareGit.run(
-                envvar,
-                "-c",
-                "user.name='name'",
-                "-c",
-                "user.email=email@address",
-                "commit",
-                "--author='name <email@address>'",
-                "-m",
-                "'initial commit'",
-                "--date=" + formattedTime,
-                "--allow-empty");
+        git.run(
+                        envvar,
+                        "-c",
+                        "user.name='name'",
+                        "-c",
+                        "user.email=email@address",
+                        "commit",
+                        "--author='name <email@address>'",
+                        "-m",
+                        "'initial commit'",
+                        "--date=" + formattedTime,
+                        "--allow-empty")
+                .get();
 
         write(new File(temporaryFolder, "foo"));
 
@@ -156,16 +154,16 @@ public class VersionDetailsTest {
     @Test
     public void git_version_result_is_being_cached() throws Exception {
         write(new File(temporaryFolder, "foo"));
-        gradleAwareGit.run("add", ".");
-        gradleAwareGit.run("commit", "-m", "initial commit");
-        gradleAwareGit.run("tag", "-a", "1.0.0", "-m", "cached");
+        git.run("add", ".").get();
+        git.run("commit", "-m", "initial commit").get();
+        git.run("tag", "-a", "1.0.0", "-m", "cached").get();
         VersionDetails versionDetails = versionDetails();
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
 
         write(new File(temporaryFolder, "bar"));
-        gradleAwareGit.run("add", ".");
-        gradleAwareGit.run("commit", "-m", "second commit");
-        gradleAwareGit.run("tag", "-a", "2.0.0", "-m", "unused");
+        git.run("add", ".").get();
+        git.run("commit", "-m", "second commit").get();
+        git.run("tag", "-a", "2.0.0", "-m", "unused").get();
 
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
