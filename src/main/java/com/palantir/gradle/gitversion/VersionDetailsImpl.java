@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+import com.palantir.gradle.gitversion.GradleAwareGit.GitCommandFailed;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -25,7 +26,7 @@ import org.gradle.api.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class VersionDetailsImpl implements VersionDetails {
+class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
@@ -33,12 +34,12 @@ final class VersionDetailsImpl implements VersionDetails {
     private static final String DOT_GIT_DIR_PATH = "/.git";
     private final GitVersionArgs args;
 
-    private Git nativeGitInvoker;
+    private GradleAwareGit gradleAwareGit;
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs args) {
         String gitDirStr = gitDir.toString();
         String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
-        this.nativeGitInvoker = new Git(new File(projectDir), providerFactory);
+        this.gradleAwareGit = new GradleAwareGit(new File(projectDir), providerFactory);
         this.args = args;
     }
 
@@ -56,14 +57,27 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean isClean() {
-        return nativeGitInvoker.isClean();
+        try {
+            return gradleAwareGit.run("status", "--porcelain").isEmpty();
+        } catch (GitCommandFailed e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String description() {
-        String rawDescription = nativeGitInvoker.describe(args.getPrefix());
-        String processedDescription =
-                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
-        return processedDescription;
+        try {
+            String rawDescription = gradleAwareGit.run(
+                    "describe",
+                    "--tags",
+                    "--always",
+                    "--first-parent",
+                    "--abbrev=7",
+                    "--match=" + args.getPrefix() + "*",
+                    "HEAD");
+            return rawDescription.replaceFirst("^" + args.getPrefix(), "");
+        } catch (GitCommandFailed e) {
+            return null;
+        }
     }
 
     @Override
@@ -110,13 +124,25 @@ final class VersionDetailsImpl implements VersionDetails {
     @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
     @Override
     public String getGitHashFull() throws IOException {
-        return nativeGitInvoker.getCurrentHeadFullHash();
+        try {
+            return gradleAwareGit.run("rev-parse", "HEAD");
+        } catch (GitCommandFailed e) {
+            return null;
+        }
     }
 
     @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
     @Override
-    public String getBranchName() throws IOException {
-        return nativeGitInvoker.getCurrentBranch();
+    public String getBranchName() {
+        try {
+            String branch = gradleAwareGit.run("branch", "--show-current");
+            if (branch.isEmpty()) {
+                return null;
+            }
+            return branch;
+        } catch (GitCommandFailed e) {
+            return null;
+        }
     }
 
     @Override

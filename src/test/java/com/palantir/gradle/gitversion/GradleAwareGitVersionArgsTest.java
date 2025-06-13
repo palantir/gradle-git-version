@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-public class GitVersionArgsTest {
+public class GradleAwareGitVersionArgsTest {
     @Test
     public void allowed_prefixes() throws Exception {
         new GitVersionArgs().setPrefix("@Product@");

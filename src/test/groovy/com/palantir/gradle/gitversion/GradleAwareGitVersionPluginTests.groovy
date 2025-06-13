@@ -15,13 +15,13 @@
  */
 package com.palantir.gradle.gitversion
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.nio.charset.StandardCharsets;
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
 
-class GitVersionPluginTests extends Specification {
+class GradleAwareGitVersionPluginTests extends Specification {
 
     File temporaryFolder
     File projectDir
@@ -77,7 +77,7 @@ class GitVersionPluginTests extends Specification {
         '''.stripIndent()
         gitIgnoreFile << 'build'
         new File(projectDir, 'settings.gradle').createNewFile()
-        
+
         gitInit(rootFolder)
         runGitCmd(rootFolder, "add", ".")
         runGitCmd(rootFolder, "commit","-m", "'initial commit'")
@@ -748,7 +748,7 @@ class GitVersionPluginTests extends Specification {
 
         return gradleRunner
     }
-    
+
     private static String runGitCmd(File directory, String ...commands) {
         return runGitCmd(directory, [:], commands);
     }
