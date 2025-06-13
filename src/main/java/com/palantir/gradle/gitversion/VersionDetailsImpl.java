@@ -81,7 +81,6 @@ final class VersionDetailsImpl implements VersionDetails {
             return 0;
         }
 
-        @SuppressWarnings("for-rollout:ConstantPatternCompile")
         Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
         Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", description());
         return Integer.parseInt(match.group(2));
@@ -107,13 +106,11 @@ final class VersionDetailsImpl implements VersionDetails {
         return gitHashFull.substring(0, VERSION_ABBR_LENGTH);
     }
 
-    @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
     @Override
     public String getGitHashFull() throws IOException {
         return nativeGitInvoker.getCurrentHeadFullHash();
     }
 
-    @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
     @Override
     public String getBranchName() throws IOException {
         return nativeGitInvoker.getCurrentBranch();
