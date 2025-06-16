@@ -15,15 +15,16 @@
  */
 package com.palantir.gradle.gitversion;
 
-import java.io.File;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import javax.inject.Inject;
 import org.gradle.api.Project;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
 
@@ -40,7 +41,6 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
         String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-
         return versionDetailsMap.computeIfAbsent(
                 key, _k -> new VersionDetailsImpl(getProviderFactory(), gitDir, gitVersionArgs));
     }
@@ -72,6 +72,7 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
     public static Provider<GitVersionCacheService> getSharedGitVersionCacheService(Project project) {
         return project.getGradle()
                 .getSharedServices()
-                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {});
+                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {
+                });
     }
 }
