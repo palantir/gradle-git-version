@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +31,28 @@ class VersionDetailsImpl implements VersionDetails {
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
-    private final GitVersionArgs gitVersionArgs;
-
     private Git git;
+
+    private Provider<String> description;
+    private Provider<Boolean> isClean;
+    private Provider<String> gitHashFull;
+    private Provider<String> branchName;
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
         String projectDir = gitDir.getParent();
         this.git = new Git(new File(projectDir), providerFactory);
-        this.gitVersionArgs = gitVersionArgs;
+
+        this.description = git.run("describe",
+                "--tags",
+                "--always",
+                "--first-parent",
+                "--abbrev=7",
+                "--match=" + gitVersionArgs.getPrefix() + "*",
+                "HEAD").map(rawDescription -> rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), ""));
+        this.isClean = git.run("status", "--porcelain").map(String::isEmpty);
+        this.gitHashFull = git.run("rev-parse", "HEAD");
+        this.branchName = git.run("branch", "--show-current").map(name -> name.isEmpty() ? null : name);
+
     }
 
     @Override
@@ -54,25 +69,11 @@ class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean isClean() {
-        return git.run("status", "--porcelain").map(String::isEmpty).get();
+        return isClean.get();
     }
 
     private String description() {
-        try {
-            String rawDescription = git.run(
-                            "describe",
-                            "--tags",
-                            "--always",
-                            "--first-parent",
-                            "--abbrev=7",
-                            "--match=" + gitVersionArgs.getPrefix() + "*",
-                            "HEAD")
-                    .get();
-            return rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), "");
-        } catch (RuntimeException e) {
-            log.error("VersionDetailsImpl::description failed", e);
-            return null;
-        }
+        return this.description.get();
     }
 
     @Override
@@ -120,7 +121,7 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getGitHashFull() throws IOException {
         try {
-            return git.run("rev-parse", "HEAD").get();
+            return gitHashFull.get();
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getGitHashFull failed", e);
             return null;
@@ -131,11 +132,7 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getBranchName() {
         try {
-            String branch = git.run("branch", "--show-current").get();
-            if (branch.isEmpty()) {
-                return null;
-            }
-            return branch;
+            return this.branchName.get();
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getBranchName failed", e);
             return null;
