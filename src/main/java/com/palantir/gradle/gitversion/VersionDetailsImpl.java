@@ -42,17 +42,18 @@ class VersionDetailsImpl implements VersionDetails {
         String projectDir = gitDir.getParent();
         this.git = new Git(new File(projectDir), providerFactory);
 
-        this.description = git.run("describe",
-                "--tags",
-                "--always",
-                "--first-parent",
-                "--abbrev=7",
-                "--match=" + gitVersionArgs.getPrefix() + "*",
-                "HEAD").map(rawDescription -> rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), ""));
+        this.description = git.run(
+                        "describe",
+                        "--tags",
+                        "--always",
+                        "--first-parent",
+                        "--abbrev=7",
+                        "--match=" + gitVersionArgs.getPrefix() + "*",
+                        "HEAD")
+                .map(rawDescription -> rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), ""));
         this.isClean = git.run("status", "--porcelain").map(String::isEmpty);
         this.gitHashFull = git.run("rev-parse", "HEAD");
-        this.branchName = git.run("branch", "--show-current").map(name -> name.isEmpty() ? null : name);
-
+        this.branchName = git.run("branch", "--show-current");
     }
 
     @Override
@@ -73,7 +74,17 @@ class VersionDetailsImpl implements VersionDetails {
     }
 
     private String description() {
-        return this.description.get();
+        try {
+            String description = this.description.get();
+            if (description.isEmpty()) {
+                return null;
+            } else {
+                return description;
+            }
+        } catch (RuntimeException e) {
+            log.error("VersionDetailsImpl::getGitHashFull failed", e);
+            return null;
+        }
     }
 
     @Override
@@ -109,12 +120,7 @@ class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHash() throws IOException {
-        String gitHashFull = getGitHashFull();
-        if (gitHashFull == null) {
-            return null;
-        }
-
-        return gitHashFull.substring(0, VERSION_ABBR_LENGTH);
+        return getGitHashFull().substring(0, VERSION_ABBR_LENGTH);
     }
 
     @SuppressWarnings("for-rollout:CheckedExceptionNotThrown")
@@ -132,7 +138,12 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getBranchName() {
         try {
-            return this.branchName.get();
+            String branchName = this.branchName.get();
+            if (branchName.isEmpty()) {
+                return null;
+            } else {
+                return branchName;
+            }
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getBranchName failed", e);
             return null;
