@@ -99,7 +99,7 @@ This plugin adds a `printVersion` task, which will echo the project's configured
 to standard-out.
 
 
-Cacheing
+Caching
 ---
 
 `VersionDetails` caches calls to git with gradle's [Provider\<ExecOutput\>](https://docs.gradle.org/current/javadoc/org/gradle/process/ExecOutput.html#getResult()). External calls are expensive, and cacheing prevents running the same `git` command more than once in a single build. 
