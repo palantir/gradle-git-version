@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -31,8 +32,6 @@ class VersionDetailsImpl implements VersionDetails {
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
-    private Git git;
-
     private Provider<String> description;
     private Provider<Boolean> isClean;
     private Provider<String> gitHashFull;
@@ -40,7 +39,7 @@ class VersionDetailsImpl implements VersionDetails {
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
         String projectDir = gitDir.getParent();
-        this.git = new Git(new File(projectDir), providerFactory);
+        Git git = new Git(new File(projectDir), providerFactory);
 
         this.description = git.run(
                         "describe",
@@ -75,12 +74,7 @@ class VersionDetailsImpl implements VersionDetails {
 
     private String description() {
         try {
-            String description = this.description.get();
-            if (description.isEmpty()) {
-                return null;
-            } else {
-                return description;
-            }
+            return Strings.emptyToNull(this.description.get());
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getGitHashFull failed", e);
             return null;
@@ -138,12 +132,7 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getBranchName() {
         try {
-            String branchName = this.branchName.get();
-            if (branchName.isEmpty()) {
-                return null;
-            } else {
-                return branchName;
-            }
+            return Strings.emptyToNull(this.branchName.get());
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getBranchName failed", e);
             return null;

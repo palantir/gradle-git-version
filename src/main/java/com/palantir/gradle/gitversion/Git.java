@@ -37,22 +37,6 @@ class Git {
     Git(File repositoryDir, ProviderFactory providerFactory) {
         this.providerFactory = providerFactory;
         this.repositoryDir = repositoryDir;
-        if (!gitCommandExists()) {
-            throw new RuntimeException("git command not found in project.");
-        }
-    }
-
-    private boolean gitCommandExists() {
-        return providerFactory
-                        .exec(execSpec -> {
-                            execSpec.executable("git");
-                            execSpec.args("version");
-                            execSpec.workingDir(repositoryDir);
-                        })
-                        .getResult()
-                        .get()
-                        .getExitValue()
-                == 0;
     }
 
     public Provider<String> run(Map<String, String> envvars, String... commands) {
