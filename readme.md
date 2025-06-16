@@ -102,7 +102,7 @@ to standard-out.
 Cacheing
 ---
 
-`VersionDetails` caches calls to git with gradle's [Provider\<ExecOutput\>](https://docs.gradle.org/current/javadoc/org/gradle/process/ExecOutput.html#getResult()). External calls are expensive, and cacheing prevents running the same `git` command more than once in a single build. 
+`VersionDetails` caches calls to `git` with Gradle's [`Provider<ExecOutput>`](https://docs.gradle.org/current/javadoc/org/gradle/process/ExecOutput.html#getResult()). External calls can be  expensive, especially if called repeatedly across multiple projects. Caching prevents running the same `git` command more than once in a single build. 
 
 If the state of the git repo changes within a single gradle session (e.g. a task in the build does `git commit`), `VersionDetails` might reflect the outdated state of your repo.
 
