@@ -40,6 +40,7 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
         File gitDir = getRootGitDir(project);
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
         String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
+
         return versionDetailsMap.computeIfAbsent(
                 key, _k -> new VersionDetailsImpl(getProviderFactory(), gitDir, gitVersionArgs));
     }
