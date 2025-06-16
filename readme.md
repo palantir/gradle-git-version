@@ -103,7 +103,7 @@ to standard-out.
 ---
 External process calls to `git` in this plugin are compatible with Gradle's [Configuration Cache](https://docs.gradle.org/current/userguide/configuration_cache.html).
 
-Since we're using CC compatible APIs, we leverage Gradle's ability to reuse the output for a single `git` upon successive invocations.
+Since we're using CC compatible APIs, we leverage Gradle's ability to reuse outputs of `git` commands upon successive invocations.
 
 `VersionDetails` caches calls to `git` with Gradle's [`Provider<ExecOutput>`](https://docs.gradle.org/current/javadoc/org/gradle/process/ExecOutput.html#getResult()). External calls can be  expensive, especially if called repeatedly across multiple projects. Caching prevents running the same `git` command more than once in a single build. 
 
