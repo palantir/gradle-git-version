@@ -1,0 +1,10 @@
+C:/your/path/to/go.mod:/go/src/app/go.mod
+COPY go.mod .
+
+#final stage
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+COPY --from=builder /go/bin/app /app
+ENTRYPOINT /app
+LABEL Name=gradlegitversion Version=0.0.1
+EXPOSE 3000
