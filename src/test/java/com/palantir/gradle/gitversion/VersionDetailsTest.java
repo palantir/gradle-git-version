@@ -57,25 +57,29 @@ public class VersionDetailsTest {
     private void createGitIgnore(File dir) {
         File gitignoreFile = new File(dir, ".gitignore");
 
-        String gitignoreContent = "# Gradle project files\n" + ".gradle/\n"
-                + "build/\n"
-                + "out/\n"
-                + "classes/\n"
-                + "\n"
-                + "# Gradle wrapper\n"
-                + "gradle/\n"
-                + "gradlew\n"
-                + "gradlew.bat\n"
-                + "\n"
-                + "# Gradle cache\n"
-                + ".gradle/\n"
-                + "caches/\n"
-                + "\n"
-                + "# Local configuration\n"
-                + "local.properties\n"
-                + "\n"
-                + "# Logs\n"
-                + "*.log\n";
+        String gitignoreContent =
+                """
+                # Gradle project files
+                .gradle/
+                build/
+                out/
+                classes/
+
+                # Gradle wrapper
+                gradle/
+                gradlew
+                gradlew.bat
+
+                # Gradle cache
+                .gradle/
+                caches/
+
+                # Local configuration
+                local.properties
+
+                # Logs
+                *.log
+                """;
 
         try {
             Files.write(gitignoreFile.toPath(), gitignoreContent.getBytes(StandardCharsets.UTF_8));
