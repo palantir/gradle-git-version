@@ -17,29 +17,42 @@
 package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class VersionDetailsImpl implements VersionDetails {
+class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
     private static final int VERSION_ABBR_LENGTH = 10;
 
-    private static final String DOT_GIT_DIR_PATH = "/.git";
-    private final GitVersionArgs args;
+    private Provider<String> description;
+    private Provider<Boolean> isClean;
+    private Provider<String> gitHashFull;
+    private Provider<String> branchName;
 
-    private Git nativeGitInvoker;
+    VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
+        String projectDir = gitDir.getParent();
+        Git git = new Git(new File(projectDir), providerFactory);
 
-    VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs args) {
-        String gitDirStr = gitDir.toString();
-        String projectDir = gitDirStr.substring(0, gitDirStr.length() - DOT_GIT_DIR_PATH.length());
-        this.nativeGitInvoker = new Git(new File(projectDir), providerFactory);
-        this.args = args;
+        this.description = git.run(
+                        "describe",
+                        "--tags",
+                        "--always",
+                        "--first-parent",
+                        "--abbrev=7",
+                        "--match=" + gitVersionArgs.getPrefix() + "*",
+                        "HEAD")
+                .map(rawDescription -> rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), ""));
+        this.isClean = git.run("status", "--porcelain").map(String::isEmpty);
+        this.gitHashFull = git.run("rev-parse", "HEAD");
+        this.branchName = git.run("branch", "--show-current");
     }
 
     @Override
@@ -56,14 +69,16 @@ final class VersionDetailsImpl implements VersionDetails {
     }
 
     private boolean isClean() {
-        return nativeGitInvoker.isClean();
+        return isClean.get();
     }
 
     private String description() {
-        String rawDescription = nativeGitInvoker.describe(args.getPrefix());
-        String processedDescription =
-                rawDescription == null ? null : rawDescription.replaceFirst("^" + args.getPrefix(), "");
-        return processedDescription;
+        try {
+            return Strings.emptyToNull(this.description.get());
+        } catch (RuntimeException e) {
+            log.error("VersionDetailsImpl::getGitHashFull failed", e);
+            return null;
+        }
     }
 
     @Override
@@ -98,22 +113,27 @@ final class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHash() throws IOException {
-        String gitHashFull = getGitHashFull();
-        if (gitHashFull == null) {
-            return null;
-        }
-
-        return gitHashFull.substring(0, VERSION_ABBR_LENGTH);
+        return getGitHashFull().substring(0, VERSION_ABBR_LENGTH);
     }
 
     @Override
     public String getGitHashFull() throws IOException {
-        return nativeGitInvoker.getCurrentHeadFullHash();
+        try {
+            return gitHashFull.get();
+        } catch (RuntimeException e) {
+            log.error("VersionDetailsImpl::getGitHashFull failed", e);
+            return null;
+        }
     }
 
     @Override
-    public String getBranchName() throws IOException {
-        return nativeGitInvoker.getCurrentBranch();
+    public String getBranchName() {
+        try {
+            return Strings.emptyToNull(this.branchName.get());
+        } catch (RuntimeException e) {
+            log.error("VersionDetailsImpl::getBranchName failed", e);
+            return null;
+        }
     }
 
     @Override

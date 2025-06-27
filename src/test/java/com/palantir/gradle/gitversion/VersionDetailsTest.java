@@ -45,12 +45,13 @@ public class VersionDetailsTest {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         createGitIgnore(temporaryFolder);
         this.git = new Git(temporaryFolder, project.getProviders());
-        git.runGitCommand("init", temporaryFolder.toString());
-        git.runGitCommand("config", "commit.gpgsign", "false");
-        git.runGitCommand("config", "tag.gpgsign", "false");
-        git.runGitCommand("config", "tag.forcesignannotated", "false");
-        git.runGitCommand("config", "user.email", "email@example.com");
-        git.runGitCommand("config", "user.name", "name");
+        git.run("init", temporaryFolder.toString()).get();
+
+        git.run("config", "commit.gpgsign", "false").get();
+        git.run("config", "tag.gpgsign", "false").get();
+        git.run("config", "tag.forcesignannotated", "false").get();
+        git.run("config", "user.email", "email@example.com").get();
+        git.run("config", "user.name", "name").get();
     }
 
     private void createGitIgnore(File dir) {
@@ -93,55 +94,57 @@ public class VersionDetailsTest {
         write(new File(folderToLinkTo, "dummyFile"));
         Files.createSymbolicLink(temporaryFolder.toPath().resolve("folderLink"), folderToLinkTo.toPath());
 
-        git.runGitCommand("add", ".");
-        git.runGitCommand("commit", "-m", "'initial commit'");
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "unused");
+        git.run("add", ".").get();
+        git.run("commit", "-m", "'initial commit'").get();
+        git.run("tag", "-a", "1.0.0", "-m", "unused").get();
 
         assertThat(versionDetails().getVersion()).isEqualTo("1.0.0");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
-        git.runGitCommand("add", ".");
+        git.run("add", ".").get();
 
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
         envvar.put("TZ", "UTC");
-        git.runGitCommand(
-                envvar,
-                "-c",
-                "user.name='name'",
-                "-c",
-                "user.email=email@address",
-                "commit",
-                "--author='name <email@address>'",
-                "-m",
-                "'initial commit'",
-                "--date=" + formattedTime,
-                "--allow-empty");
+        git.run(
+                        envvar,
+                        "-c",
+                        "user.name='name'",
+                        "-c",
+                        "user.email=email@address",
+                        "commit",
+                        "--author='name <email@address>'",
+                        "-m",
+                        "'initial commit'",
+                        "--date=" + formattedTime,
+                        "--allow-empty")
+                .get();
 
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
-        git.runGitCommand("add", ".");
+        git.run("add", ".").get();
 
         Map<String, String> envvar = new HashMap<>();
         envvar.put("GIT_COMMITTER_DATE", formattedTime);
         envvar.put("TZ", "UTC");
-        git.runGitCommand(
-                envvar,
-                "-c",
-                "user.name='name'",
-                "-c",
-                "user.email=email@address",
-                "commit",
-                "--author='name <email@address>'",
-                "-m",
-                "'initial commit'",
-                "--date=" + formattedTime,
-                "--allow-empty");
+        git.run(
+                        envvar,
+                        "-c",
+                        "user.name='name'",
+                        "-c",
+                        "user.email=email@address",
+                        "commit",
+                        "--author='name <email@address>'",
+                        "-m",
+                        "'initial commit'",
+                        "--date=" + formattedTime,
+                        "--allow-empty")
+                .get();
 
         write(new File(temporaryFolder, "foo"));
 
@@ -151,12 +154,17 @@ public class VersionDetailsTest {
     @Test
     public void git_version_result_is_being_cached() throws Exception {
         write(new File(temporaryFolder, "foo"));
-        git.runGitCommand("add", ".");
-        git.runGitCommand("commit", "-m", "initial commit");
-        git.runGitCommand("tag", "-a", "1.0.0", "-m", "cached");
+        git.run("add", ".").get();
+        git.run("commit", "-m", "initial commit").get();
+        git.run("tag", "-a", "1.0.0", "-m", "cached").get();
         VersionDetails versionDetails = versionDetails();
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
-        git.runGitCommand("tag", "-a", "2.0.0", "-m", "unused");
+
+        write(new File(temporaryFolder, "bar"));
+        git.run("add", ".").get();
+        git.run("commit", "-m", "second commit").get();
+        git.run("tag", "-a", "2.0.0", "-m", "unused").get();
+
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
 
