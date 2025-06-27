@@ -100,6 +100,28 @@ Tasks
 This plugin adds a `printVersion` task, which will echo the project's configured version
 to standard-out.
 
+
+☑️ Configuration cache
+---
+External process calls to `git` in this plugin are compatible with Gradle's [Configuration Cache](https://docs.gradle.org/current/userguide/configuration_cache.html).
+
+Since we're using Configuration Cache compatible APIs, we leverage Gradle's ability to reuse outputs of `git` commands upon successive invocations.
+
+`VersionDetails` caches calls to `git` with Gradle's [`Provider<ExecOutput>`](https://docs.gradle.org/current/javadoc/org/gradle/process/ExecOutput.html#getResult()). External calls can be  expensive, especially if called repeatedly across multiple projects. Caching prevents running the same `git` command more than once in a single build. 
+
+> [!WARNING]
+> If the state of the git repo changes within a single gradle session (e.g. a task in the build does `git commit`), `VersionDetails` might reflect the outdated state of your repo.
+
+However, changes to the state of your repo between gradle builds i.e. two runs of gradle...
+```bash
+./gradlew check
+git commit -m "new commit"
+./gradlew check
+```
+
+...are not affected by this, as the cache is scoped to individual `VersionDetails` instances. 
+
+
 License
 -------
 This plugin is made available under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).

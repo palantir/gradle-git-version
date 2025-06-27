@@ -11,7 +11,7 @@ buildscript {
         classpath 'com.palantir.gradle.plugintesting:gradle-plugin-testing:0.6.0'
         classpath 'com.palantir.jakartapackagealignment:jakarta-package-alignment:0.6.0'
         classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.19.0'
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.68.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.69.0'
         classpath 'com.palantir.suppressible-error-prone:gradle-suppressible-error-prone:2.9.0'
         classpath 'gradle.plugin.org.inferred:gradle-processors:3.7.0'
         classpath 'com.palantir.baseline:gradle-baseline-java:6.32.0'
@@ -20,8 +20,9 @@ buildscript {
 
 plugins {
     id 'com.gradle.plugin-publish' version '1.3.1'
-    id 'com.palantir.git-version' version '3.3.0'
+    id 'com.palantir.git-version' version '3.4.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
+    id 'com.palantir.baseline' version '6.39.0'
     id 'com.palantir.consistent-versions' version '2.34.0'
     id 'java-gradle-plugin'
     id 'groovy'
@@ -97,5 +98,5 @@ jdks {
 }
 
 gradleTestUtils {
-    gradleVersions = ['7.6.5', '8.14.2']
+    gradleVersions = ['8.14.2']
 }

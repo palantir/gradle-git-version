@@ -34,12 +34,14 @@ public final class GitVersionPlugin implements Plugin<Project> {
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
+            @SuppressWarnings("for-rollout:UnusedMethod")
             public String doCall(Object args) {
                 return serviceProvider.get().getGitVersion(project.getProjectDir(), args);
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
+            @SuppressWarnings("for-rollout:UnusedMethod")
             public VersionDetails doCall(Object args) {
                 return serviceProvider.get().getVersionDetails(project.getProjectDir(), args);
             }
