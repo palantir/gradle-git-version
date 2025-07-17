@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -54,7 +55,6 @@ public class VersionDetailsTest {
         git.run("config", "user.name", "name").get();
     }
 
-    @SuppressWarnings("for-rollout:PreferUncheckedIoException")
     private void createGitIgnore(File dir) {
         File gitignoreFile = new File(dir, ".gitignore");
 
@@ -85,7 +85,7 @@ public class VersionDetailsTest {
         try {
             Files.write(gitignoreFile.toPath(), gitignoreContent.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
