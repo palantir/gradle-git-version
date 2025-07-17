@@ -54,6 +54,7 @@ public class VersionDetailsTest {
         git.run("config", "user.name", "name").get();
     }
 
+    @SuppressWarnings("for-rollout:PreferUncheckedIoException")
     private void createGitIgnore(File dir) {
         File gitignoreFile = new File(dir, ".gitignore");
 
