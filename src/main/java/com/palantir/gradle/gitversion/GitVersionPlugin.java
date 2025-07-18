@@ -47,6 +47,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
             }
         });
 
+        @SuppressWarnings("for-rollout:ConfigurationAvoidanceRegistration")
         Task printVersionTask = project.getTasks().create("printVersion");
         printVersionTask.doLast(new Action<Task>() {
             @Override
