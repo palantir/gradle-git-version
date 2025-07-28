@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Use `com.palantir.gradle.plugintesting.ConfigurationCacheSpec`
+  links:
+  - https://github.com/palantir/gradle-git-version/pull/1019

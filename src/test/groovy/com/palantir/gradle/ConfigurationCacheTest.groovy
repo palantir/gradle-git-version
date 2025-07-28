@@ -16,9 +16,9 @@
 
 package com.palantir.gradle
 
-import nebula.test.IntegrationTestKitSpec
+import com.palantir.gradle.plugintesting.ConfigurationCacheSpec
 
-class ConfigurationCacheTest extends IntegrationTestKitSpec {
+class ConfigurationCacheTest extends ConfigurationCacheSpec {
 
     def setup() {
         definePluginOutsideOfPluginBlock = true
@@ -40,7 +40,7 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
         """)
 
         expect:
-        runTasksWithConfigurationCache('classes')
+        runTasksWithConfigurationCacheAndCheck('classes')
     }
 
     def "classes task runs with configuration cache when using versionDetails()"() {
@@ -61,7 +61,7 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
         """)
 
         expect:
-        runTasksWithConfigurationCache('classes')
+        runTasksWithConfigurationCacheAndCheck('classes')
     }
 
     /**
@@ -70,21 +70,5 @@ class ConfigurationCacheTest extends IntegrationTestKitSpec {
     private void setupBuildWithGitVersion(String buildFileContent) {
         // language=Gradle
         buildFile << buildFileContent.stripIndent(true)
-    }
-
-    /**
-     * Runs the specified tasks twice with configuration cache and verifies cache behavior.
-     * Returns true if the configuration cache was properly used on the second run.
-     */
-    private boolean runTasksWithConfigurationCache(String... tasks) {
-        def firstRun = createRunner(tasks + ['--configuration-cache'] as String[]).build()
-        assert firstRun.output.contains('Configuration cache entry stored.'),
-                "Expected first run to store configuration cache, but output was: ${firstRun.output}"
-
-        def secondRun = createRunner(tasks + ['--configuration-cache'] as String[]).build()
-        assert secondRun.output.contains('Configuration cache entry reused.'),
-                "Expected second run to reuse configuration cache, but output was: ${secondRun.output}"
-
-        return true
     }
 }
