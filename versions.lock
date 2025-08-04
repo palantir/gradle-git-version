@@ -4,7 +4,7 @@ com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 com.google.guava:guava:33.4.8-jre (2 constraints: e31ee37f)
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 com.google.j2objc:j2objc-annotations:3.0.0 (1 constraints: 150aeab4)
-org.immutables:value:2.11.1 (1 constraints: 3705333b)
+org.immutables:value:2.11.2 (1 constraints: 3805343b)
 org.jspecify:jspecify:1.0.0 (1 constraints: 130ae0b4)
 
 [Test dependencies]
