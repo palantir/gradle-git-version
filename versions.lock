@@ -15,7 +15,7 @@ com.palantir.gradle.plugintesting:plugin-testing-core:0.11.0 (1 constraints: 340
 junit:junit:4.13.2 (1 constraints: 1b0e1d4c)
 net.bytebuddy:byte-buddy:1.15.11 (1 constraints: 7f0bc9ea)
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
-org.assertj:assertj-core:3.27.3 (1 constraints: 4105513b)
+org.assertj:assertj-core:3.27.4 (1 constraints: 4205523b)
 org.codehaus.groovy:groovy:3.0.25 (3 constraints: 14347add)
 org.hamcrest:hamcrest:2.2 (1 constraints: d20cdc04)
 org.hamcrest:hamcrest-core:1.3 (1 constraints: cc05fe3f)

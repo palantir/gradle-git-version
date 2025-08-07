@@ -1,5 +1,5 @@
 com.google.guava:guava = 33.4.8-jre
-org.assertj:assertj-core = 3.27.3
+org.assertj:assertj-core = 3.27.4
 org.immutables:* = 2.11.2
 org.junit.jupiter:* = 5.13.4
 org.junit.platform:* = 1.13.4
