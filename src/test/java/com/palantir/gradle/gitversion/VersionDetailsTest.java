@@ -16,7 +16,11 @@
 
 package com.palantir.gradle.gitversion;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,11 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class VersionDetailsTest {
 
@@ -60,29 +61,30 @@ public class VersionDetailsTest {
 
         String gitignoreContent =
                 """
-                # Gradle project files
-                .gradle/
-                build/
-                out/
-                classes/
-
-                # Gradle wrapper
-                gradle/
-                gradlew
-                gradlew.bat
-
-                # Gradle cache
-                .gradle/
-                caches/
-
-                # Local configuration
-                local.properties
-
-                # Logs
-                *.log
-                """;
+                        # Gradle project files
+                        .gradle/
+                        build/
+                        out/
+                        classes/
+                        
+                        # Gradle wrapper
+                        gradle/
+                        gradlew
+                        gradlew.bat
+                        
+                        # Gradle cache
+                        .gradle/
+                        caches/
+                        
+                        # Local configuration
+                        local.properties
+                        
+                        # Logs
+                        *.log
+                        """;
 
         try {
+            Files.deleteIfExists(gitignoreFile.toPath());
             Files.write(gitignoreFile.toPath(), gitignoreContent.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -172,6 +174,28 @@ public class VersionDetailsTest {
 
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
+
+
+    @Test
+    public void git_version_commit_count_returns_correct_count() throws Exception {
+        write(new File(temporaryFolder, "foo"));
+        git.run("add", ".").get();
+        git.run("commit", "-m", "initial commit").get();
+
+        write(new File(temporaryFolder, "bar"));
+        git.run("add", ".").get();
+        git.run("commit", "-m", "second commit").get();
+
+        write(new File(temporaryFolder, "doo"));
+        git.run("add", ".").get();
+        git.run("commit", "-m", "third commit").get();
+
+
+        VersionDetails versionDetails = versionDetails();
+        assertThat(versionDetails.getCommitCount()).isEqualTo(3);
+
+    }
+
 
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));

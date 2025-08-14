@@ -32,4 +32,6 @@ public interface VersionDetails {
     boolean getIsCleanTag();
 
     String getVersion();
+
+    Long getCommitCount();
 }

@@ -36,6 +36,7 @@ class VersionDetailsImpl implements VersionDetails {
     private Provider<Boolean> isClean;
     private Provider<String> gitHashFull;
     private Provider<String> branchName;
+    private Provider<Long> commitCount;
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
         String projectDir = gitDir.getParent();
@@ -53,6 +54,14 @@ class VersionDetailsImpl implements VersionDetails {
         this.isClean = git.run("status", "--porcelain").map(String::isEmpty);
         this.gitHashFull = git.run("rev-parse", "HEAD");
         this.branchName = git.run("branch", "--show-current");
+        this.commitCount = git.run("rev-list", "--count", "HEAD").map(rawCount -> {
+            try {
+                return Long.valueOf(rawCount);
+            } catch (Exception e) {
+                System.out.printf(e.getMessage());
+                return 0L;
+            }
+        });
     }
 
     @Override
@@ -66,6 +75,11 @@ class VersionDetailsImpl implements VersionDetails {
             return "unspecified";
         }
         return description() + (isClean() ? "" : ".dirty");
+    }
+
+    @Override
+    public Long getCommitCount() {
+        return commitCount.get();
     }
 
     private boolean isClean() {
