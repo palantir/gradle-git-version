@@ -16,11 +16,7 @@
 
 package com.palantir.gradle.gitversion;
 
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class VersionDetailsTest {
 
@@ -61,27 +60,27 @@ public class VersionDetailsTest {
 
         String gitignoreContent =
                 """
-                        # Gradle project files
-                        .gradle/
-                        build/
-                        out/
-                        classes/
-                        
-                        # Gradle wrapper
-                        gradle/
-                        gradlew
-                        gradlew.bat
-                        
-                        # Gradle cache
-                        .gradle/
-                        caches/
-                        
-                        # Local configuration
-                        local.properties
-                        
-                        # Logs
-                        *.log
-                        """;
+                # Gradle project files
+                .gradle/
+                build/
+                out/
+                classes/
+
+                # Gradle wrapper
+                gradle/
+                gradlew
+                gradlew.bat
+
+                # Gradle cache
+                .gradle/
+                caches/
+
+                # Local configuration
+                local.properties
+
+                # Logs
+                *.log
+                """;
 
         try {
             Files.deleteIfExists(gitignoreFile.toPath());
