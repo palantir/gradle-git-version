@@ -174,7 +174,6 @@ public class VersionDetailsTest {
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
     }
 
-
     @Test
     public void git_version_commit_count_returns_correct_count() throws Exception {
         write(new File(temporaryFolder, "foo"));
@@ -192,9 +191,7 @@ public class VersionDetailsTest {
 
         VersionDetails versionDetails = versionDetails();
         assertThat(versionDetails.getCommitCount()).isEqualTo(3);
-
     }
-
 
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
