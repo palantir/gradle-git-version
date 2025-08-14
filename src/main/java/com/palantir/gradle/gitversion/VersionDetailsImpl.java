@@ -58,7 +58,7 @@ class VersionDetailsImpl implements VersionDetails {
             try {
                 return Long.valueOf(rawCount);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("VersionDetailsImpl::getGitHashFull failed", e);
                 return 0L;
             }
         });
