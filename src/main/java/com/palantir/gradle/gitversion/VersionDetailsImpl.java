@@ -58,7 +58,7 @@ class VersionDetailsImpl implements VersionDetails {
             try {
                 return Long.valueOf(rawCount);
             } catch (Exception e) {
-                System.out.printf(e.getMessage());
+                e.printStackTrace();
                 return 0L;
             }
         });

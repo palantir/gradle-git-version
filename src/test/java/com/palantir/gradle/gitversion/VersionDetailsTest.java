@@ -188,7 +188,6 @@ public class VersionDetailsTest {
         git.run("add", ".").get();
         git.run("commit", "-m", "third commit").get();
 
-
         VersionDetails versionDetails = versionDetails();
         assertThat(versionDetails.getCommitCount()).isEqualTo(3);
     }
