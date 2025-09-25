@@ -1,16 +1,16 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-com.google.errorprone:error_prone_annotations:2.36.0 (1 constraints: 4d0a49bf)
+com.google.errorprone:error_prone_annotations:2.41.0 (1 constraints: 490a3ebf)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
-com.google.guava:guava:33.4.8-jre (2 constraints: e31ee37f)
+com.google.guava:guava:33.5.0-jre (2 constraints: dc1eed7d)
 
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 
-com.google.j2objc:j2objc-annotations:3.0.0 (1 constraints: 150aeab4)
+com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-org.immutables:value:2.11.3 (1 constraints: 3905353b)
+org.immutables:value:2.11.4 (1 constraints: 3a05363b)
 
 org.jspecify:jspecify:1.0.0 (1 constraints: 130ae0b4)
 
@@ -28,11 +28,11 @@ com.palantir.gradle.plugintesting:plugin-testing-core:0.11.0 (1 constraints: 340
 
 junit:junit:4.13.2 (1 constraints: 1b0e1d4c)
 
-net.bytebuddy:byte-buddy:1.15.11 (1 constraints: 7f0bc9ea)
+net.bytebuddy:byte-buddy:1.17.7 (1 constraints: 560b56df)
 
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
-org.assertj:assertj-core:3.27.4 (1 constraints: 4205523b)
+org.assertj:assertj-core:3.27.6 (1 constraints: 4405543b)
 
 org.codehaus.groovy:groovy:3.0.25 (3 constraints: 14347add)
 
