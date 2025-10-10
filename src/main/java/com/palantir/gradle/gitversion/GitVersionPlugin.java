@@ -47,16 +47,16 @@ public final class GitVersionPlugin implements Plugin<Project> {
             }
         });
 
-        @SuppressWarnings("for-rollout:ConfigurationAvoidanceRegistration")
-        Task printVersionTask = project.getTasks().create("printVersion");
-        printVersionTask.doLast(new Action<Task>() {
-            @Override
-            @SuppressWarnings("BanSystemOut")
-            public void execute(Task _task) {
-                System.out.println(project.getVersion());
-            }
+        project.getTasks().register("printVersion", task -> {
+            task.doLast(new Action<Task>() {
+                @Override
+                @SuppressWarnings("BanSystemOut")
+                public void execute(Task _task) {
+                    System.out.println(project.getVersion());
+                }
+            });
+            task.setGroup("Versioning");
+            task.setDescription("Prints the project's configured version to standard out");
         });
-        printVersionTask.setGroup("Versioning");
-        printVersionTask.setDescription("Prints the project's configured version to standard out");
     }
 }
