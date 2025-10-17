@@ -4,7 +4,7 @@ com.google.errorprone:error_prone_annotations:2.41.0 (1 constraints: 490a3ebf)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
-com.google.guava:guava:33.5.0-jre (2 constraints: d51ecc7d)
+com.google.guava:guava:33.5.0-jre (3 constraints: 1c3a7bdf)
 
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 
@@ -22,9 +22,13 @@ cglib:cglib-nodep:3.2.2 (1 constraints: 490ded24)
 
 com.netflix.nebula:nebula-test:10.6.2 (2 constraints: d61de72d)
 
-com.palantir.gradle.plugintesting:configuration-cache-spec:0.12.0 (1 constraints: 3505293b)
+com.palantir.gradle.plugintesting:configuration-cache-spec:0.13.0 (1 constraints: 36052c3b)
 
-com.palantir.gradle.plugintesting:plugin-testing-core:0.12.0 (1 constraints: 3505293b)
+com.palantir.gradle.plugintesting:gradle-plugin-testing-junit:0.13.0 (1 constraints: 36052c3b)
+
+com.palantir.gradle.plugintesting:plugin-testing-core:0.13.0 (1 constraints: 36052c3b)
+
+commons-io:commons-io:2.19.0 (1 constraints: db190cdf)
 
 junit:junit:4.13.2 (1 constraints: 1b0e1d4c)
 
@@ -32,21 +36,23 @@ net.bytebuddy:byte-buddy:1.17.7 (1 constraints: 560b56df)
 
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
-org.assertj:assertj-core:3.27.6 (1 constraints: 4405543b)
+org.assertj:assertj-core:3.27.6 (2 constraints: 211f1a90)
 
-org.codehaus.groovy:groovy:3.0.25 (3 constraints: 14347add)
+org.codehaus.groovy:groovy:3.0.24 (3 constraints: 133429dd)
 
 org.hamcrest:hamcrest:2.2 (1 constraints: d20cdc04)
 
 org.hamcrest:hamcrest-core:1.3 (1 constraints: cc05fe3f)
 
+org.jetbrains:annotations:26.0.2 (1 constraints: d9190fdf)
+
 org.junit.jupiter:junit-jupiter:6.0.0 (1 constraints: 47070770)
 
-org.junit.jupiter:junit-jupiter-api:6.0.0 (4 constraints: e2455a9a)
+org.junit.jupiter:junit-jupiter-api:6.0.0 (5 constraints: f45fbb93)
 
 org.junit.jupiter:junit-jupiter-engine:6.0.0 (1 constraints: 030eca3b)
 
-org.junit.jupiter:junit-jupiter-params:6.0.0 (2 constraints: 8a24c8b7)
+org.junit.jupiter:junit-jupiter-params:6.0.0 (2 constraints: c12425d7)
 
 org.junit.platform:junit-platform-commons:6.0.0 (2 constraints: d320144a)
 
