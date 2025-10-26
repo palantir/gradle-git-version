@@ -4,7 +4,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.16.0'
+        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.17.0'
         classpath 'com.palantir.gradle.guide:gradle-guide:1.24.0'
         classpath 'com.palantir.gradle.idea-configuration:gradle-idea-configuration:0.7.0'
         classpath 'com.palantir.gradle.jdks:gradle-jdks:0.69.0'
