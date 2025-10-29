@@ -7,6 +7,7 @@ buildscript {
         classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.17.0'
         classpath 'com.palantir.gradle.guide:gradle-guide:1.24.0'
         classpath 'com.palantir.gradle.idea-configuration:gradle-idea-configuration:0.7.0'
+        classpath 'com.palantir.gradle.idea-language-injector:gradle-idea-language-injector:0.2.0'
         classpath 'com.palantir.gradle.jdks:gradle-jdks:0.69.0'
         classpath 'com.palantir.gradle.jdkslatest:gradle-jdks-latest:0.23.0'
         classpath 'com.palantir.gradle.plugintesting:gradle-plugin-testing:0.17.0'
@@ -40,6 +41,7 @@ apply plugin: 'com.palantir.jdks.latest'
 apply plugin: 'com.palantir.failure-reports'
 apply plugin: 'com.palantir.gradle-guide'
 apply plugin: 'com.palantir.gradle-plugin-testing'
+apply plugin: 'com.palantir.idea-language-injector'
 
 group 'com.palantir.gradle.gitversion'
 version System.env.CIRCLE_TAG ?: gitVersion()
