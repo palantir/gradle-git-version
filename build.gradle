@@ -15,7 +15,7 @@ buildscript {
         classpath 'com.palantir.gradle.externalpublish:gradle-external-publish-plugin:1.27.0'
         classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.83.0'
         classpath 'com.palantir.suppressible-error-prone:gradle-suppressible-error-prone:2.26.0'
-        classpath 'com.palantir.baseline:gradle-baseline-java:6.80.0'
+        classpath 'com.palantir.baseline:gradle-baseline-java:6.84.0'
     }
 }
 
@@ -23,7 +23,7 @@ plugins {
     id 'com.gradle.plugin-publish' version '2.0.0'
     id 'com.palantir.git-version' version '4.0.0'
     id 'com.palantir.idea-test-fix' version '0.1.0'
-    id 'com.palantir.baseline' version '6.80.0'
+    id 'com.palantir.baseline' version '6.84.0'
     id 'com.palantir.consistent-versions' version '3.7.0'
     id 'java-gradle-plugin'
     id 'groovy'
