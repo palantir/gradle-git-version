@@ -10,7 +10,7 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-org.immutables:value:2.11.7 (1 constraints: 3d05393b)
+org.immutables:value:2.12.0 (1 constraints: 3705353b)
 
 org.jspecify:jspecify:1.0.0 (7 constraints: 5370d26f)
 
