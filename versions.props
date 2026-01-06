@@ -1,6 +1,6 @@
 com.google.guava:guava = 33.5.0-jre
 org.assertj:assertj-core = 3.27.6
-org.immutables:* = 2.12.0
+org.immutables:* = 2.12.1
 org.junit.jupiter:* = 6.0.2
 org.junit.platform:* = 6.0.2
 org.spockframework:spock-core = 2.1-groovy-3.0
