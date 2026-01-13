@@ -17,6 +17,7 @@
 package com.palantir.gradle.gitversion;
 
 import groovy.lang.Closure;
+import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -25,12 +26,18 @@ import org.gradle.api.provider.Provider;
 
 public final class GitVersionPlugin implements Plugin<Project> {
 
+    private Project project;
+    private Provider<GitVersionCacheService> serviceProvider;
+
+    @Inject
+    public GitVersionPlugin(Project project) {
+        this.project = project;
+        this.serviceProvider = GitVersionCacheService.getSharedGitVersionCacheService(project);
+    }
+
     @Override
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
-
-        Provider<GitVersionCacheService> serviceProvider =
-                GitVersionCacheService.getSharedGitVersionCacheService(project);
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
@@ -58,5 +65,10 @@ public final class GitVersionPlugin implements Plugin<Project> {
             task.setGroup("Versioning");
             task.setDescription("Prints the project's configured version to standard out");
         });
+    }
+
+    public Provider<VersionDetails> getVersionDetails() {
+        return serviceProvider.map(
+                gitVersionCacheService -> gitVersionCacheService.getVersionDetails(project.getProjectDir(), null));
     }
 }

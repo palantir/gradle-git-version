@@ -19,7 +19,7 @@ package com.palantir.gradle.gitversion;
 import java.io.IOException;
 
 public interface VersionDetails {
-    String getBranchName() throws IOException;
+    String getBranchName();
 
     String getGitHashFull() throws IOException;
 
