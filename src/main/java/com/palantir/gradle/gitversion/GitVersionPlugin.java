@@ -36,6 +36,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
     }
 
     @Override
+    @SuppressWarnings("HiddenField")
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
 
