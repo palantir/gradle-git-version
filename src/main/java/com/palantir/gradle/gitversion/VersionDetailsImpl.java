@@ -36,6 +36,7 @@ class VersionDetailsImpl implements VersionDetails {
     private Provider<Boolean> isClean;
     private Provider<String> gitHashFull;
     private Provider<String> branchName;
+    private Provider<String> originUrl;
 
     VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
         String projectDir = gitDir.getParent();
@@ -53,6 +54,7 @@ class VersionDetailsImpl implements VersionDetails {
         this.isClean = git.run("status", "--porcelain").map(String::isEmpty);
         this.gitHashFull = git.run("rev-parse", "HEAD");
         this.branchName = git.run("branch", "--show-current");
+        this.originUrl = git.run("config", "remote.origin.url");
     }
 
     @Override
@@ -132,6 +134,16 @@ class VersionDetailsImpl implements VersionDetails {
             return Strings.emptyToNull(this.branchName.get());
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getBranchName failed", e);
+            return null;
+        }
+    }
+
+    @Override
+    public String getOriginUrl() {
+        try {
+            return Strings.emptyToNull(this.originUrl.get());
+        } catch (RuntimeException e) {
+            log.error("VersionDetailsImpl::getOriginUrl failed", e);
             return null;
         }
     }
