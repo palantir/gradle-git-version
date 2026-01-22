@@ -26,19 +26,19 @@ import org.gradle.api.provider.Provider;
 
 public final class GitVersionPlugin implements Plugin<Project> {
 
-    private Project project;
-    private Provider<GitVersionCacheService> serviceProvider;
+    private final Project pluginProject;
 
     @Inject
     public GitVersionPlugin(Project project) {
-        this.project = project;
-        this.serviceProvider = GitVersionCacheService.getSharedGitVersionCacheService(project);
+        this.pluginProject = project;
     }
 
     @Override
-    @SuppressWarnings("HiddenField")
     public void apply(final Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
+
+        Provider<GitVersionCacheService> serviceProvider =
+                GitVersionCacheService.getSharedGitVersionCacheService(project);
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
@@ -68,8 +68,7 @@ public final class GitVersionPlugin implements Plugin<Project> {
         });
     }
 
-    public Provider<VersionDetails> getVersionDetails() {
-        return serviceProvider.map(
-                gitVersionCacheService -> gitVersionCacheService.getVersionDetails(project.getProjectDir(), null));
+    public Provider<GitVersionCacheService> getCacheService() {
+        return GitVersionCacheService.getSharedGitVersionCacheService(pluginProject);
     }
 }
