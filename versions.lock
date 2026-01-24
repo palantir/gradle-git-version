@@ -36,11 +36,11 @@ info.picocli:picocli:4.7.7 (1 constraints: 2816dcdd)
 
 junit:junit:4.13.2 (1 constraints: 1b0e1d4c)
 
-net.bytebuddy:byte-buddy:1.17.7 (1 constraints: 560b56df)
+net.bytebuddy:byte-buddy:1.18.3 (1 constraints: 530b55df)
 
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
-org.assertj:assertj-core:3.27.6 (2 constraints: 211f1a90)
+org.assertj:assertj-core:3.27.7 (2 constraints: 221f6290)
 
 org.codehaus.groovy:groovy:3.0.24 (3 constraints: 133429dd)
 
