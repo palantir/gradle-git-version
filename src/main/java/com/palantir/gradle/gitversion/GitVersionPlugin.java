@@ -17,7 +17,6 @@
 package com.palantir.gradle.gitversion;
 
 import groovy.lang.Closure;
-import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -25,13 +24,6 @@ import org.gradle.api.Task;
 import org.gradle.api.provider.Provider;
 
 public final class GitVersionPlugin implements Plugin<Project> {
-
-    private final Project pluginProject;
-
-    @Inject
-    public GitVersionPlugin(Project project) {
-        this.pluginProject = project;
-    }
 
     @Override
     public void apply(final Project project) {
@@ -66,9 +58,5 @@ public final class GitVersionPlugin implements Plugin<Project> {
             task.setGroup("Versioning");
             task.setDescription("Prints the project's configured version to standard out");
         });
-    }
-
-    public Provider<GitVersionCacheService> getCacheService() {
-        return GitVersionCacheService.getSharedGitVersionCacheService(pluginProject);
     }
 }
