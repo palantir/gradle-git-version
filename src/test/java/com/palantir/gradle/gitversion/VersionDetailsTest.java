@@ -53,6 +53,7 @@ public class VersionDetailsTest {
         git.run("config", "tag.forcesignannotated", "false").get();
         git.run("config", "user.email", "email@example.com").get();
         git.run("config", "user.name", "name").get();
+        git.run("remote", "add", "origin", "git@github.com:example/example.git").get();
     }
 
     private void createGitIgnore(File dir) {
@@ -170,6 +171,17 @@ public class VersionDetailsTest {
         git.run("tag", "-a", "2.0.0", "-m", "unused").get();
 
         assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
+    }
+
+    @Test
+    public void git_origin_url_result_is_being_cached() throws Exception {
+        write(new File(temporaryFolder, "foo"));
+        VersionDetails versionDetails = versionDetails();
+        assertThat(versionDetails.getOriginUrl()).isEqualTo("git@github.com:example/example.git");
+
+        git.run("remote", "set-url", "origin", "git@github.com:example/example2.git")
+                .get();
+        assertThat(versionDetails.getOriginUrl()).isEqualTo("git@github.com:example/example.git");
     }
 
     private File write(File file) throws IOException {
