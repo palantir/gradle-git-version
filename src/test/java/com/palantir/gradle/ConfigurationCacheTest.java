@@ -17,31 +17,17 @@
 package com.palantir.gradle;
 
 import com.palantir.gradle.testing.execution.GradleInvoker;
-import com.palantir.gradle.testing.files.gradle.GradleFile;
-import com.palantir.gradle.testing.junit.DisabledConfigurationCache;
 import com.palantir.gradle.testing.junit.GradlePluginTests;
 import com.palantir.gradle.testing.project.RootProject;
 import org.junit.jupiter.api.Test;
 
 @GradlePluginTests
-@DisabledConfigurationCache
 class ConfigurationCacheTest {
-
-    /**
-     * Sets up the build.gradle file with the given content.
-     */
-    GradleFile setupBuildWithGitVersion(RootProject rootProject) {
-        // The git-version plugin is the plugin under test - it's automatically available
-        return rootProject.buildGradle();
-    }
 
     @Test
     void classes_task_runs_with_configuration_cache_when_using_git_version(
             GradleInvoker gradle, RootProject rootProject) {
-        setupBuildWithGitVersion(rootProject)
-                .plugins()
-                .add("com.palantir.git-version")
-                .add("java-library");
+        rootProject.buildGradle().plugins().add("com.palantir.git-version").add("java-library");
 
         rootProject.buildGradle().append("""
             repositories {
@@ -52,17 +38,13 @@ class ConfigurationCacheTest {
             version gitVersion()
             """);
 
-        // The framework automatically runs configuration cache tests when configurationCacheEnabled = true
         gradle.withArgs("classes").buildsSuccessfully();
     }
 
     @Test
     void classes_task_runs_with_configuration_cache_when_using_version_details(
             GradleInvoker gradle, RootProject rootProject) {
-        setupBuildWithGitVersion(rootProject)
-                .plugins()
-                .add("com.palantir.git-version")
-                .add("java-library");
+        rootProject.buildGradle().plugins().add("com.palantir.git-version").add("java-library");
 
         rootProject.buildGradle().append("""
             repositories {
@@ -76,7 +58,6 @@ class ConfigurationCacheTest {
             def branchName = details.getBranchName()
             """);
 
-        // The framework automatically runs configuration cache tests when configurationCacheEnabled = true
         gradle.withArgs("classes").buildsSuccessfully();
     }
 }
