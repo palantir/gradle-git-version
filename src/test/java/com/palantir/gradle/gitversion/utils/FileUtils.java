@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.palantir.gradle.gitversion;
+package com.palantir.gradle.gitversion.utils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
