@@ -10,6 +10,8 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
+com.palantir.gradle.utils:environment-variables:0.22.0 (1 constraints: 36052d3b)
+
 org.immutables:value:2.12.1 (1 constraints: 3805363b)
 
 org.jspecify:jspecify:1.0.0 (7 constraints: 5370d26f)

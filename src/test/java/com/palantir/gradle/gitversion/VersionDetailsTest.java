@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -191,6 +192,10 @@ public class VersionDetailsTest {
 
     private VersionDetails versionDetails() {
         String gitDir = temporaryFolder.toString() + "/.git";
-        return new VersionDetailsImpl(this.project.getProviders(), new File(gitDir), new GitVersionArgs());
+        return new VersionDetailsImpl(
+                this.project.getProviders(),
+                this.project.getObjects().newInstance(EnvironmentVariables.class),
+                new File(gitDir),
+                new GitVersionArgs());
     }
 }

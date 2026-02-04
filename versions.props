@@ -1,7 +1,9 @@
 com.google.guava:guava = 33.5.0-jre
+com.palantir.gradle.plugintesting:gradle-plugin-testing-junit = 0.51.0
 org.assertj:assertj-core = 3.27.7
 org.immutables:* = 2.12.1
 org.junit.jupiter:* = 6.0.2
 org.junit.platform:* = 6.0.2
 org.spockframework:spock-core = 2.1-groovy-3.0
 com.netflix.nebula:nebula-test = 10.6.2
+com.palantir.gradle.utils:environment-variables = 0.22.0
