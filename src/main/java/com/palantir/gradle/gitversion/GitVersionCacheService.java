@@ -15,6 +15,7 @@
  */
 package com.palantir.gradle.gitversion;
 
+import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,6 +25,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
+import org.gradle.api.tasks.Nested;
 
 public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
 
@@ -31,6 +33,9 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
 
     @Inject
     protected abstract ProviderFactory getProviderFactory();
+
+    @Nested
+    protected abstract EnvironmentVariables getEnvironmentVariables();
 
     public final String getGitVersion(File project, Object args) {
         return getVersionDetails(project, args).getVersion();
@@ -41,7 +46,8 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
         GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
         String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
         return versionDetailsMap.computeIfAbsent(
-                key, _k -> new VersionDetailsImpl(getProviderFactory(), gitDir, gitVersionArgs));
+                key,
+                _k -> new VersionDetailsImpl(getProviderFactory(), getEnvironmentVariables(), gitDir, gitVersionArgs));
     }
 
     private static File getRootGitDir(File currentRoot) {

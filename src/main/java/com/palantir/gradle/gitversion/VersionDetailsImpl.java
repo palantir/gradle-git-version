@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -37,11 +38,15 @@ class VersionDetailsImpl implements VersionDetails {
     private Provider<String> gitHashFull;
     private Provider<String> branchName;
     private Provider<String> originUrl;
+    private EnvironmentVariables environmentVariables;
 
-    VersionDetailsImpl(ProviderFactory providerFactory, File gitDir, GitVersionArgs gitVersionArgs) {
+    VersionDetailsImpl(
+            ProviderFactory providerFactory,
+            EnvironmentVariables environmentVariables,
+            File gitDir,
+            GitVersionArgs gitVersionArgs) {
         String projectDir = gitDir.getParent();
         Git git = new Git(new File(projectDir), providerFactory);
-
         this.description = git.run(
                         "describe",
                         "--tags",
@@ -55,13 +60,14 @@ class VersionDetailsImpl implements VersionDetails {
         this.gitHashFull = git.run("rev-parse", "HEAD");
         this.branchName = git.run("branch", "--show-current");
         this.originUrl = git.run("config", "remote.origin.url");
+        this.environmentVariables = environmentVariables;
     }
 
     @Override
     public String getVersion() {
-        String envVersion = System.getenv("GIT_VERSION");
-        if (envVersion != null && !envVersion.isEmpty()) {
-            return envVersion;
+        Provider<String> envVersion = environmentVariables.envVarOrFromTestingProperty("GIT_VERSION");
+        if (envVersion.isPresent() && !envVersion.get().isEmpty()) {
+            return envVersion.get();
         }
 
         if (description() == null) {
