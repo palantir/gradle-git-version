@@ -6,4 +6,4 @@ org.junit.jupiter:* = 6.0.2
 org.junit.platform:* = 6.0.2
 org.spockframework:spock-core = 2.1-groovy-3.0
 com.netflix.nebula:nebula-test = 10.6.2
-com.palantir.gradle.utils:environment-variables = 0.22.0
+com.palantir.gradle.utils:environment-variables = 0.23.0
