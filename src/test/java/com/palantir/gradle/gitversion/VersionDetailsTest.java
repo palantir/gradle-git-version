@@ -18,7 +18,6 @@ package com.palantir.gradle.gitversion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -45,11 +44,7 @@ public class VersionDetailsTest {
     public void before() {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         createGitIgnore(temporaryFolder);
-        this.git = new Git(
-                temporaryFolder,
-                project.getProviders(),
-                project.getObjects(),
-                project.getObjects().newInstance(EnvironmentVariables.class));
+        this.git = project.getObjects().newInstance(Git.class, temporaryFolder);
         git.run("init", temporaryFolder.toString()).get();
 
         git.run("config", "commit.gpgsign", "false").get();

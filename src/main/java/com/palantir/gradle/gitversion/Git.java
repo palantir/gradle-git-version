@@ -19,33 +19,45 @@ package com.palantir.gradle.gitversion;
 import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.util.Map;
+import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.tasks.Nested;
 import org.gradle.process.ExecOutput;
 
 /**
  * Runs git commands in a gradle-aware manner, so gradle can do up-to-date checking for the configuration cache.
  */
-class Git {
+@SuppressWarnings("RedundantModifier")
+abstract class Git {
 
-    private final File repositoryDir;
-    private final ProviderFactory providerFactory;
-    private final ObjectFactory objectFactory;
-    private final EnvironmentVariables environmentVariables;
+    @Inject
+    protected abstract ProviderFactory getProviderFactory();
 
-    Git(
-            File repositoryDir,
-            ProviderFactory providerFactory,
-            ObjectFactory objectFactory,
-            EnvironmentVariables environmentVariables) {
-        this.providerFactory = providerFactory;
-        this.repositoryDir = repositoryDir;
-        this.objectFactory = objectFactory;
-        this.environmentVariables = environmentVariables;
+    @Inject
+    protected abstract ObjectFactory getObjectFactory();
+
+    @Nested
+    protected abstract EnvironmentVariables getEnvironmentVariables();
+
+    public abstract static class Factory {
+        @Inject
+        protected abstract ObjectFactory getObjectFactory();
+
+        Git create(File repositoryDirectory) {
+            return getObjectFactory().newInstance(Git.class, repositoryDirectory);
+        }
+    }
+
+    private final File repositoryDirectory;
+
+    @Inject
+    public Git(File repositoryDirectory) {
+        this.repositoryDirectory = repositoryDirectory;
     }
 
     interface GitParameters {
@@ -55,15 +67,15 @@ class Git {
     }
 
     public Provider<GitExecOutput> runWithResult(Action<GitParameters> configureParameters) {
-        GitParameters gitParameters = objectFactory.newInstance(GitParameters.class);
+        GitParameters gitParameters = getObjectFactory().newInstance(GitParameters.class);
         configureParameters.execute(gitParameters);
 
-        ExecOutput output = providerFactory.exec(execSpec -> {
+        ExecOutput output = getProviderFactory().exec(execSpec -> {
             execSpec.executable("git");
             execSpec.args(gitParameters.getCommand().get());
             execSpec.environment(gitParameters.getEnvironmentVariables().get());
             execSpec.environment(getGitTraceEnvironmentVariables());
-            execSpec.workingDir(repositoryDir);
+            execSpec.workingDir(repositoryDirectory);
             execSpec.setIgnoreExitValue(true); // So gradle doesn't throw before we get the error
         });
 
@@ -86,7 +98,7 @@ class Git {
     }
 
     private Map<String, String> getGitTraceEnvironmentVariables() {
-        return environmentVariables
+        return getEnvironmentVariables()
                 .envVarOrFromTestingProperty("GIT_TRACE")
                 .map(value -> Map.of("GIT_TRACE", value))
                 .getOrElse(Map.of());

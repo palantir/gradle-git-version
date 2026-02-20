@@ -18,33 +18,28 @@ package com.palantir.gradle.gitversion;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
+import com.palantir.gradle.gitversion.GitVersionCacheServiceV2.Parameters;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import javax.inject.Inject;
 import org.gradle.api.file.ProjectLayout;
-import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 import org.gradle.api.tasks.Nested;
 
 @SuppressWarnings("RedundantModifier")
-abstract class GitVersionCacheServiceV2 implements BuildService<BuildServiceParameters.None> {
+abstract class GitVersionCacheServiceV2 implements BuildService<Parameters> {
 
     @Inject
     public GitVersionCacheServiceV2() {}
 
-    @Inject
-    protected abstract ProviderFactory getProviderFactory();
-
-    @Inject
-    protected abstract ObjectFactory getObjectFactory();
-
-    @Nested
-    protected abstract EnvironmentVariables getEnvironmentVariables();
+    interface Parameters extends BuildServiceParameters {
+        @Nested
+        Property<Git.Factory> getGitFactory();
+    }
 
     private final LoadingCache<Key, Provider<GitExecOutput>> gitInvocationCache =
             Caffeine.newBuilder().build(this::getInvocationUncached);
@@ -58,7 +53,7 @@ abstract class GitVersionCacheServiceV2 implements BuildService<BuildServicePara
 
     private Provider<GitExecOutput> getInvocationUncached(Key cacheKey) {
         File projectDir = cacheKey.dotGitDirectory().getParent().toFile();
-        Git git = new Git(projectDir, getProviderFactory(), getObjectFactory(), getEnvironmentVariables());
+        Git git = getParameters().getGitFactory().get().create(projectDir);
         return git.runWithResult(parameters -> parameters.getCommand().set(cacheKey.command()));
     }
 

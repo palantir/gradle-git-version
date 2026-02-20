@@ -18,6 +18,7 @@ package com.palantir.gradle.gitversion;
 
 import javax.inject.Inject;
 import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.services.BuildServiceRegistry;
 
@@ -29,9 +30,12 @@ public abstract class GitInvoker {
     private final Provider<GitVersionCacheServiceV2> cacheService;
 
     @Inject
-    public GitInvoker(BuildServiceRegistry buildServiceRegistry) {
+    public GitInvoker(BuildServiceRegistry buildServiceRegistry, ObjectFactory objectFactory) {
         cacheService = buildServiceRegistry.registerIfAbsent(
-                "GitVersionCacheServiceV2", GitVersionCacheServiceV2.class, _spec -> {});
+                "GitVersionCacheServiceV2", GitVersionCacheServiceV2.class, spec -> {
+                    spec.parameters(
+                            parameters -> parameters.getGitFactory().set(objectFactory.newInstance(Git.Factory.class)));
+                });
     }
 
     public final Provider<String> invoke(String... command) {
