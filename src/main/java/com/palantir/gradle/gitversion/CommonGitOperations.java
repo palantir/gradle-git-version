@@ -28,7 +28,6 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Nested;
 
-@SuppressWarnings("MoreThanOneInjectableConstructor")
 public abstract class CommonGitOperations {
 
     public abstract static class Default extends CommonGitOperations {
