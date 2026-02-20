@@ -43,6 +43,6 @@ public abstract class GitInvoker {
     }
 
     public final Provider<GitExecOutput> invokeWithResult(String... command) {
-        return cacheService.get().invokeWithResult(getProjectLayout(), command);
+        return cacheService.flatMap(service -> service.invokeWithResult(getProjectLayout(), command));
     }
 }
