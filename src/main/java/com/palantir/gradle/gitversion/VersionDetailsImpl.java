@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
-    static final int VERSION_ABBR_LENGTH = 10;
 
     private final CommonGitOperations commonGitOperations;
 

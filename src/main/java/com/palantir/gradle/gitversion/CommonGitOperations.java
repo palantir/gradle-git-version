@@ -30,6 +30,8 @@ import org.gradle.api.tasks.Nested;
 
 public abstract class CommonGitOperations {
 
+    private static final int VERSION_ABBR_LENGTH = 10;
+
     public abstract static class Default extends CommonGitOperations {
         @Inject
         public Default(ObjectFactory objectFactory) {
@@ -86,7 +88,7 @@ public abstract class CommonGitOperations {
     }
 
     public final Provider<String> abbreviatedGitHash() {
-        return fullGitHash().map(fullGitHash -> fullGitHash.substring(0, VersionDetailsImpl.VERSION_ABBR_LENGTH));
+        return fullGitHash().map(fullGitHash -> fullGitHash.substring(0, VERSION_ABBR_LENGTH));
     }
 
     public final Provider<Boolean> isCleanTag() {
