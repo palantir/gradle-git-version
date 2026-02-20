@@ -65,6 +65,7 @@ dependencies {
     testImplementation 'com.netflix.nebula:nebula-test'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
+    testImplementation 'one.util:streamex'
 
     testImplementation('org.spockframework:spock-core') {
         exclude module: 'groovy-all'

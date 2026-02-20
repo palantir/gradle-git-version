@@ -42,6 +42,8 @@ junit:junit:4.13.2 (1 constraints: 1b0e1d4c)
 
 net.bytebuddy:byte-buddy:1.18.3 (1 constraints: 530b55df)
 
+one.util:streamex:0.8.4 (1 constraints: 0e050736)
+
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
 org.assertj:assertj-core:3.27.7 (2 constraints: 221f6290)

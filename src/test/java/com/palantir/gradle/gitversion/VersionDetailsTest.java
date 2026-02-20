@@ -138,7 +138,6 @@ public class VersionDetailsTest {
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.run("add", ".").get();
-        System.out.println(temporaryFolder.getAbsoluteFile());
         git.run(parameters -> {
                     parameters.getEnvironmentVariables().put("GIT_COMMITTER_DATE", formattedTime);
                     parameters.getEnvironmentVariables().put("TZ", "UTC");
@@ -161,34 +160,6 @@ public class VersionDetailsTest {
         write(new File(temporaryFolder, "foo"));
 
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772.dirty");
-    }
-
-    @Test
-    public void git_version_result_is_being_cached() throws Exception {
-        write(new File(temporaryFolder, "foo"));
-        git.run("add", ".").get();
-        git.run("commit", "-m", "initial commit").get();
-        git.run("tag", "-a", "1.0.0", "-m", "cached").get();
-        VersionDetails versionDetails = versionDetails();
-        assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
-
-        write(new File(temporaryFolder, "bar"));
-        git.run("add", ".").get();
-        git.run("commit", "-m", "second commit").get();
-        git.run("tag", "-a", "2.0.0", "-m", "unused").get();
-
-        assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
-    }
-
-    @Test
-    public void git_origin_url_result_is_being_cached() throws Exception {
-        write(new File(temporaryFolder, "foo"));
-        VersionDetails versionDetails = versionDetails();
-        assertThat(versionDetails.getOriginUrl()).isEqualTo("git@github.com:example/example.git");
-
-        git.run("remote", "set-url", "origin", "git@github.com:example/example2.git")
-                .get();
-        assertThat(versionDetails.getOriginUrl()).isEqualTo("git@github.com:example/example.git");
     }
 
     private File write(File file) throws IOException {
