@@ -243,7 +243,7 @@ External process calls to `git` in this plugin are compatible with Gradle's [Con
 
 As part of moving to Configuration Cache safe APIs, we use the configuration-time `Provider` APIs. A corollary of this is that if you query the *same* instance of a `Provider` it will **not** rerun the underlying `git` invocation.
 
-As a result, if the state of the git repo changes within a single Gradle session (e.g. a task in the build does `git commit`), `VersionDetails` might not reflect the outdated state of your repo.
+As a result, if the state of the git repo changes within a single Gradle session (e.g. a task in the build does `git commit`), `VersionDetails` will reflect the outdated state of your repo.
 
 However, changes to the state of your repo between Gradle builds i.e. two runs of Gradle...
 ```bash
