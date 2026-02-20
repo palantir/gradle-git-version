@@ -1,6 +1,8 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-com.google.errorprone:error_prone_annotations:2.41.0 (1 constraints: 490a3ebf)
+com.github.ben-manes.caffeine:caffeine:3.2.3 (1 constraints: 0a050336)
+
+com.google.errorprone:error_prone_annotations:2.43.0 (2 constraints: 771ac774)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
@@ -14,7 +16,7 @@ com.palantir.gradle.utils:environment-variables:0.23.0 (1 constraints: 3705303b)
 
 org.immutables:value:2.12.1 (1 constraints: 3805363b)
 
-org.jspecify:jspecify:1.0.0 (7 constraints: 5370d26f)
+org.jspecify:jspecify:1.0.0 (8 constraints: 4980dcf3)
 
 
 

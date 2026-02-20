@@ -16,12 +16,12 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
@@ -46,17 +46,20 @@ abstract class GitVersionCacheServiceV2 implements BuildService<BuildServicePara
     @Nested
     protected abstract EnvironmentVariables getEnvironmentVariables();
 
-    private final ConcurrentMap<Key, Provider<GitExecOutput>> gitInvocationCache = new ConcurrentHashMap<>();
+    private final LoadingCache<Key, Provider<GitExecOutput>> gitInvocationCache =
+            Caffeine.newBuilder().build(this::getInvocationUncached);
 
     Provider<GitExecOutput> invokeWithResult(ProjectLayout projectLayout, String... command) {
         Path rootGitDirectory =
                 getRootGitDir(projectLayout.getProjectDirectory().getAsFile()).toPath();
         Key cacheKey = new Key(rootGitDirectory, List.of(command));
-        return gitInvocationCache.computeIfAbsent(cacheKey, _key -> {
-            File projectDir = cacheKey.dotGitDirectory().getParent().toFile();
-            Git git = new Git(projectDir, getProviderFactory(), getObjectFactory(), getEnvironmentVariables());
-            return git.runWithResult(parameters -> parameters.getCommand().set(cacheKey.command()));
-        });
+        return gitInvocationCache.get(cacheKey);
+    }
+
+    private Provider<GitExecOutput> getInvocationUncached(Key cacheKey) {
+        File projectDir = cacheKey.dotGitDirectory().getParent().toFile();
+        Git git = new Git(projectDir, getProviderFactory(), getObjectFactory(), getEnvironmentVariables());
+        return git.runWithResult(parameters -> parameters.getCommand().set(cacheKey.command()));
     }
 
     private static File getRootGitDir(File currentRoot) {
