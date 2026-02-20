@@ -53,7 +53,7 @@ public abstract class CommonGitOperations {
         }
     }
 
-    protected abstract Property<Parameters> getParameters();
+    private final Parameters parameters;
 
     @Nested
     protected abstract GitInvoker getInvoker();
@@ -63,7 +63,7 @@ public abstract class CommonGitOperations {
 
     @Inject
     public CommonGitOperations(Parameters parameters) {
-        getParameters().set(parameters);
+        this.parameters = parameters;
     }
 
     public final Provider<String> version() {
@@ -106,8 +106,7 @@ public abstract class CommonGitOperations {
     }
 
     private Provider<Description> description() {
-        Provider<String> nonEmptyPrefix =
-                getParameters().flatMap(Parameters::getPrefix).orElse("");
+        Provider<String> nonEmptyPrefix = parameters.getPrefix().orElse("");
         return nonEmptyPrefix.flatMap(this::describe).map(Strings::emptyToNull).map(Description::new);
     }
 
