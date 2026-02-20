@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2023 Palantir Technologies Inc. All rights reserved.
+ * (c) Copyright 2026 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,41 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.palantir.gradle.gitversion;
 
 import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
-import org.gradle.api.Project;
+import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 import org.gradle.api.tasks.Nested;
 
-public abstract class GitVersionCacheService implements BuildService<BuildServiceParameters.None> {
+@SuppressWarnings("RedundantModifier")
+abstract class GitVersionCacheServiceV2 implements BuildService<BuildServiceParameters.None> {
 
-    private final ConcurrentMap<String, VersionDetails> versionDetailsMap = new ConcurrentHashMap<>();
+    @Inject
+    public GitVersionCacheServiceV2() {}
 
     @Inject
     protected abstract ProviderFactory getProviderFactory();
 
+    @Inject
+    protected abstract ObjectFactory getObjectFactory();
+
     @Nested
     protected abstract EnvironmentVariables getEnvironmentVariables();
 
-    public final String getGitVersion(File project, Object args) {
-        return getVersionDetails(project, args).getVersion();
-    }
+    private final ConcurrentMap<Key, Provider<GitExecOutput>> gitInvocationCache = new ConcurrentHashMap<>();
 
-    public final VersionDetails getVersionDetails(File project, Object args) {
-        File gitDir = getRootGitDir(project);
-        GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(args);
-        String key = gitDir.toPath() + "|" + gitVersionArgs.getPrefix();
-        return versionDetailsMap.computeIfAbsent(
-                key,
-                _k -> new VersionDetailsImpl(getProviderFactory(), getEnvironmentVariables(), gitDir, gitVersionArgs));
+    Provider<GitExecOutput> invokeWithResult(ProjectLayout projectLayout, String... command) {
+        Path rootGitDirectory =
+                getRootGitDir(projectLayout.getProjectDirectory().getAsFile()).toPath();
+        Key cacheKey = new Key(rootGitDirectory, List.of(command));
+        return gitInvocationCache.computeIfAbsent(cacheKey, _key -> {
+            File projectDir = cacheKey.dotGitDirectory().getParent().toFile();
+            Git git = new Git(projectDir, getProviderFactory(), getObjectFactory(), getEnvironmentVariables());
+            return git.runWithResult(parameters -> parameters.getCommand().set(cacheKey.command()));
+        });
     }
 
     private static File getRootGitDir(File currentRoot) {
@@ -74,9 +83,5 @@ public abstract class GitVersionCacheService implements BuildService<BuildServic
         return scanForRootGitDir(currentRoot.getParentFile());
     }
 
-    public static Provider<GitVersionCacheService> getSharedGitVersionCacheService(Project project) {
-        return project.getGradle()
-                .getSharedServices()
-                .registerIfAbsent("GitVersionCacheService", GitVersionCacheService.class, _spec -> {});
-    }
+    private record Key(Path dotGitDirectory, List<String> command) {}
 }

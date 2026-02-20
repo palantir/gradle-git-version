@@ -476,7 +476,7 @@ class GitVersionPluginTests {
         GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'initial commit'");
         GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "my-product@1.0.0", "-m", "my-product@1.0.0");
         GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'commit 2'", "--allow-empty");
-        GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "1.0.0", "-m", "1.0.0");
+        GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "2.0.0", "-m", "2.0.0");
 
         gradle.withArgs("printVersionDetails")
                 .buildsSuccessfully()

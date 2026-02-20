@@ -24,17 +24,16 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 
 public class VersionDetailsTest {
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     public File temporaryFolder;
 
     private Project project;
@@ -46,7 +45,11 @@ public class VersionDetailsTest {
     public void before() {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         createGitIgnore(temporaryFolder);
-        this.git = new Git(temporaryFolder, project.getProviders());
+        this.git = new Git(
+                temporaryFolder,
+                project.getProviders(),
+                project.getObjects(),
+                project.getObjects().newInstance(EnvironmentVariables.class));
         git.run("init", temporaryFolder.toString()).get();
 
         git.run("config", "commit.gpgsign", "false").get();
@@ -111,45 +114,48 @@ public class VersionDetailsTest {
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.run("add", ".").get();
 
-        Map<String, String> envvar = new HashMap<>();
-        envvar.put("GIT_COMMITTER_DATE", formattedTime);
-        envvar.put("TZ", "UTC");
-        git.run(
-                        envvar,
-                        "-c",
-                        "user.name='name'",
-                        "-c",
-                        "user.email=email@address",
-                        "commit",
-                        "--author='name <email@address>'",
-                        "-m",
-                        "'initial commit'",
-                        "--date=" + formattedTime,
-                        "--allow-empty")
+        git.run(parameters -> {
+                    parameters.getEnvironmentVariables().put("GIT_COMMITTER_DATE", formattedTime);
+                    parameters.getEnvironmentVariables().put("TZ", "UTC");
+                    parameters
+                            .getCommand()
+                            .addAll(
+                                    "-c",
+                                    "user.name='name'",
+                                    "-c",
+                                    "user.email=email@address",
+                                    "commit",
+                                    "--author='name <email@address>'",
+                                    "-m",
+                                    "'initial commit'",
+                                    "--date=" + formattedTime,
+                                    "--allow-empty");
+                })
                 .get();
-
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.run("add", ".").get();
-
-        Map<String, String> envvar = new HashMap<>();
-        envvar.put("GIT_COMMITTER_DATE", formattedTime);
-        envvar.put("TZ", "UTC");
-        git.run(
-                        envvar,
-                        "-c",
-                        "user.name='name'",
-                        "-c",
-                        "user.email=email@address",
-                        "commit",
-                        "--author='name <email@address>'",
-                        "-m",
-                        "'initial commit'",
-                        "--date=" + formattedTime,
-                        "--allow-empty")
+        System.out.println(temporaryFolder.getAbsoluteFile());
+        git.run(parameters -> {
+                    parameters.getEnvironmentVariables().put("GIT_COMMITTER_DATE", formattedTime);
+                    parameters.getEnvironmentVariables().put("TZ", "UTC");
+                    parameters
+                            .getCommand()
+                            .addAll(
+                                    "-c",
+                                    "user.name='name'",
+                                    "-c",
+                                    "user.email=email@address",
+                                    "commit",
+                                    "--author='name <email@address>'",
+                                    "-m",
+                                    "'initial commit'",
+                                    "--date=" + formattedTime,
+                                    "--allow-empty");
+                })
                 .get();
 
         write(new File(temporaryFolder, "foo"));
@@ -191,11 +197,6 @@ public class VersionDetailsTest {
     }
 
     private VersionDetails versionDetails() {
-        String gitDir = temporaryFolder.toString() + "/.git";
-        return new VersionDetailsImpl(
-                this.project.getProviders(),
-                this.project.getObjects().newInstance(EnvironmentVariables.class),
-                new File(gitDir),
-                new GitVersionArgs());
+        return new VersionDetailsImpl(this.project.getObjects().newInstance(CommonGitOperations.Default.class));
     }
 }
