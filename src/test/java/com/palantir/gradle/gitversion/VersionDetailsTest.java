@@ -27,12 +27,11 @@ import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 
 public class VersionDetailsTest {
 
-    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
+    @TempDir
     public File temporaryFolder;
 
     private Project project;

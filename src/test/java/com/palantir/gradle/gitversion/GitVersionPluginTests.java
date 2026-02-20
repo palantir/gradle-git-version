@@ -847,7 +847,7 @@ class GitVersionPluginTests {
          *     )
          * </pre>
          */
-        private List<String> extractGitCalls(ArbitraryFile gitTraceFile) {
+        private static List<String> extractGitCalls(ArbitraryFile gitTraceFile) {
             return gitTraceFile
                     .text()
                     .lines()
