@@ -56,6 +56,7 @@ dependencies {
     implementation gradleApi()
     implementation 'com.google.guava:guava'
     implementation 'com.palantir.gradle.utils:environment-variables'
+    implementation 'com.palantir.gradle.utils:exec'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
     annotationProcessor 'org.immutables:value'

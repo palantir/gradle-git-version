@@ -17,6 +17,8 @@
 package com.palantir.gradle.gitversion;
 
 import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
+import com.palantir.gradle.utils.exec.GradleExec;
+import com.palantir.gradle.utils.exec.GradleExec.ExecResultWithOutput;
 import java.io.File;
 import java.util.Map;
 import javax.inject.Inject;
@@ -27,7 +29,6 @@ import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Nested;
-import org.gradle.process.ExecOutput;
 
 /**
  * Runs git commands in a gradle-aware manner, so gradle can do up-to-date checking for the configuration cache.
@@ -43,6 +44,9 @@ abstract class Git {
 
     @Nested
     protected abstract EnvironmentVariables getEnvironmentVariables();
+
+    @Nested
+    protected abstract GradleExec getGradleExec();
 
     public abstract static class Factory {
         @Inject
@@ -70,7 +74,7 @@ abstract class Git {
         GitParameters gitParameters = getObjectFactory().newInstance(GitParameters.class);
         configureParameters.execute(gitParameters);
 
-        ExecOutput output = getProviderFactory().exec(execSpec -> {
+        Provider<ExecResultWithOutput> output = getGradleExec().exec(execSpec -> {
             execSpec.executable("git");
             execSpec.args(gitParameters.getCommand().get());
             execSpec.environment(gitParameters.getEnvironmentVariables().get());
@@ -79,14 +83,11 @@ abstract class Git {
             execSpec.setIgnoreExitValue(true); // So gradle doesn't throw before we get the error
         });
 
-        ImmutableGitExecOutput.Builder execOutputBuilder = ImmutableGitExecOutput.builder()
-                .command(gitParameters.getCommand().get());
-        return output.getResult()
-                .zip(output.getStandardOutput().getAsText(), (result, standardOut) -> execOutputBuilder
-                        .uncheckedStandardOut(standardOut)
-                        .exitCode(result.getExitValue()))
-                .zip(output.getStandardError().getAsText(), ImmutableGitExecOutput.Builder::standardError)
-                .map(ImmutableGitExecOutput.Builder::build);
+        return output.map(execResultWithOutput -> ImmutableGitExecOutput.builder()
+                .uncheckedStandardOut(execResultWithOutput.stdOut())
+                .standardError(execResultWithOutput.stdErr())
+                .exitCode(execResultWithOutput.result().getExitValue())
+                .build());
     }
 
     public Provider<String> run(Action<GitParameters> configureParameters) {
