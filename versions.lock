@@ -14,6 +14,10 @@ com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
 com.palantir.gradle.utils:environment-variables:0.23.0 (1 constraints: 3705303b)
 
+com.palantir.gradle.utils:exec:0.23.0 (1 constraints: 3705303b)
+
+com.palantir.gradle.utils:providers:0.23.0 (1 constraints: 700ddd31)
+
 org.immutables:value:2.12.1 (1 constraints: 3805363b)
 
 org.jspecify:jspecify:1.0.0 (8 constraints: 4980dcf3)
