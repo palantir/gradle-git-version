@@ -754,13 +754,7 @@ class GitVersionPluginTests {
             rootProject.buildGradle().plugins().add("com.palantir.git-version");
             StreamEx.of(rootProject, projectA, projectB)
                     .map(GradleProject::buildGradle)
-                    .forEach(buildGradle -> buildGradle.append(
-                            """
-                            println %s
-                            println %s
-                            println %s
-                            println %s
-                            """, versionQueryMethod, versionQueryMethod, versionQueryMethod, versionQueryMethod));
+                    .forEach(buildGradle -> buildGradle.append((versionQueryMethod + "\n").repeat(4)));
             rootProject.file(".gitignore").append("build");
             Directory buildDirectory = rootProject.directory("build").createDirectories();
             ArbitraryFile gitTraceFile = buildDirectory.file("git-trace.log").createEmpty();
@@ -774,7 +768,6 @@ class GitVersionPluginTests {
 
             gradle.withArgs(
                             "help",
-                            "-P__TESTING=true",
                             "-P__TESTING_GIT_TRACE=" + gitTraceFile.path().toAbsolutePath())
                     .buildsSuccessfully();
 
@@ -814,7 +807,6 @@ class GitVersionPluginTests {
 
             gradle.withArgs(
                             "help",
-                            "-P__TESTING=true",
                             "-P__TESTING_GIT_TRACE=" + gitTraceFile.path().toAbsolutePath())
                     .buildsSuccessfully();
 
