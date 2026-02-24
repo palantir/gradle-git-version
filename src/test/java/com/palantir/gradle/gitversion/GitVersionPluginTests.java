@@ -773,7 +773,8 @@ class GitVersionPluginTests {
             gradle.with(Options.builder()
                             .addArgs("help")
                             .putTestingEnvironmentVariables(
-                                    "GIT_TRACE", gitTraceFile.path().toAbsolutePath().toString())
+                                    "GIT_TRACE",
+                                    gitTraceFile.path().toAbsolutePath().toString())
                             .build())
                     .buildsSuccessfully();
 
@@ -814,7 +815,8 @@ class GitVersionPluginTests {
             gradle.with(Options.builder()
                             .addArgs("help")
                             .putTestingEnvironmentVariables(
-                                    "GIT_TRACE", gitTraceFile.path().toAbsolutePath().toString())
+                                    "GIT_TRACE",
+                                    gitTraceFile.path().toAbsolutePath().toString())
                             .build())
                     .buildsSuccessfully();
 
