@@ -121,7 +121,12 @@ class VersionDetailsImpl implements VersionDetails {
 
     @Override
     public String getGitHash() throws IOException {
-        return getGitHashFull().substring(0, VERSION_ABBR_LENGTH);
+        String shortHash = null;
+        String fullHash = getGitHashFull();
+        if (fullHash != null) {
+            shortHash = fullHash.substring(0, VERSION_ABBR_LENGTH);
+        }
+        return shortHash;
     }
 
     @Override
