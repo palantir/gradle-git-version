@@ -142,6 +142,7 @@ public abstract class CommonGitOperations {
     private record Description(String description) {
 
         private static final Pattern GIT_DESCRIBE_PATTERN = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}");
+        private static final Pattern GIT_TAG_PATTERN = Pattern.compile(".*g.?[0-9a-fA-F]{3,}");
 
         public Optional<String> lastTag() {
             if (isPlainTag()) {
@@ -163,7 +164,8 @@ public abstract class CommonGitOperations {
         }
 
         private boolean isPlainTag() {
-            return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", description);
+            Matcher match = GIT_TAG_PATTERN.matcher(description);
+            return !match.matches();
         }
 
         @Override
