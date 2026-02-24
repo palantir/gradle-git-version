@@ -140,7 +140,7 @@ abstract class MyPlugin extends Plugin<Project> {
 All calls are coalesced and run once for a given git root directory i.e. `<path>/.git`. So you can create as many instances and invoke as many times as required without taking a performance penalty.
 
 ### Handling errors yourself
-This `Provider` will throw on resolution if the underlying `git` call fails. If you want finer control of the result, e.g. you want to handle a particular error, you can use `GitInvoker#invokeWithResult`:
+This `Provider` will throw on reading its value if the underlying `git` call fails. If you want finer control of the result, e.g. you want to handle a particular error, you can use `GitInvoker#invokeWithResult`:
 
 ```java
 abstract class MyPlugin extends Plugin<Project> {
