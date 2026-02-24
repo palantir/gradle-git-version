@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.palantir.gradle.gitversion.utils.FileUtils;
 import com.palantir.gradle.gitversion.utils.GitUtils;
 import com.palantir.gradle.testing.execution.GradleInvoker;
+import com.palantir.gradle.testing.execution.Options;
 import com.palantir.gradle.testing.files.Directory;
 import com.palantir.gradle.testing.files.arbitrary.ArbitraryFile;
 import com.palantir.gradle.testing.junit.DisabledConfigurationCache;
@@ -207,7 +208,10 @@ class GitVersionPluginTests {
                 .output()
                 .contains(":printVersion\n1.0.0\n");
 
-        gradle.withArgs("printVersion", "-P__TESTING=true", "-P__TESTING_GIT_VERSION=999")
+        gradle.with(Options.builder()
+                        .addArgs("printVersion")
+                        .putTestingEnvironmentVariables("GIT_VERSION", "999")
+                        .build())
                 .buildsSuccessfully()
                 .assertThat()
                 .output()
@@ -766,9 +770,11 @@ class GitVersionPluginTests {
             GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "initial commit");
             GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "1.0.0", "-m", "1.0.0");
 
-            gradle.withArgs(
-                            "help",
-                            "-P__TESTING_GIT_TRACE=" + gitTraceFile.path().toAbsolutePath())
+            gradle.with(Options.builder()
+                            .addArgs("help")
+                            .putTestingEnvironmentVariables(
+                                    "GIT_TRACE", gitTraceFile.path().toAbsolutePath().toString())
+                            .build())
                     .buildsSuccessfully();
 
             System.out.println(gitTraceFile.text());
@@ -805,9 +811,11 @@ class GitVersionPluginTests {
             GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'commit 2'", "--allow-empty");
             GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "2.0.0", "-m", "2.0.0");
 
-            gradle.withArgs(
-                            "help",
-                            "-P__TESTING_GIT_TRACE=" + gitTraceFile.path().toAbsolutePath())
+            gradle.with(Options.builder()
+                            .addArgs("help")
+                            .putTestingEnvironmentVariables(
+                                    "GIT_TRACE", gitTraceFile.path().toAbsolutePath().toString())
+                            .build())
                     .buildsSuccessfully();
 
             System.out.println(gitTraceFile.text());
