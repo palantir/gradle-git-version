@@ -115,7 +115,7 @@ This will flow into publishing and a bunch of other builds. Sometimes you might 
 1.0.0
 
 > GRADLE_VERSION=999 ./gradlew printVersion
-999/
+999
 ```
 
 `Provider` APIs
