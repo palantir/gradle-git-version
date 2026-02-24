@@ -18,14 +18,14 @@ package com.palantir.gradle.gitversion;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.immutables.value.Value;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Value.Immutable
 public abstract class GitExecOutput {
 
-    private static final Logger log = LoggerFactory.getLogger(GitExecOutput.class);
+    private static final Logger log = Logging.getLogger(GitExecOutput.class);
 
     abstract List<String> command();
 
