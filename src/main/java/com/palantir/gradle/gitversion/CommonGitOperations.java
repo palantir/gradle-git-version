@@ -19,6 +19,7 @@ package com.palantir.gradle.gitversion;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.palantir.gradle.gitversion.CommonGitOperations.Factory.Parameters;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
@@ -100,7 +101,7 @@ public abstract class CommonGitOperations {
     }
 
     public final Provider<String> lastTag() {
-        return description().map(Description::lastTag);
+        return description().map(description -> description.lastTag().orElse(null));
     }
 
     private Provider<Boolean> isClean() {
@@ -142,13 +143,13 @@ public abstract class CommonGitOperations {
 
         private static final Pattern GIT_DESCRIBE_PATTERN = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}");
 
-        public String lastTag() {
+        public Optional<String> lastTag() {
             if (isPlainTag()) {
-                return description;
+                return Optional.of(description);
             }
 
             Matcher match = GIT_DESCRIBE_PATTERN.matcher(description);
-            return match.matches() ? match.group(1) : null;
+            return match.matches() ? Optional.of(match.group(1)) : Optional.empty();
         }
 
         public int commitDistance() {
