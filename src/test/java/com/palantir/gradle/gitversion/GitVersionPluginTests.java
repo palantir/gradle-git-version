@@ -15,11 +15,17 @@
  */
 package com.palantir.gradle.gitversion;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.palantir.gradle.gitversion.utils.FileUtils;
 import com.palantir.gradle.gitversion.utils.GitUtils;
 import com.palantir.gradle.testing.execution.GradleInvoker;
+import com.palantir.gradle.testing.execution.Options;
+import com.palantir.gradle.testing.files.Directory;
+import com.palantir.gradle.testing.files.arbitrary.ArbitraryFile;
 import com.palantir.gradle.testing.junit.DisabledConfigurationCache;
 import com.palantir.gradle.testing.junit.GradlePluginTests;
+import com.palantir.gradle.testing.project.GradleProject;
 import com.palantir.gradle.testing.project.RootProject;
 import com.palantir.gradle.testing.project.SubProject;
 import java.io.IOException;
@@ -27,9 +33,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import one.util.streamex.StreamEx;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @GradlePluginTests
 @DisabledConfigurationCache
@@ -195,7 +208,10 @@ class GitVersionPluginTests {
                 .output()
                 .contains(":printVersion\n1.0.0\n");
 
-        gradle.withArgs("printVersion", "-P__TESTING=true", "-P__TESTING_GIT_VERSION=999")
+        gradle.with(Options.builder()
+                        .addArgs("printVersion")
+                        .putTestingEnvironmentVariables("GIT_VERSION", "999")
+                        .build())
                 .buildsSuccessfully()
                 .assertThat()
                 .output()
@@ -476,7 +492,7 @@ class GitVersionPluginTests {
         GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'initial commit'");
         GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "my-product@1.0.0", "-m", "my-product@1.0.0");
         GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'commit 2'", "--allow-empty");
-        GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "1.0.0", "-m", "1.0.0");
+        GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "2.0.0", "-m", "2.0.0");
 
         gradle.withArgs("printVersionDetails")
                 .buildsSuccessfully()
@@ -714,5 +730,133 @@ class GitVersionPluginTests {
                 .assertThat()
                 .output()
                 .contains(":printVersion\n1.0.0-" + depth + "-g" + latestCommit.substring(0, 7) + "\n");
+    }
+
+    @Nested
+    class Caching {
+
+        @ParameterizedTest
+        @ValueSource(
+                strings = {
+                    "gitVersion()",
+                    "versionDetails().getBranchName()",
+                    "versionDetails().getGitHashFull()",
+                    "versionDetails().getGitHash()",
+                    "versionDetails().getLastTag()",
+                    "versionDetails().getCommitDistance()",
+                    "versionDetails().getIsCleanTag()",
+                    "versionDetails().getVersion()",
+                    "versionDetails().getOriginUrl()"
+                })
+        void multiple_git_calls_in_the_same_project_coalesce(
+                String versionQueryMethod,
+                GradleInvoker gradle,
+                RootProject rootProject,
+                SubProject projectA,
+                SubProject projectB)
+                throws IOException, InterruptedException {
+            rootProject.buildGradle().plugins().add("com.palantir.git-version");
+            StreamEx.of(rootProject, projectA, projectB)
+                    .map(GradleProject::buildGradle)
+                    .forEach(buildGradle -> buildGradle.append((versionQueryMethod + "\n").repeat(4)));
+            rootProject.file(".gitignore").append("build");
+            Directory buildDirectory = rootProject.directory("build").createDirectories();
+            ArbitraryFile gitTraceFile = buildDirectory.file("git-trace.log").createEmpty();
+
+            GitUtils.gitInit(rootProject.path().toFile());
+            GitUtils.runCommands(
+                    rootProject.path().toFile(), "remote", "add", "origin", "git@github.com:example/example.git");
+            GitUtils.runCommands(rootProject.path().toFile(), "add", ".");
+            GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "initial commit");
+            GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "1.0.0", "-m", "1.0.0");
+
+            gradle.with(Options.builder()
+                            .addArgs("help")
+                            .putTestingEnvironmentVariables(
+                                    "GIT_TRACE",
+                                    gitTraceFile.path().toAbsolutePath().toString())
+                            .build())
+                    .buildsSuccessfully();
+
+            System.out.println(gitTraceFile.text());
+
+            Map<String, Long> gitCallCounts =
+                    StreamEx.of(extractGitCalls(gitTraceFile)).groupingBy(Function.identity(), Collectors.counting());
+            assertThat(gitCallCounts)
+                    .values()
+                    .as("each git call only occurs once even across all the projects")
+                    .containsOnly(1L);
+        }
+
+        @Test
+        void use_but_cache_separate_git_calls_for_prefix(GradleInvoker gradle, RootProject rootProject)
+                throws IOException, InterruptedException {
+            rootProject.buildGradle().plugins().add("com.palantir.git-version");
+            rootProject.buildGradle().append("""
+                println gitVersion(prefix: "my-product@")
+                println gitVersion()
+                println versionDetails(prefix: "my-product@").getLastTag()
+                println versionDetails().getLastTag()
+                """);
+            rootProject.file(".gitignore").append("build");
+            Directory buildDirectory = rootProject.directory("build").createDirectories();
+            ArbitraryFile gitTraceFile = buildDirectory.file("git-trace.log").createEmpty();
+
+            GitUtils.gitInit(rootProject.path().toFile());
+            GitUtils.runCommands(rootProject.path().toFile(), "add", ".");
+            GitUtils.runCommands(
+                    rootProject.path().toFile(), "remote", "add", "origin", "git@github.com:example/example.git");
+            GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'initial commit'");
+            GitUtils.runCommands(
+                    rootProject.path().toFile(), "tag", "-a", "my-product@1.0.0", "-m", "my-product@1.0.0");
+            GitUtils.runCommands(rootProject.path().toFile(), "commit", "-m", "'commit 2'", "--allow-empty");
+            GitUtils.runCommands(rootProject.path().toFile(), "tag", "-a", "2.0.0", "-m", "2.0.0");
+
+            gradle.with(Options.builder()
+                            .addArgs("help")
+                            .putTestingEnvironmentVariables(
+                                    "GIT_TRACE",
+                                    gitTraceFile.path().toAbsolutePath().toString())
+                            .build())
+                    .buildsSuccessfully();
+
+            System.out.println(gitTraceFile.text());
+
+            Map<String, Long> gitCallCounts =
+                    StreamEx.of(extractGitCalls(gitTraceFile)).groupingBy(Function.identity(), Collectors.counting());
+            assertThat(gitCallCounts)
+                    .values()
+                    .as("each git call only occurs once even across all the projects and prefixes")
+                    .containsOnly(1L);
+        }
+
+        /**
+         * Git trace file looks like this (truncated to fit with checkstyle):
+         * <pre>
+         * 1.608 exec-cmd.c:145 trace: resolved executable path from Darwin stack: /usr/bin/git
+         * 1.610 exec-cmd.c:267 trace: resolved executable dir: /usr/bin
+         * 1.611 git.c:476      trace: built-in: git describe --tags --always --first-parent --abbrev=7 '--match=*' HEAD
+         * 1.643 exec-cmd.c:145 trace: resolved executable path from Darwin stack: /usr/bin/git
+         * 1.644 exec-cmd.c:267 trace: resolved executable dir: /usr/bin
+         * 1.645 git.c:476      trace: built-in: git status --porcelain
+         * </pre>
+         *
+         * method will return:
+         * <pre>
+         *     List.of(
+         *       "git describe --tags --always --first-parent --abbrev=7 '--match=*' HEAD",
+         *       "git status --porcelain"
+         *     )
+         * </pre>
+         */
+        private static List<String> extractGitCalls(ArbitraryFile gitTraceFile) {
+            return gitTraceFile
+                    .text()
+                    .lines()
+                    .filter(line -> line.contains("git.c:") && line.contains("built-in: "))
+                    .map(line -> line.substring(line.indexOf("built-in: ") + "built-in: ".length()))
+                    .map(String::trim)
+                    .toList();
+        }
     }
 }

@@ -16,50 +16,92 @@
 
 package com.palantir.gradle.gitversion;
 
+import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
+import com.palantir.gradle.utils.exec.GradleExec;
+import com.palantir.gradle.utils.exec.GradleExec.ExecResultWithOutput;
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
+import javax.inject.Inject;
+import org.gradle.api.Action;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.gradle.process.ExecOutput;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.gradle.api.tasks.Nested;
 
 /**
  * Runs git commands in a gradle-aware manner, so gradle can do up-to-date checking for the configuration cache.
  */
-class Git {
-    private static final Logger log = LoggerFactory.getLogger(Git.class);
+@SuppressWarnings("RedundantModifier")
+abstract class Git {
 
-    private final File repositoryDir;
-    private final ProviderFactory providerFactory;
+    @Inject
+    protected abstract ProviderFactory getProviderFactory();
 
-    Git(File repositoryDir, ProviderFactory providerFactory) {
-        this.providerFactory = providerFactory;
-        this.repositoryDir = repositoryDir;
+    @Inject
+    protected abstract ObjectFactory getObjectFactory();
+
+    @Nested
+    protected abstract EnvironmentVariables getEnvironmentVariables();
+
+    @Nested
+    protected abstract GradleExec getGradleExec();
+
+    public abstract static class Factory {
+        @Inject
+        protected abstract ObjectFactory getObjectFactory();
+
+        Git create(File repositoryDirectory) {
+            return getObjectFactory().newInstance(Git.class, repositoryDirectory);
+        }
     }
 
-    public Provider<String> run(Map<String, String> envvars, String... commands) {
-        ExecOutput output = providerFactory.exec(execSpec -> {
+    private final File repositoryDirectory;
+
+    @Inject
+    public Git(File repositoryDirectory) {
+        this.repositoryDirectory = repositoryDirectory;
+    }
+
+    interface GitParameters {
+        MapProperty<String, String> getEnvironmentVariables();
+
+        ListProperty<String> getCommand();
+    }
+
+    public Provider<GitExecOutput> runWithResult(Action<GitParameters> configureParameters) {
+        GitParameters gitParameters = getObjectFactory().newInstance(GitParameters.class);
+        configureParameters.execute(gitParameters);
+
+        Provider<ExecResultWithOutput> output = getGradleExec().exec(execSpec -> {
             execSpec.executable("git");
-            execSpec.args((Object[]) commands);
-            execSpec.environment(envvars);
-            execSpec.workingDir(repositoryDir);
+            execSpec.args(gitParameters.getCommand().get());
+            execSpec.environment(gitParameters.getEnvironmentVariables().get());
+            execSpec.environment(getGitTraceEnvironmentVariables());
+            execSpec.workingDir(repositoryDirectory);
             execSpec.setIgnoreExitValue(true); // So gradle doesn't throw before we get the error
         });
 
-        return output.getResult().flatMap(execResult -> {
-            if (execResult.getExitValue() != 0) {
-                String stdErr = output.getStandardError().getAsText().get();
-                String errorMsg = String.format("git command failed: %s", stdErr);
-                log.error(errorMsg);
-                throw new RuntimeException(errorMsg);
-            }
-            return output.getStandardOutput().getAsText().map(String::trim);
-        });
+        return output.map(execResultWithOutput -> ImmutableGitExecOutput.builder()
+                .uncheckedStandardOut(execResultWithOutput.stdOut())
+                .standardError(execResultWithOutput.stdErr())
+                .exitCode(execResultWithOutput.result().getExitValue())
+                .build());
+    }
+
+    public Provider<String> run(Action<GitParameters> configureParameters) {
+        return runWithResult(configureParameters).map(GitExecOutput::standardOutputOfSuccessfulCommand);
     }
 
     public Provider<String> run(String... command) {
-        return run(new HashMap<>(), command);
+        return run(parameters -> parameters.getCommand().addAll(command));
+    }
+
+    private Map<String, String> getGitTraceEnvironmentVariables() {
+        return getEnvironmentVariables()
+                .envVarOrFromTestingProperty("GIT_TRACE")
+                .map(value -> Map.of("GIT_TRACE", value))
+                .getOrElse(Map.of());
     }
 }

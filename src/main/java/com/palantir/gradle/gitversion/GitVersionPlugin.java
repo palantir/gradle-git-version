@@ -21,29 +21,29 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Nested;
 
-public final class GitVersionPlugin implements Plugin<Project> {
+public abstract class GitVersionPlugin implements Plugin<Project> {
+
+    @Nested
+    protected abstract CommonGitOperations.Factory getGitOperationsFactory();
 
     @Override
-    public void apply(final Project project) {
+    public final void apply(Project project) {
         project.getRootProject().getPluginManager().apply(GitVersionRootPlugin.class);
-
-        Provider<GitVersionCacheService> serviceProvider =
-                GitVersionCacheService.getSharedGitVersionCacheService(project);
 
         // intentionally not using .getExtension() here for back-compat
         project.getExtensions().getExtraProperties().set("gitVersion", new Closure<String>(this, this) {
-            @SuppressWarnings("for-rollout:UnusedMethod")
+            @SuppressWarnings("UnusedMethod")
             public String doCall(Object args) {
-                return serviceProvider.get().getGitVersion(project.getProjectDir(), args);
+                return getGitOperations(args).version().get();
             }
         });
 
         project.getExtensions().getExtraProperties().set("versionDetails", new Closure<VersionDetails>(this, this) {
-            @SuppressWarnings("for-rollout:UnusedMethod")
+            @SuppressWarnings("UnusedMethod")
             public VersionDetails doCall(Object args) {
-                return serviceProvider.get().getVersionDetails(project.getProjectDir(), args);
+                return new VersionDetailsImpl(getGitOperations(args));
             }
         });
 
@@ -58,5 +58,11 @@ public final class GitVersionPlugin implements Plugin<Project> {
             task.setGroup("Versioning");
             task.setDescription("Prints the project's configured version to standard out");
         });
+    }
+
+    private CommonGitOperations getGitOperations(Object closureArgs) {
+        GitVersionArgs gitVersionArgs = GitVersionArgs.fromGroovyClosure(closureArgs);
+        return getGitOperationsFactory()
+                .create(parameters -> parameters.getPrefix().set(gitVersionArgs.getPrefix()));
     }
 }

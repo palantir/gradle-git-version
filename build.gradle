@@ -56,6 +56,8 @@ dependencies {
     implementation gradleApi()
     implementation 'com.google.guava:guava'
     implementation 'com.palantir.gradle.utils:environment-variables'
+    implementation 'com.palantir.gradle.utils:exec'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
     annotationProcessor 'org.immutables:value'
     compileOnly 'org.immutables:value::annotations'
@@ -64,6 +66,7 @@ dependencies {
     testImplementation 'com.netflix.nebula:nebula-test'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
+    testImplementation 'one.util:streamex'
 
     testImplementation('org.spockframework:spock-core') {
         exclude module: 'groovy-all'

@@ -1,6 +1,8 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-com.google.errorprone:error_prone_annotations:2.41.0 (1 constraints: 490a3ebf)
+com.github.ben-manes.caffeine:caffeine:3.2.3 (1 constraints: 0a050336)
+
+com.google.errorprone:error_prone_annotations:2.43.0 (2 constraints: 771ac774)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
@@ -12,9 +14,13 @@ com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
 com.palantir.gradle.utils:environment-variables:0.23.0 (1 constraints: 3705303b)
 
+com.palantir.gradle.utils:exec:0.23.0 (1 constraints: 3705303b)
+
+com.palantir.gradle.utils:providers:0.23.0 (1 constraints: 700ddd31)
+
 org.immutables:value:2.12.1 (1 constraints: 3805363b)
 
-org.jspecify:jspecify:1.0.0 (8 constraints: 957daa08)
+org.jspecify:jspecify:1.0.0 (9 constraints: 8b8d4cfb)
 
 
 
@@ -37,6 +43,8 @@ commons-io:commons-io:2.19.0 (1 constraints: db190cdf)
 info.picocli:picocli:4.7.7 (1 constraints: 2816dcdd)
 
 net.bytebuddy:byte-buddy:1.18.3 (1 constraints: 530b55df)
+
+one.util:streamex:0.8.4 (1 constraints: 0e050736)
 
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 

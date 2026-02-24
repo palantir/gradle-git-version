@@ -16,118 +16,49 @@
 
 package com.palantir.gradle.gitversion;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
-import java.io.File;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.gradle.api.provider.Provider;
-import org.gradle.api.provider.ProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class VersionDetailsImpl implements VersionDetails {
 
     private static final Logger log = LoggerFactory.getLogger(VersionDetailsImpl.class);
-    private static final int VERSION_ABBR_LENGTH = 10;
 
-    private Provider<String> description;
-    private Provider<Boolean> isClean;
-    private Provider<String> gitHashFull;
-    private Provider<String> branchName;
-    private Provider<String> originUrl;
-    private EnvironmentVariables environmentVariables;
+    private final CommonGitOperations commonGitOperations;
 
-    VersionDetailsImpl(
-            ProviderFactory providerFactory,
-            EnvironmentVariables environmentVariables,
-            File gitDir,
-            GitVersionArgs gitVersionArgs) {
-        String projectDir = gitDir.getParent();
-        Git git = new Git(new File(projectDir), providerFactory);
-        this.description = git.run(
-                        "describe",
-                        "--tags",
-                        "--always",
-                        "--first-parent",
-                        "--abbrev=7",
-                        "--match=" + gitVersionArgs.getPrefix() + "*",
-                        "HEAD")
-                .map(rawDescription -> rawDescription.replaceFirst("^" + gitVersionArgs.getPrefix(), ""));
-        this.isClean = git.run("status", "--porcelain").map(String::isEmpty);
-        this.gitHashFull = git.run("rev-parse", "HEAD");
-        this.branchName = git.run("branch", "--show-current");
-        this.originUrl = git.run("config", "remote.origin.url");
-        this.environmentVariables = environmentVariables;
+    VersionDetailsImpl(CommonGitOperations commonGitOperations) {
+        this.commonGitOperations = commonGitOperations;
     }
 
     @Override
     public String getVersion() {
-        Provider<String> envVersion = environmentVariables.envVarOrFromTestingProperty("GIT_VERSION");
-        if (envVersion.isPresent() && !envVersion.get().isEmpty()) {
-            return envVersion.get();
-        }
-
-        if (description() == null) {
-            return "unspecified";
-        }
-        return description() + (isClean() ? "" : ".dirty");
-    }
-
-    private boolean isClean() {
-        return isClean.get();
-    }
-
-    private String description() {
-        try {
-            return Strings.emptyToNull(this.description.get());
-        } catch (RuntimeException e) {
-            log.error("VersionDetailsImpl::getGitHashFull failed", e);
-            return null;
-        }
+        return commonGitOperations.version().get();
     }
 
     @Override
     public boolean getIsCleanTag() {
-        return isClean() && descriptionIsPlainTag();
-    }
-
-    private boolean descriptionIsPlainTag() {
-        return !Pattern.matches(".*g.?[0-9a-fA-F]{3,}", description());
+        return commonGitOperations.isCleanTag().get();
     }
 
     @Override
     public int getCommitDistance() {
-        if (descriptionIsPlainTag()) {
-            return 0;
-        }
-
-        Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
-        Preconditions.checkState(match.matches(), "Cannot get commit distance for description: '%s'", description());
-        return Integer.parseInt(match.group(2));
+        return commonGitOperations.commitDistance().get();
     }
 
     @Override
     public String getLastTag() {
-        if (descriptionIsPlainTag()) {
-            return description();
-        }
-
-        Matcher match = Pattern.compile("(.*)-([0-9]+)-g.?[0-9a-fA-F]{3,}").matcher(description());
-        return match.matches() ? match.group(1) : null;
+        return commonGitOperations.lastTag().get();
     }
 
     @Override
     public String getGitHash() throws IOException {
-        return getGitHashFull().substring(0, VERSION_ABBR_LENGTH);
+        return commonGitOperations.abbreviatedGitHash().get();
     }
 
     @Override
     public String getGitHashFull() throws IOException {
         try {
-            return gitHashFull.get();
+            return commonGitOperations.fullGitHash().get();
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getGitHashFull failed", e);
             return null;
@@ -137,7 +68,7 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getBranchName() {
         try {
-            return Strings.emptyToNull(this.branchName.get());
+            return commonGitOperations.branchName().getOrNull();
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getBranchName failed", e);
             return null;
@@ -147,7 +78,7 @@ class VersionDetailsImpl implements VersionDetails {
     @Override
     public String getOriginUrl() {
         try {
-            return Strings.emptyToNull(this.originUrl.get());
+            return commonGitOperations.originUrl().getOrNull();
         } catch (RuntimeException e) {
             log.error("VersionDetailsImpl::getOriginUrl failed", e);
             return null;

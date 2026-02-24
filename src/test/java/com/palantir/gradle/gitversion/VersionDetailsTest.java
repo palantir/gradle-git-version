@@ -18,14 +18,11 @@ package com.palantir.gradle.gitversion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.palantir.gradle.utils.environmentvariables.EnvironmentVariables;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +43,7 @@ public class VersionDetailsTest {
     public void before() {
         this.project = ProjectBuilder.builder().withProjectDir(temporaryFolder).build();
         createGitIgnore(temporaryFolder);
-        this.git = new Git(temporaryFolder, project.getProviders());
+        this.git = project.getObjects().newInstance(Git.class, temporaryFolder);
         git.run("init", temporaryFolder.toString()).get();
 
         git.run("config", "commit.gpgsign", "false").get();
@@ -111,78 +108,52 @@ public class VersionDetailsTest {
     public void short_sha_when_no_annotated_tags_are_present() throws Exception {
         git.run("add", ".").get();
 
-        Map<String, String> envvar = new HashMap<>();
-        envvar.put("GIT_COMMITTER_DATE", formattedTime);
-        envvar.put("TZ", "UTC");
-        git.run(
-                        envvar,
-                        "-c",
-                        "user.name='name'",
-                        "-c",
-                        "user.email=email@address",
-                        "commit",
-                        "--author='name <email@address>'",
-                        "-m",
-                        "'initial commit'",
-                        "--date=" + formattedTime,
-                        "--allow-empty")
+        git.run(parameters -> {
+                    parameters.getEnvironmentVariables().put("GIT_COMMITTER_DATE", formattedTime);
+                    parameters.getEnvironmentVariables().put("TZ", "UTC");
+                    parameters
+                            .getCommand()
+                            .addAll(
+                                    "-c",
+                                    "user.name='name'",
+                                    "-c",
+                                    "user.email=email@address",
+                                    "commit",
+                                    "--author='name <email@address>'",
+                                    "-m",
+                                    "'initial commit'",
+                                    "--date=" + formattedTime,
+                                    "--allow-empty");
+                })
                 .get();
-
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772");
     }
 
     @Test
     public void short_sha_when_no_annotated_tags_are_present_and_dirty_content() throws Exception {
         git.run("add", ".").get();
-
-        Map<String, String> envvar = new HashMap<>();
-        envvar.put("GIT_COMMITTER_DATE", formattedTime);
-        envvar.put("TZ", "UTC");
-        git.run(
-                        envvar,
-                        "-c",
-                        "user.name='name'",
-                        "-c",
-                        "user.email=email@address",
-                        "commit",
-                        "--author='name <email@address>'",
-                        "-m",
-                        "'initial commit'",
-                        "--date=" + formattedTime,
-                        "--allow-empty")
+        git.run(parameters -> {
+                    parameters.getEnvironmentVariables().put("GIT_COMMITTER_DATE", formattedTime);
+                    parameters.getEnvironmentVariables().put("TZ", "UTC");
+                    parameters
+                            .getCommand()
+                            .addAll(
+                                    "-c",
+                                    "user.name='name'",
+                                    "-c",
+                                    "user.email=email@address",
+                                    "commit",
+                                    "--author='name <email@address>'",
+                                    "-m",
+                                    "'initial commit'",
+                                    "--date=" + formattedTime,
+                                    "--allow-empty");
+                })
                 .get();
 
         write(new File(temporaryFolder, "foo"));
 
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772.dirty");
-    }
-
-    @Test
-    public void git_version_result_is_being_cached() throws Exception {
-        write(new File(temporaryFolder, "foo"));
-        git.run("add", ".").get();
-        git.run("commit", "-m", "initial commit").get();
-        git.run("tag", "-a", "1.0.0", "-m", "cached").get();
-        VersionDetails versionDetails = versionDetails();
-        assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
-
-        write(new File(temporaryFolder, "bar"));
-        git.run("add", ".").get();
-        git.run("commit", "-m", "second commit").get();
-        git.run("tag", "-a", "2.0.0", "-m", "unused").get();
-
-        assertThat(versionDetails.getVersion()).isEqualTo("1.0.0");
-    }
-
-    @Test
-    public void git_origin_url_result_is_being_cached() throws Exception {
-        write(new File(temporaryFolder, "foo"));
-        VersionDetails versionDetails = versionDetails();
-        assertThat(versionDetails.getOriginUrl()).isEqualTo("git@github.com:example/example.git");
-
-        git.run("remote", "set-url", "origin", "git@github.com:example/example2.git")
-                .get();
-        assertThat(versionDetails.getOriginUrl()).isEqualTo("git@github.com:example/example.git");
     }
 
     private File write(File file) throws IOException {
@@ -191,11 +162,6 @@ public class VersionDetailsTest {
     }
 
     private VersionDetails versionDetails() {
-        String gitDir = temporaryFolder.toString() + "/.git";
-        return new VersionDetailsImpl(
-                this.project.getProviders(),
-                this.project.getObjects().newInstance(EnvironmentVariables.class),
-                new File(gitDir),
-                new GitVersionArgs());
+        return new VersionDetailsImpl(this.project.getObjects().newInstance(CommonGitOperations.Default.class));
     }
 }
