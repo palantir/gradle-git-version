@@ -30,13 +30,13 @@ cglib:cglib-nodep:3.2.2 (1 constraints: 490ded24)
 
 com.netflix.nebula:nebula-test:11.11.3 (2 constraints: 041e803f)
 
-com.palantir.gradle.plugintesting:configuration-cache-spec:0.59.0 (1 constraints: 40054e3b)
+com.palantir.gradle.plugintesting:configuration-cache-spec:0.60.0 (1 constraints: 3805373b)
 
-com.palantir.gradle.plugintesting:discover-tests-cli:0.59.0 (1 constraints: 40054e3b)
+com.palantir.gradle.plugintesting:discover-tests-cli:0.60.0 (1 constraints: 3805373b)
 
-com.palantir.gradle.plugintesting:gradle-plugin-testing-junit:0.59.0 (1 constraints: a607387e)
+com.palantir.gradle.plugintesting:gradle-plugin-testing-junit:0.60.0 (1 constraints: 9e07197e)
 
-com.palantir.gradle.plugintesting:plugin-testing-core:0.59.0 (1 constraints: 40054e3b)
+com.palantir.gradle.plugintesting:plugin-testing-core:0.60.0 (1 constraints: 3805373b)
 
 commons-io:commons-io:2.19.0 (1 constraints: db190cdf)
 
@@ -54,7 +54,7 @@ org.codehaus.groovy:groovy:3.0.24 (2 constraints: fd25697b)
 
 org.hamcrest:hamcrest:2.2 (1 constraints: d20cdc04)
 
-org.jetbrains:annotations:26.0.2 (1 constraints: d9190fdf)
+org.jetbrains:annotations:26.1.0 (1 constraints: d81910df)
 
 org.junit.jupiter:junit-jupiter:6.0.3 (1 constraints: 4a070d70)
 
