@@ -1,5 +1,5 @@
 com.google.guava:guava = 33.6.0-jre
-com.palantir.gradle.plugintesting:gradle-plugin-testing-junit = 0.67.0
+com.palantir.gradle.plugintesting:gradle-plugin-testing-junit = 0.68.0
 org.assertj:assertj-core = 3.27.7
 org.immutables:* = 2.12.1
 org.junit.jupiter:* = 6.0.3
