@@ -1,8 +1,8 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-com.github.ben-manes.caffeine:caffeine:3.2.3 (1 constraints: 0a050336)
+com.github.ben-manes.caffeine:caffeine:3.2.4 (1 constraints: 0b050436)
 
-com.google.errorprone:error_prone_annotations:2.47.0 (2 constraints: 7d1ad974)
+com.google.errorprone:error_prone_annotations:2.49.0 (2 constraints: 831aab75)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
