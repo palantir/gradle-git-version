@@ -20,7 +20,7 @@ com.palantir.gradle.utils:providers:0.24.0 (1 constraints: 710de031)
 
 com.palantir.gradle.utils:safe-exec-commandline:0.24.0 (1 constraints: 710de031)
 
-org.immutables:value:2.12.1 (1 constraints: 3805363b)
+org.immutables:value:2.12.2 (1 constraints: 3905373b)
 
 org.jspecify:jspecify:1.0.0 (9 constraints: 8b8d4cfb)
 
