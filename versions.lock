@@ -70,7 +70,7 @@ org.junit.platform:junit-platform-commons:6.1.0 (2 constraints: d5204b4a)
 
 org.junit.platform:junit-platform-engine:6.1.0 (3 constraints: 22304f56)
 
-org.junit.platform:junit-platform-launcher:6.1.0 (3 constraints: d128dea1)
+org.junit.platform:junit-platform-launcher:6.1.0 (3 constraints: cf2812a1)
 
 org.objenesis:objenesis:2.4 (1 constraints: ea0c8c0a)
 
