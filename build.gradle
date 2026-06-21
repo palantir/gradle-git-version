@@ -5,7 +5,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.palantir.baseline-error-prone:gradle-baseline-error-prone:0.23.0'
-        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.18.0'
+        classpath 'com.palantir.gradle.failure-reports:gradle-failure-reports:1.19.0'
         classpath 'com.palantir.gradle.guide:gradle-guide:1.30.0'
         classpath 'com.palantir.gradle.idea-configuration:gradle-idea-configuration:0.10.0'
         classpath 'com.palantir.gradle.idea-language-injector:gradle-idea-language-injector:0.3.0'
