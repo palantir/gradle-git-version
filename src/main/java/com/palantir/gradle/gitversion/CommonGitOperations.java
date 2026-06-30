@@ -19,6 +19,8 @@ package com.palantir.gradle.gitversion;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.palantir.gradle.gitversion.CommonGitOperations.Factory.Parameters;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,16 +115,26 @@ public abstract class CommonGitOperations {
         return nonEmptyPrefix.flatMap(this::describe).map(Strings::emptyToNull).map(Description::new);
     }
 
+    private static String[] describeArgs(String prefixValue) {
+        List<String> args = new ArrayList<>();
+        args.add("describe");
+        args.add("--tags");
+        args.add("--always");
+        args.add("--first-parent");
+        args.add("--abbrev=7");
+        // Only add --match when a prefix is set. Omitting it relies on git's default
+        // "match all tags" behaviour, which avoids passing a bare --match=* that some
+        // shells (e.g. zsh with noglob disabled) expand before git sees the argument.
+        if (!prefixValue.isEmpty()) {
+            args.add("--match=%s*".formatted(prefixValue));
+        }
+        args.add("HEAD");
+        return args.toArray(new String[0]);
+    }
+
     private Provider<String> describe(String prefixValue) {
         return getInvoker()
-                .invokeWithResult(
-                        "describe",
-                        "--tags",
-                        "--always",
-                        "--first-parent",
-                        "--abbrev=7",
-                        "--match=%s*".formatted(prefixValue),
-                        "HEAD")
+                .invokeWithResult(describeArgs(prefixValue))
                 .map(execOutput -> {
                     if (execOutput.exitCode() == 0) {
                         return execOutput.uncheckedStandardOut();
