@@ -46,7 +46,7 @@ info.picocli:picocli:4.7.7 (1 constraints: 2816dcdd)
 
 net.bytebuddy:byte-buddy:1.18.3 (1 constraints: 530b55df)
 
-one.util:streamex:0.8.4 (1 constraints: 0e050736)
+one.util:streamex:0.9.0 (1 constraints: 0b050636)
 
 org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
