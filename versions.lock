@@ -2,11 +2,11 @@
 
 com.github.ben-manes.caffeine:caffeine:3.2.4 (1 constraints: 0b050436)
 
-com.google.errorprone:error_prone_annotations:2.49.0 (2 constraints: 831aab75)
+com.google.errorprone:error_prone_annotations:2.50.0 (2 constraints: 7d1a9a75)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
-com.google.guava:guava:33.6.0-jre (3 constraints: 1d3a10e0)
+com.google.guava:guava:33.7.0-jre (3 constraints: 1e3aa5e0)
 
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 
@@ -22,7 +22,7 @@ com.palantir.gradle.utils:safe-exec-commandline:0.24.0 (1 constraints: 710de031)
 
 org.immutables:value:2.12.2 (1 constraints: 3905373b)
 
-org.jspecify:jspecify:1.0.0 (9 constraints: 8b8d4cfb)
+org.jspecify:jspecify:1.0.1 (9 constraints: 8c8d94fc)
 
 
 
