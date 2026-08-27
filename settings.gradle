@@ -9,4 +9,3 @@ buildscript {
 }
 apply plugin: 'com.palantir.jdks.settings'
 rootProject.name = 'gradle-git-version'
-
