@@ -30,15 +30,15 @@ org.jspecify:jspecify:1.0.1 (9 constraints: 8c8d94fc)
 
 cglib:cglib-nodep:3.2.2 (1 constraints: 490ded24)
 
-com.netflix.nebula:nebula-test:12.1.0 (2 constraints: d11d8c2c)
+com.netflix.nebula:nebula-test:12.1.0 (2 constraints: cb1d802c)
 
-com.palantir.gradle.plugintesting:configuration-cache-spec:0.75.0 (1 constraints: 3e054a3b)
+com.palantir.gradle.plugintesting:configuration-cache-spec:0.76.0 (1 constraints: 3f054d3b)
 
-com.palantir.gradle.plugintesting:discover-tests-cli:0.75.0 (1 constraints: 3e054a3b)
+com.palantir.gradle.plugintesting:discover-tests-cli:0.76.0 (1 constraints: 3f054d3b)
 
-com.palantir.gradle.plugintesting:gradle-plugin-testing-junit:0.75.0 (1 constraints: ad079f7e)
+com.palantir.gradle.plugintesting:gradle-plugin-testing-junit:0.76.0 (1 constraints: ae07a37e)
 
-com.palantir.gradle.plugintesting:plugin-testing-core:0.75.0 (2 constraints: 181f5f8e)
+com.palantir.gradle.plugintesting:plugin-testing-core:0.76.0 (2 constraints: 1a1fac8e)
 
 commons-io:commons-io:2.22.0 (1 constraints: d519fbde)
 
@@ -54,7 +54,7 @@ org.apiguardian:apiguardian-api:1.1.2 (6 constraints: 5366ce6e)
 
 org.assertj:assertj-core:3.27.7 (3 constraints: a62c6955)
 
-org.codehaus.groovy:groovy:3.0.24 (2 constraints: fd25697b)
+org.codehaus.groovy:groovy:3.0.9 (1 constraints: 380d141f)
 
 org.hamcrest:hamcrest:2.2 (1 constraints: d20cdc04)
 
@@ -72,7 +72,7 @@ org.junit.jupiter:junit-jupiter-params:6.1.3 (2 constraints: c5242bd7)
 
 org.junit.platform:junit-platform-commons:6.1.3 (2 constraints: db20e44a)
 
-org.junit.platform:junit-platform-engine:6.1.3 (3 constraints: 2830d257)
+org.junit.platform:junit-platform-engine:6.1.3 (3 constraints: 2830d057)
 
 org.junit.platform:junit-platform-launcher:6.1.3 (3 constraints: d428c5a2)
 
@@ -80,4 +80,4 @@ org.objenesis:objenesis:2.4 (1 constraints: ea0c8c0a)
 
 org.opentest4j:opentest4j:1.3.0 (2 constraints: cf209249)
 
-org.spockframework:spock-core:2.3-groovy-3.0 (2 constraints: d223154d)
+org.spockframework:spock-core:2.1-groovy-3.0 (1 constraints: 3808bd76)
