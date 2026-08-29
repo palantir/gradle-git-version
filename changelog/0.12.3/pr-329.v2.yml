@@ -1,6 +1,0 @@
-type: feature
-feature:
-  description: Performance information is exposed in Gradle build scans for `gitVersion()`
-    and `versionDetails().xxxxx()` calls.
-  links:
-  - https://github.com/palantir/gradle-git-version/pull/329

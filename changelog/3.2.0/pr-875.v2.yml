@@ -1,5 +1,0 @@
-type: fix
-fix:
-  description: no longer used
-  links:
-  - https://github.com/palantir/gradle-git-version/pull/875

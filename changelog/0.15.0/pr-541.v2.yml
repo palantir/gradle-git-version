@@ -1,6 +1,0 @@
-type: fix
-fix:
-  description: |-
-    Evaluate Buildscan directly when the root project is evaluated
-  links:
-  - https://github.com/palantir/gradle-git-version/pull/541
