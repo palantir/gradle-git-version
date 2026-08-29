@@ -12,7 +12,7 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.gradle.utils:environment-variables:0.28.0 (1 constraints: 3c053f3b)
+com.palantir.gradle.utils:environment-variables:0.29.0 (1 constraints: 3d05423b)
 
 com.palantir.gradle.utils:exec:0.24.0 (1 constraints: 3805333b)
 
