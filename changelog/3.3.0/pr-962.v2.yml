@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Allow numbers in prefixes.
-  links:
-  - https://github.com/palantir/gradle-git-version/pull/962

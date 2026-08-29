@@ -1,5 +1,0 @@
-type: break
-break:
-  description: Increasing minimum supported JDK to JDK 17
-  links:
-  - https://github.com/palantir/gradle-git-version/pull/972
