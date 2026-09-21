@@ -9,5 +9,5 @@ org.spockframework:spock-core = 2.1-groovy-3.0
 com.netflix.nebula:nebula-test = 12.1.0
 com.palantir.gradle.utils:environment-variables = 0.29.0
 com.palantir.gradle.utils:exec = 0.24.0
-com.github.ben-manes.caffeine:caffeine = 3.2.4
+com.github.ben-manes.caffeine:caffeine = 3.3.0
 one.util:streamex = 0.9.0
