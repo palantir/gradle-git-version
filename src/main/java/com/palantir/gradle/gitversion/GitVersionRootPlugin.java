@@ -20,6 +20,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 final class GitVersionRootPlugin implements Plugin<Project> {
+    @SuppressWarnings("for-rollout:ReferenceEquality")
     @Override
     public void apply(Project project) {
         if (project.getRootProject() != project) {
