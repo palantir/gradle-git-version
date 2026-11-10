@@ -156,6 +156,20 @@ public class VersionDetailsTest {
         assertThat(versionDetails().getVersion()).isEqualTo("f2bc772.dirty");
     }
 
+    @Test
+    public void origin_url_is_returned_when_origin_exists() {
+        assertThat(versionDetails().getOriginUrl()).isEqualTo("git@github.com:example/example.git");
+    }
+
+    @Test
+    public void origin_url_is_null_when_no_origin_exists() {
+        git.run("remote", "remove", "origin").get();
+
+        // Call CommonGitOperations directly, as VersionDetailsImpl swallows exceptions
+        CommonGitOperations operations = project.getObjects().newInstance(CommonGitOperations.Default.class);
+        assertThat(operations.originUrl().getOrNull()).isNull();
+    }
+
     private File write(File file) throws IOException {
         Files.write(file.toPath(), "content".getBytes(StandardCharsets.UTF_8));
         return file;

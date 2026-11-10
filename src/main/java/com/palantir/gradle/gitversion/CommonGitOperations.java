@@ -77,7 +77,17 @@ public abstract class CommonGitOperations {
     }
 
     public final Provider<String> originUrl() {
-        return getInvoker().invoke("config", "remote.origin.url").map(Strings::emptyToNull);
+        return getInvoker()
+                .invokeWithResult("config", "remote.origin.url")
+                .map(execOutput -> {
+                    // git config exits with code 1 when the section or key is invalid (i.e. there is no origin)
+                    if (execOutput.exitCode() == 1
+                            && execOutput.uncheckedStandardOut().isEmpty()) {
+                        return "";
+                    }
+                    return execOutput.standardOutputOfSuccessfulCommand();
+                })
+                .map(Strings::emptyToNull);
     }
 
     public final Provider<String> branchName() {
